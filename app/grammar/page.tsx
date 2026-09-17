@@ -1,0 +1,3 @@
+import { PageIntro } from "@/components/ui";
+import { GrammarLearningHub } from "@/components/grammar/grammar-learning-hub";
+export default async function GrammarPage({searchParams}:{searchParams:Promise<{practice?:string}>}){const q=await searchParams,practiceMode=q.practice==="1";return <><PageIntro eyebrow={practiceMode?"Practice · Grammar":"Grammar"} title="Grammar pathways & practice" description={practiceMode?"Tenant-guided grammar practice uses the configured content stage and exercise target.":"Learn grammar in stages from P1 foundations to S4 precision, with explanations, examples, common mistakes and mixed-mode reinforcement."}/><GrammarLearningHub practiceMode={practiceMode}/></>}

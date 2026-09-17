@@ -1,0 +1,2 @@
+import{getEnv}from"@/lib/cloudflare";import{requireTenantSession}from"@/lib/auth/tenant";import{resolveTenantIntegrations}from"@/lib/settings/tenant-runtime";
+export async function GET(request:Request){const a=await requireTenantSession(request);if(a.response)return a.response;const s=a.session!,env=await resolveTenantIntegrations(getEnv(),s.tenant_id),rows=await env.DB.prepare("SELECT * FROM listening_sources WHERE enabled=1 ORDER BY name").all();return Response.json({sources:rows.results,youtubeEnabled:Boolean(env.YOUTUBE_API_KEY),readOnly:true})}

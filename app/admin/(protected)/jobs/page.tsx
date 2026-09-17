@@ -1,0 +1,1 @@
+import{TenantJobManager}from"@/components/tenant-job-manager";export default function Page(){return <><div className="sectionHeading"><div><span>Tenant Admin · Operations</span><h1>Work Queue</h1><p>See what is waiting, what is running, and what has completed or failed. Tasks execute one at a time in FIFO queue-entry order.</p></div></div><TenantJobManager/></>}

@@ -1,0 +1,84 @@
+English Mastery v1.0.2 Hotfix 11.8.3
+FINAL TEST REPORT
+Date: 2026-09-01
+
+Scope
+- Fix false UNAVAILABLE Daily Reading and Speaking cards when later published resources are still eligible.
+- Apply the same correction to Listening and scheduled Writing.
+- Preserve the configurable completion-only lesson cooldown (default 7 days).
+- Keep Vocabulary behaviour unchanged.
+
+Root cause fixed
+Hotfix 11.8.x applied tenant_learn_availability.lesson_limit inside an `allowed` CTE before checking recent completion/cooldown evidence. Example: with lesson_limit=2, if lessons #1 and #2 were completed recently, the query discarded them after limiting and returned zero rows even when lessons #3+ were published and eligible. This produced false UNAVAILABLE cards.
+
+Implemented
+- DAILY_PLANNER_VERSION = daily-cache-v12-eligible-before-limit.
+- Reading, Listening, Speaking and Writing now apply:
+  1) published status,
+  2) learner stage,
+  3) global/current-Tenant scope,
+  4) genuine completion-only cooldown,
+  before applying the Tenant candidate limit.
+- The v12 planner marker invalidates/rematerialises erroneous 11.8.2 todo/skipped UNAVAILABLE cards.
+- Speaking cooldown only excludes prompts with a prior done task or all three scored modes passed.
+- Writing cooldown only excludes prompts with a passed submission/done task.
+- Reading/Listening still prefer configured max-word / max-video-duration filters. If a non-repeating published resource exists but every returned resource fails only that soft size/duration preference, one concrete resource is assigned with dailyLimitRelaxed=true instead of a false UNAVAILABLE card. The repeat cooldown is not relaxed.
+- Vocabulary is unchanged.
+
+New regression coverage
+- scripts/test_hotfix1183.py extracts and executes the actual planner SQL against SQLite fixtures.
+- Fixture has five resources per domain and marks the first two completed inside cooldown while lesson_limit=2.
+- Expected/validated output is resources #3 and #4 for Reading, Listening, Speaking and Writing.
+- Test also rejects any return of the old `WITH allowed AS (... LIMIT ?)` pre-limit pattern.
+
+Regression results
+PASS scripts/validate_release.py
+PASS scripts/test_d1_migrations.py
+PASS scripts/test_hotfix5.py
+PASS scripts/test_hotfix52.py
+PASS scripts/test_hotfix6.py
+PASS scripts/test_hotfix61.py
+PASS scripts/test_hotfix7.py
+PASS scripts/test_hotfix8.py
+PASS scripts/test_hotfix9.py
+PASS scripts/test_hotfix10.py
+PASS scripts/test_hotfix11.py
+PASS scripts/test_hotfix112.py
+PASS scripts/test_hotfix113.py
+PASS scripts/test_hotfix114.py
+PASS scripts/test_hotfix115.py
+PASS scripts/test_hotfix116.py
+PASS scripts/test_hotfix117.py
+PASS scripts/test_hotfix118.py
+PASS scripts/test_hotfix1181.py
+PASS scripts/test_hotfix1182.py
+PASS scripts/test_hotfix1183.py
+PASS scripts/test_ai_guest_guard.py
+PASS scripts/test_r10_status_gates.py
+PASS scripts/test_r12_work_queue.py
+PASS scripts/test_r13_status_selection.py
+PASS scripts/test_r14_summary_cloze.py
+PASS scripts/test_r15_pass_score_cloze_summary.py
+PASS scripts/test_r16_learn_progress.py
+PASS scripts/test_r24_hotfix1_queue_typing.py
+PASS scripts/audit_styles.py
+PASS bash -n scripts/deploy.sh
+PASS bash -n scripts/install-deps-resilient.sh
+
+Schema/release validation
+- 55 migrations
+- 102 application tables
+- 39 skills
+- 343 published questions
+- 31 qbank sources
+- 337 qbank items
+- 718 vocabulary memberships
+- 84 grammar topics
+- 168 grammar exercises
+- No new migration in 11.8.3.
+
+TypeScript validation
+- 417 TS/TSX files syntax/transpile: 0 errors.
+- lib/student/planner.ts strict semantic TypeScript check with D1 interface shims: PASS.
+- Full dependency-backed `tsc --noEmit` cannot complete in this sandbox because the release source has no node_modules and the sandbox does not contain the project @cloudflare/workers-types/node type packages. The observed project-wide tsc failure is TS2688 missing type-definition packages, not a source semantic error.
+- Run `npm run verify:release` in the normal dependency-enabled release environment before production deployment.

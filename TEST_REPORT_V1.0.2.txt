@@ -1,0 +1,26 @@
+English Mastery V1.0.2 - Validation Report
+Date: 2026-08-31
+
+PASS - Release self-check
+  40 migrations; 94 tables; 39 skills; 343 published questions;
+  30 qbank sources; 337 qbank items; 140 vocabulary memberships;
+  56 grammar topics; 112 grammar exercises.
+
+PASS - TypeScript/TSX parser check
+  386 .ts/.tsx source files parsed with TypeScript compiler API; no syntax diagnostics.
+
+PASS - UI style audit
+  520 CSS classes; 455 literal UI classes checked; minimum explicit font size 17px.
+
+PASS - deploy.sh shell syntax (bash -n)
+PASS - Student account signed-in profile path present
+PASS - Reading and Listening review pages include in-app Back to lesson library
+PASS - Lesson-library refresh event wired after publish
+PASS - Create-time dedup wired for Reading / Listening / Speaking / Writing / Cloze
+PASS - Question Bank existing fingerprint + lexical-similarity duplicate rejection retained
+PASS - SMTP managed integration + test-send endpoint wired
+PASS - Syllabus monitor runtime switched from Email binding to SMTP notification helper
+PASS - Cloudflare legacy Email binding removed from monitor Worker config
+
+Environment limitation:
+  Full npm dependency installation / npm run typecheck / Next build could not be executed in this sandbox because registry.npmjs.org DNS resolution failed (EAI_AGAIN). No new npm dependency was introduced by V1.0.2. The source package's pinned dependencies are unchanged from V1.0.1 except the package version/name.

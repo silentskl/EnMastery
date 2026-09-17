@@ -1,0 +1,88 @@
+English Mastery v1.0.2 Hotfix 11.7 — Final Test Report
+Date: 2026-09-01
+
+Scope
+-----
+Fix browser speech-recognition duplication where one spoken sentence appeared repeatedly in "What we heard" because cumulative Web Speech API results were appended again on every onresult callback.
+
+Implemented
+-----------
+1. Speaking Workspace
+   - Track committed SpeechRecognition result slots with Set<number>.
+   - A final slot is appended exactly once.
+   - Interim text remains replaceable and is not committed early.
+   - Reset committed slots for every new recording.
+   - Guard asynchronous microphone start with startingRef to prevent accidental double-start / duplicate recognition sessions.
+
+2. Question Bank oral recording
+   - Apply the same committed-result-slot logic.
+   - Do not append the complete cumulative result list on every callback.
+
+3. Intensive Listening shadowing
+   - Apply result-slot de-duplication to final shadowing transcripts.
+   - Submit the de-duplicated finalParts value on recognition end.
+
+4. No database/schema change
+   - Migration count remains 54.
+   - Latest migration remains 0054_v102_hotfix115_daily_plan_resource_indexes.sql.
+
+Behavioural regression
+----------------------
+Simulated cumulative browser callbacks:
+  callback 1: [final sentence A]
+  callback 2: [final sentence A, interim sentence B]
+  callback 3: [final sentence A, final sentence B]
+  callback 4: [final sentence A, final sentence B]
+Expected transcript: sentence A + sentence B exactly once each.
+Result: PASS.
+
+A new recording resets committed result slots, so legitimate repeated speech in another recording remains accepted.
+Result: PASS.
+
+Regression results
+------------------
+PASS scripts/test_hotfix117.py
+PASS scripts/test_hotfix116.py
+PASS scripts/test_hotfix115.py
+PASS scripts/test_hotfix114.py
+PASS scripts/test_hotfix113.py
+PASS scripts/test_hotfix112.py
+PASS scripts/test_hotfix11.py
+PASS scripts/test_hotfix10.py
+PASS scripts/test_hotfix9.py
+PASS scripts/test_hotfix8.py
+PASS scripts/test_hotfix7.py
+PASS scripts/test_hotfix61.py
+PASS scripts/test_hotfix6.py
+PASS scripts/test_hotfix52.py
+PASS scripts/test_hotfix5.py
+PASS scripts/test_d1_migrations.py
+PASS scripts/audit_styles.py
+PASS scripts/validate_release.py
+PASS bash syntax: scripts/deploy.sh
+PASS bash syntax: scripts/install-deps-resilient.sh
+
+Database validation
+-------------------
+54 migrations
+101 application tables
+39 skills
+343 published questions
+31 qbank sources
+337 qbank items
+718 vocabulary memberships
+84 grammar topics
+168 grammar exercises
+
+TypeScript source validation
+----------------------------
+415 TS/TSX files transpiled with TypeScript 5.8.3.
+Syntax/transpile errors: 0.
+
+Environment limitation
+----------------------
+The sandbox copy does not contain project node_modules, so the full dependency-backed npm run typecheck / typecheck:workers / Next/OpenNext production build was not executed here. The release package retains these gates in npm run check:release / verify:release for execution in the normal dependency-installed build environment.
+
+Conclusion
+----------
+PASS for Hotfix 11.7 speaking-recognition duplication fix and local release regression gates available in this environment.

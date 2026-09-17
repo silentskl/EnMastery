@@ -1,0 +1,2 @@
+import{TenantPracticeSettings}from"@/components/tenant-practice-settings";
+export default function Page(){return <><div className="sectionHeading"><div><span>Tenant Admin · Practice</span><h1>Practice settings</h1><p>Configure Listening, Speaking, Reading, Writing, Vocabulary, Grammar and Cloze by learner stage. Vocabulary spaced-review frequency is managed here.</p></div></div><TenantPracticeSettings/></>}

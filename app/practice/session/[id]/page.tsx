@@ -1,0 +1,1 @@
+import{SpecialisedSessionRunner}from"@/components/question-bank/session-runner";export default async function Page({params}:{params:Promise<{id:string}>}){const{id}=await params;return <SpecialisedSessionRunner id={id}/>}

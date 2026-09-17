@@ -1,0 +1,23 @@
+English Mastery V0.9.0 R12 — Hotfix 1
+
+Issue reproduced from deployment typecheck:
+- app/api/admin/question-bank/review/route.ts imported removed softDeleteJob
+- app/api/platform/question-bank/review/route.ts imported removed softDeleteJob
+
+Fix:
+- Added deleteQuestionBankItemJob() in lib/jobs/store.ts.
+- Replaced both stale softDeleteJob imports/calls with the dedicated Question Bank deletion helper.
+- Work Queue DELETE endpoints continue to use deleteFinishedJob(), so queued/running Work Queue tasks remain non-deletable and generated entities/assets are not removed by Work Queue history cleanup.
+
+Validation:
+- python3 scripts/validate_release.py: PASS
+  Validated V0.9.0 R12; 30 migrations; 89 tables; 39 skills; 98 published questions; 28 qbank sources; 92 qbank items; 140 vocabulary memberships; 56 grammar topics; 112 grammar exercises.
+- python3 scripts/audit_styles.py: PASS
+- 352 app/lib/component TS/TSX files transpile syntax check: PASS (0 diagnostics)
+- Named-import audit for @/lib/jobs/store: PASS (0 missing exports)
+- softDeleteJob source references: 0
+
+Full local `npm run typecheck` note:
+- The current artifact execution environment does not have project node_modules installed. The command therefore stops at TS2688 for missing @cloudflare/workers-types before project semantic checking.
+- The two user-reported TS2305 errors are removed at source and the named-export audit confirms both replacement imports exist.
+- In the deployment environment where dependencies are installed, rerun `npm run typecheck`; this hotfix specifically resolves the reported TS2305 failures.

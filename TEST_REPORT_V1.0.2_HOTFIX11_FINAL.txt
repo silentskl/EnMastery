@@ -1,0 +1,74 @@
+English Mastery v1.0.2 Hotfix 11 - Final Validation Report
+Date: 2026-09-01
+
+PURPOSE
+Fix persistent Today Mission load failures by exposing exact backend diagnostics and adding safe degradation; expand Tenant Admin Word Books for incremental management; and add configurable Task Queue execution timeout with delete/retrigger lifecycle. Default task timeout is 120 minutes.
+
+IMPLEMENTED
+1. Today Mission reliability / diagnostics
+   - `/api/student/plan` returns a structured `student_plan_failed` error with code, exact stage, backend message and requestId.
+   - `X-Request-Id` is emitted and the same ID is written to server logs.
+   - Student Today and Learning Momentum display the concrete backend diagnostic instead of only “Refresh to try again”.
+   - Planner/policy/materialisation failures degrade to an emergency Today mission when core `learning_tasks` storage remains usable.
+   - Completion reconciliation and streak are best-effort and cannot block an otherwise valid Today mission.
+   - Progress Calendar uses the same code/message/stage/requestId diagnostic model.
+
+2. Tenant Admin Word Books inventory
+   - Existing Tenant and System word books are listed with term counts and stage metadata.
+   - Tenant books support View/Search terms, rename, description/stage editing, Add terms through the persistent background import queue, individual-term removal and protected deletion.
+   - System books are visible for reference and are read-only.
+   - Fixed the actual content-list SQL ordering field to `v.lemma`; a full migrated SQLite database executes the query successfully.
+
+3. Configurable Task Queue timeout
+   - Migration 0051 adds `queue_runtime_policy`.
+   - Default timeout is 120 minutes; supported range is 5–1440 minutes.
+   - Tenant Admin and Platform Work Queue APIs/UI read and save the timeout.
+   - The Task Runner watchdog checks stale running tasks every 5 minutes.
+   - A task exceeding the configured execution timeout becomes terminal `failed / timed_out` and records `job_timed_out` diagnostics.
+   - Timed-out queue history can be deleted or retriggered.
+   - Retrigger creates a fresh queued execution and preserves the original timed-out task/logs for audit.
+   - Queue remains strictly single-consumer: max_batch_size=1, max_concurrency=1, oldest persisted enqueued_at first.
+
+DATABASE
+51 migrations; 100 tables. Latest migration: 0051_v102_hotfix11_queue_timeout.sql.
+
+FINAL VALIDATION RESULTS
+PASS  scripts/validate_release.py
+      V1.0.2; 51 migrations; 100 tables; 39 skills; 343 published questions;
+      31 qbank sources; 337 qbank items; 718 vocabulary memberships;
+      84 grammar topics; 168 grammar exercises.
+PASS  scripts/test_d1_migrations.py
+PASS  scripts/test_hotfix5.py
+PASS  scripts/test_hotfix52.py
+PASS  scripts/test_hotfix6.py
+PASS  scripts/test_hotfix61.py
+PASS  scripts/test_hotfix7.py
+PASS  scripts/test_hotfix8.py
+PASS  scripts/test_hotfix9.py
+PASS  scripts/test_hotfix10.py
+PASS  scripts/test_hotfix11.py
+PASS  scripts/test_ai_guest_guard.py
+PASS  scripts/test_r10_status_gates.py
+PASS  scripts/test_r12_work_queue.py
+PASS  scripts/test_r13_status_selection.py
+PASS  scripts/test_r14_summary_cloze.py
+PASS  scripts/test_r15_pass_score_cloze_summary.py
+PASS  scripts/test_r16_learn_progress.py
+PASS  scripts/test_r24_hotfix1_queue_typing.py
+PASS  scripts/audit_styles.py
+PASS  bash -n scripts/deploy.sh
+PASS  bash -n scripts/install-deps-resilient.sh
+PASS  TypeScript syntax/transpile scan: 412 TS/TSX files, 0 errors
+PASS  Tenant word-book content-list query against the fully migrated schema
+PASS  Queue configuration inspection: max_batch_size=1; max_concurrency=1; 5-minute timeout watchdog; FIFO DB selection retained
+
+DEPENDENCY-BACKED BUILD GATE
+The sandbox does not contain this project's node_modules. Direct `tsc --noEmit` therefore stops before source checking because @cloudflare/workers-types and @types/node are not installed. An npm registry ping was attempted and did not complete within 30 seconds. For that reason the dependency-backed Next/OpenNext production build is not marked PASS here.
+
+The release keeps:
+  npm run verify:release
+which installs dependencies and executes main TypeScript, Worker TypeScript, D1 + Hotfix 5→11 regressions, Next build, OpenNext build, selfcheck and stylecheck in an environment with npm registry access.
+
+RELEASE STATUS
+Hotfix 11 source, migration, queue timeout, Today diagnostics/fallback, Tenant word-book management, regression, SQL and syntax validation: PASS.
+Dependency-backed production build: NOT EXECUTED because dependencies are not installed and npm registry access timed out in this sandbox.

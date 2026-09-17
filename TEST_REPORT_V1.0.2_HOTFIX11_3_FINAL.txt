@@ -1,0 +1,64 @@
+English Mastery v1.0.2 Hotfix 11.3 - Final Validation Report
+Date: 2026-09-01
+
+PURPOSE
+1. Fix production Today Mission failures reporting:
+   materialize_plan: D1_ERROR: LIKE or GLOB pattern too complex.
+2. Prevent planner degradation from leaving a partial Today mission such as only Speaking + Vocabulary.
+3. Make Daily Vocabulary word-book assignment Tenant Admin-only.
+4. Remove the PERSONAL word-book model: every custom word book is Tenant-owned while preserving historical books.
+
+ROOT CAUSE / FIX
+- The Daily Planner materialisation path still used SQLite LIKE matching for cached-task cleanup.
+- Hotfix 11.3 removes LIKE/GLOB entirely from lib/student/planner.ts and uses instr() for bounded cache-marker checks.
+- Planner cache version is bumped to daily-cache-v8-tenant-vocab-d1-safe so unstarted v7 tasks are re-materialised after deployment.
+- The degraded Today fallback now inspects existing activity types and inserts every missing required task even when a partial mission already exists.
+
+VOCABULARY OWNERSHIP / POLICY
+- Student Word Books no longer expose "Use for daily learning".
+- Student PUT /api/student/vocabulary/training/settings returns 403; Daily Vocabulary assignment is Tenant Admin-only.
+- Tenant Admin Learning Settings visibly owns "Use for daily learning" per stage.
+- Daily training and Today Planner ignore legacy learner active_collection_id and use Tenant policy, falling back to the stage core System book.
+- Custom word-book scope is now only Tenant. No PERSONAL scope is returned by the vocabulary collection model.
+- Migration 0052_v102_hotfix113_tenant_wordbooks_planner.sql moves historical learner-owned custom books to the learner Tenant, clears owner_child_id, and preserves collection/item IDs and memberships.
+- Lesson-selected vocabulary can still be added to a Tenant custom word book available to that learner.
+
+DATABASE
+PASS 52 migrations
+PASS 100 application tables
+PASS scripts/test_d1_migrations.py under SQLITE_LIMIT_COMPOUND_SELECT=3
+PASS legacy learner-owned custom word book -> Tenant migration preservation
+
+REGRESSION RESULTS
+PASS scripts/test_hotfix5.py
+PASS scripts/test_hotfix52.py
+PASS scripts/test_hotfix6.py
+PASS scripts/test_hotfix61.py
+PASS scripts/test_hotfix7.py
+PASS scripts/test_hotfix8.py
+PASS scripts/test_hotfix9.py
+PASS scripts/test_hotfix10.py
+PASS scripts/test_hotfix11.py
+PASS scripts/test_hotfix112.py
+PASS scripts/test_hotfix113.py
+PASS scripts/test_ai_guest_guard.py
+PASS scripts/test_r10_status_gates.py
+PASS scripts/test_r12_work_queue.py
+PASS scripts/test_r13_status_selection.py
+PASS scripts/test_r14_summary_cloze.py
+PASS scripts/test_r15_pass_score_cloze_summary.py
+PASS scripts/test_r16_learn_progress.py
+PASS scripts/test_r24_hotfix1_queue_typing.py
+PASS scripts/audit_styles.py
+PASS scripts/validate_release.py
+PASS bash -n scripts/deploy.sh
+PASS bash -n scripts/install-deps-resilient.sh
+PASS TypeScript syntax/transpile scan: 413 app/components/lib/workers TS/TSX files, 0 errors
+PASS focused strict TypeScript semantic check for lib/student/planner.ts + lib/vocabulary/collections.ts with D1 interface harness
+PASS task-runner queue message remains TASK_QUEUE.send({jobId:id}); no {wake:true} regression
+
+RELEASE VALIDATION COUNTS
+52 migrations; 100 tables; 39 skills; 343 published questions; 31 qbank sources; 337 qbank items; 718 vocabulary memberships; 84 grammar topics; 168 grammar exercises.
+
+DEPENDENCY-BACKED FULL TYPECHECK / NEXT BUILD
+The sandbox does not contain this project's node_modules. Direct `tsc -p tsconfig.workers.json` stops before project source checking because @cloudflare/workers-types and @types/node are unavailable. This is an environment/dependency absence. The package retains `npm run verify:release` / `npm run check:release` for the dependency-backed main TypeScript, Worker TypeScript, Next and OpenNext production gates.

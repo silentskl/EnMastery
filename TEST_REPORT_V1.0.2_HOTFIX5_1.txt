@@ -1,0 +1,72 @@
+English Mastery V1.0.2 Hotfix 5.1 - D1 Migration Compatibility Test Report
+Date: 2026-08-31
+
+Issue reproduced
+----------------
+Remote Cloudflare D1 migration apply failed while 0043/0044 were pending:
+  too many terms in compound SELECT: SQLITE_ERROR [code: 7500]
+
+Root cause
+----------
+0043 and 0044 used seven-term UNION ALL chains to seed school stages and practice activities.
+Cloudflare D1 remote migration execution may enforce a low SQLITE_LIMIT_COMPOUND_SELECT.
+
+Fix
+---
+- 0043 now seeds stages with WITH levels(level) AS (VALUES ...).
+- 0044 now seeds stages and activities with VALUES CTEs.
+- No executable UNION / UNION ALL remains in migrations 0043 or 0044.
+- Migration numbers and filenames remain 0043/0044 so a failed remote migration can be retried normally.
+- Added .gitattributes to force LF line endings for migration SQL.
+- Added scripts/test_d1_migrations.py and npm script test:d1-migrations.
+- npm run check:release now includes the D1 migration compatibility regression.
+
+D1-specific regression
+----------------------
+PASS - baseline migrations 0001..0042 applied.
+PASS - SQLite runtime SQLITE_LIMIT_COMPOUND_SELECT forced to 3.
+PASS - four-term UNION ALL probe fails with the same "too many terms in compound SELECT" class, proving the harness is strict.
+PASS - corrected 0043 executes under that strict limit.
+PASS - corrected 0044 executes under that strict limit.
+PASS - existing P6/read tenant_learn_availability value survives the 0043 table rebuild.
+PASS - 7 tenant_daily_task_policy rows are seeded for tenant-default.
+PASS - 49 tenant_practice_policy rows are seeded for tenant-default.
+PASS - vocabulary policy columns from 0044 are present.
+
+Regression suite
+----------------
+PASS - scripts/test_ai_guest_guard.py
+PASS - scripts/test_d1_migrations.py
+PASS - scripts/test_hotfix5.py
+PASS - scripts/test_r10_status_gates.py
+PASS - scripts/test_r12_work_queue.py
+PASS - scripts/test_r13_status_selection.py
+PASS - scripts/test_r14_summary_cloze.py
+PASS - scripts/test_r15_pass_score_cloze_summary.py
+PASS - scripts/test_r16_learn_progress.py
+PASS - scripts/test_r24_hotfix1_queue_typing.py
+
+Release checks
+--------------
+PASS - scripts/validate_release.py
+PASS - scripts/audit_styles.py
+PASS - scripts/deploy.sh shell syntax
+PASS - scripts/install-deps-resilient.sh shell syntax
+PASS - 44 migrations / 98 application tables final schema validation
+PASS - ZIP integrity (verified after packaging)
+
+Remote retry procedure
+----------------------
+1. Replace the project with this Hotfix 5.1 package (or replace only the migration patch files).
+2. Check pending migrations:
+     npx wrangler d1 migrations list english-mastery --remote
+3. Confirm 0043 and 0044 are still pending.
+4. Apply:
+     npm run db:migrate:remote
+   or:
+     npx wrangler d1 migrations apply english-mastery --remote
+5. Run:
+     npm run test:d1-migrations
+     npm run test:hotfix5
+
+Cloudflare documents that a failed D1 migration is rolled back and is not recorded as applied, while earlier successful migrations remain applied. Therefore no manual cleanup should normally be required after the reported failure.

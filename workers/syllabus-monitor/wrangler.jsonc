@@ -1,0 +1,34 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "english-mastery-syllabus-monitor",
+  "main": "index.ts",
+  "compatibility_date": "2026-08-25",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "triggers": {
+    "crons": [
+      "0 23 * * *"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "english-mastery",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "english-mastery-media"
+    }
+  ],
+  "vars": {
+    "MODELBRIDGE_BASE_URL": "https://ai.wisewavesg.com",
+    "MODELBRIDGE_CHAT_MODEL": "REPLACE_WITH_MODEL"
+  }
+}

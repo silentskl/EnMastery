@@ -1,0 +1,8 @@
+R19 Hotfix 6
+
+- Fixed lib/listening/store.ts populateListeningMaterial mediaKind union to include external_video.
+- Confirmed StoredMedia and insertListeningMaterial already include external_video.
+- Confirmed lib/jobs/dispatch.ts publisher path emits external_video intentionally.
+- Searched listening media-kind unions for inconsistent youtube|podcast|owned_audio declarations.
+- TypeScript syntax transpilation of app/components/lib/workers: PASS.
+- No migration added.

@@ -1,0 +1,12 @@
+English Mastery V0.9.0 R18 Hotfix 2
+
+PASS release validator: 32 migrations; 92 tables; 39 skills; 343 published questions; 28 qbank sources; 337 qbank items; 140 vocabulary memberships; 56 grammar topics; 112 grammar exercises.
+PASS style audit: minimum explicit font-size 17px.
+PASS TypeScript syntax transpile: 366 app/components/lib/workers TS/TSX files, 0 diagnostic files.
+PASS R16/R18 Learn progress regression: one Today skill-card mission; no duplicate Explore more / Learn-by-skill block; completed tasks are non-clickable; calendar aggregation preserved.
+PASS R15 unified pass score / Cloze summary regression.
+PASS R14 Summary / Cloze regression (245 staged Cloze items).
+PASS R13 status/bulk-selection regression.
+PASS R12 FIFO Work Queue regression.
+
+No database migration. Full tsc --noEmit remains environment-dependent on installed @cloudflare/workers-types; this hotfix addresses UI composition and rendering only.

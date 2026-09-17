@@ -1,0 +1,72 @@
+English Mastery v1.0.2 Hotfix 8 - Final Validation Report
+Date: 2026-09-01
+
+PURPOSE
+Hotfix 8 fixes two student-facing regressions/requirements on top of Hotfix 7:
+1) Complete custom word-book lifecycle in Student Vocabulary and direct lesson-to-word-book saving.
+2) Daily Tasks must reset by Singapore calendar day and never inherit a historical PASS.
+
+DELIVERED
+A. STUDENT CUSTOM WORD BOOKS
+- Create new: persists an empty custom word book without requiring imported terms.
+- Create & import: creates the custom word book and imports editor/TXT/CSV terms.
+- Add to existing: appends editor/TXT/CSV terms to an owned custom word book.
+- TXT accepts one word/phrase per line and word,synonyms rows.
+- CSV parser supports quoted cells and multiple synonym columns; ; | / synonym separators remain supported.
+- Existing collection import remains deduplicated and uses the vocabulary enrichment path.
+
+B. LESSON VOCABULARY -> CUSTOM WORD BOOK
+- Common selection vocabulary drawer now lists learner-owned custom word books.
+- A selected word/phrase may be stored in My vocabulary only, or in My vocabulary + a chosen custom word book.
+- Server validates the destination is a custom collection owned by the current learner.
+- System word books remain read-only.
+- The shared control covers Reading, Listening, Speaking, Writing, question/feedback and other lesson surfaces that already use SelectionVocabulary/VocabularyAddButton.
+
+C. DAILY TASK DAY ROLLOVER
+- Reading/Listening/Writing reconciliation uses completion evidence from the current Asia/Singapore date only.
+- Previous-day learner_content_progress / writing PASS no longer completes today's Daily Task.
+- Future pre-materialised tasks are deleted before planner-cache validation if their selected lesson was completed before the scheduled task_date, allowing a replacement lesson to be chosen.
+- Existing false current-day adaptive PASS rows written by the previous lifetime reconciliation logic self-repair.
+- False task_complete XP is removed and any still-unused English daily reward for that date is removed before replacement planning.
+- Today mission refreshes just after Singapore midnight and on browser focus/visibility return, so an overnight-open page cannot keep yesterday's state.
+
+DATABASE
+- No new migration.
+- Migration count remains 49.
+- Latest migration remains 0049_v102_hotfix7_vocab_books.sql.
+
+VALIDATION RESULTS
+PASS  scripts/validate_release.py
+      49 migrations; 99 tables; 39 skills; 343 published questions;
+      31 qbank sources; 337 qbank items; 718 vocabulary memberships;
+      84 grammar topics; 168 grammar exercises.
+PASS  scripts/test_d1_migrations.py
+PASS  scripts/test_hotfix5.py
+PASS  scripts/test_hotfix52.py
+PASS  scripts/test_hotfix6.py
+PASS  scripts/test_hotfix61.py
+PASS  scripts/test_hotfix7.py
+PASS  scripts/test_hotfix8.py
+PASS  scripts/test_ai_guest_guard.py
+PASS  scripts/test_r10_status_gates.py
+PASS  scripts/test_r12_work_queue.py
+PASS  scripts/test_r13_status_selection.py
+PASS  scripts/test_r14_summary_cloze.py
+PASS  scripts/test_r15_pass_score_cloze_summary.py
+PASS  scripts/test_r16_learn_progress.py
+PASS  scripts/test_r24_hotfix1_queue_typing.py
+PASS  scripts/audit_styles.py
+PASS  bash -n scripts/deploy.sh
+PASS  bash -n scripts/install-deps-resilient.sh
+PASS  TypeScript parser/transpile across app/components/lib/workers: 404 TS/TSX files, 0 syntax diagnostics.
+
+DEPENDENCY-BACKED TYPECHECK / NEXT / OPENNEXT
+The execution container does not include this project's node_modules.
+A direct `npm run typecheck` stops before source checking with only these environment/dependency errors:
+- Cannot find type definition file for '@cloudflare/workers-types'.
+- Cannot find type definition file for 'node'.
+
+The release package keeps the production gate:
+  npm run verify:release
+which installs dependencies and then runs main TypeScript, Worker TypeScript, D1/Hotfix regressions, Next build, OpenNext build, selfcheck and stylecheck.
+Run that gate in the normal deployment environment where npm dependencies are available.

@@ -1,0 +1,10 @@
+English Mastery V0.9.0 R19 Hotfix 4
+
+PASS - curated resolver prefers approved YouTube and falls back to configured official publisher page
+PASS - story-r9-059 current British Council publisher URL migration
+PASS - external_video persists as video_ref without copying publisher media
+PASS - student/review UI exposes Open publisher video and retains questions + Summary mastery flow
+PASS - ModelBridge replay-first and Work Queue diagnostics retained
+PASS - no arbitrary third-party media fallback; fallback only uses curated companion_url from approved catalogue
+
+Database baseline: 34 migrations.

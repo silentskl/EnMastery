@@ -1,0 +1,41 @@
+English Mastery v1.0.2 Hotfix 11.1 - Final Validation Report
+Date: 2026-09-01
+
+ISSUE
+`npm run typecheck:workers` reported TS2353 in workers/task-runner/index.ts because
+TASK_QUEUE is typed as Queue<{ jobId: string }> but wakeNext() sent { wake: true }.
+
+FIX
+wakeNext() now sends:
+  env.TASK_QUEUE.send({ jobId: id })
+This reuses the existing queue message contract used by dispatchJob().
+
+VALIDATION
+PASS focused strict TypeScript queue-message harness using Queue<{jobId:string}>
+PASS scripts/test_hotfix5.py
+PASS scripts/test_hotfix52.py
+PASS scripts/test_hotfix6.py
+PASS scripts/test_hotfix61.py
+PASS scripts/test_hotfix7.py
+PASS scripts/test_hotfix8.py
+PASS scripts/test_hotfix9.py
+PASS scripts/test_hotfix10.py
+PASS scripts/test_hotfix11.py
+PASS scripts/test_r12_work_queue.py
+PASS scripts/test_d1_migrations.py
+PASS scripts/validate_release.py
+PASS scripts/audit_styles.py
+
+Release validation summary:
+51 migrations; 100 tables; 39 skills; 343 published questions; 31 qbank sources;
+337 qbank items; 718 vocabulary memberships; 84 grammar topics; 168 grammar exercises.
+
+DEPENDENCY-BACKED WORKER TYPECHECK
+The sandbox does not contain this project's node_modules. An attempted dependency install from
+https://registry.npmjs.org/ timed out, so the full project `npm run typecheck:workers` could not be
+executed here. The exact reported type mismatch was reproduced at the protocol level and the fixed
+message shape passes strict TypeScript compilation. The package retains `npm run typecheck:workers`
+for execution in the deployment environment with dependencies installed.
+
+DATABASE
+No new migration. Migration count remains 51.

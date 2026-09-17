@@ -1,0 +1,1 @@
+import{SessionSetup}from"@/components/question-bank/session-setup";export default async function Page({params}:{params:Promise<{category:string}>}){const{category}=await params;return <SessionSetup category={category} mode="practice"/>}

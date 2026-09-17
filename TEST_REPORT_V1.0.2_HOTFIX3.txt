@@ -1,0 +1,56 @@
+English Mastery v1.0.2 Hotfix 3 - Release Verification
+Date: 2026-08-31
+
+Scope
+1. Fix SMTP cross-runtime compilation for Next/OpenNext + standalone Cloudflare Workers.
+2. Add the PSLE Prelim source identified from the supplied MindPath Education / 领思教育 screenshot.
+3. Add a single release-check command so future releases do not validate only one compiler path.
+
+Changes verified
+- lib/notifications/smtp.ts uses node:net + node:tls; no cloudflare:sockets import remains.
+- tsconfig.json compilerOptions.types includes @cloudflare/workers-types AND node.
+- tsconfig.workers.json compilerOptions.types includes @cloudflare/workers-types AND node.
+- package.json already declares @types/node; Hotfix 3 selfcheck now enforces it.
+- Main, task-runner, and syllabus-monitor Wrangler compatibility dates are checked to be >= 2026-08-04.
+- package.json adds build:cloudflare and check:release.
+- Migration 0041 adds MindPath Education / 领思教育 · PSLE Prelim to:
+  * content_sources: writing, reference_only
+  * question_bank_sources: writing, reference_only, priority 85
+- Source seed validation is included in scripts/validate_release.py.
+
+Verification completed in this environment
+PASS  Python release self-check
+      41 migrations; 94 tables; 39 skills; 343 published questions;
+      31 Question Bank sources; 337 Question Bank items;
+      140 vocabulary memberships; 56 grammar topics; 112 grammar exercises.
+PASS  CSS/style audit
+      520 CSS classes; 455 literal UI classes; minimum explicit font-size 17px.
+PASS  scripts/deploy.sh shell syntax check.
+PASS  Main TypeScript program using the offline dependency-interface harness.
+PASS  Workers TypeScript program using the offline dependency-interface harness.
+PASS  SMTP transpile + Node.js module-load smoke test; sendSmtpMail export loaded successfully.
+PASS  Release selfcheck enforces Node typings, SMTP transport imports, compatibility dates,
+      the PSLE Prelim source seeds, and the complete release command.
+
+Network-limited verification
+BLOCKED (environment, not source failure): a real npm dependency install and therefore a real
+Next/OpenNext production build cannot be executed in this sandbox because registry.npmjs.org
+cannot resolve (curl: Could not resolve host / npm EAI_AGAIN). No claim is made that those two
+real dependency-backed build commands ran here.
+
+Required final verification on a normal machine with npm dependencies/network available
+  npm install
+  npm run check:release
+
+check:release executes, in order:
+  npm run typecheck
+  npm run typecheck:workers
+  npm run build
+  npm run build:cloudflare
+  npm run selfcheck
+  npm run stylecheck
+
+Expected resolution for the reported error
+The prior `Cannot find module 'node:net'/'node:tls' or its corresponding type declarations`
+was caused by the Workers TypeScript program not loading Node compatibility typings. Both TS
+programs now explicitly include `node`, and @types/node is a required devDependency.

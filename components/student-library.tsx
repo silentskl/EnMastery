@@ -1,0 +1,12 @@
+"use client";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+type Content={id:string;title:string;school_level:string;topic?:string;description?:string;source_attribution?:string;progress_percent:number;progress_status:string;attempt_count?:number;wrong_attempts?:number;correct_questions?:number;total_questions?:number};
+function stateOf(c:Content){if(c.progress_status==="completed"&&c.progress_percent>=100)return{label:"PASS",className:"learningStatus pass"};if(Number(c.wrong_attempts||0)>0)return{label:"FAIL · REDO",className:"learningStatus fail"};if(c.progress_percent>0)return{label:"IN PROGRESS",className:"learningStatus reviewing"};return null}
+export function StudentLibrary(){
+ const[level,setLevel]=useState<"P5"|"P6">("P6"),[contents,setContents]=useState<Content[]>([]),[loading,setLoading]=useState(true);
+ async function load(next=level){setLoading(true);const res=await fetch(`/api/student/content?level=${next}`,{cache:"no-store"});const body=await res.json() as {contents?:Content[]};setContents(body.contents||[]);setLoading(false)}
+ useEffect(()=>{void load()},[]);
+ return <><div className="libraryToolbar"><div className="tabs"><button className={level==="P6"?"active":""} onClick={()=>{setLevel("P6");void load("P6")}}>P6</button><button className={level==="P5"?"active":""} onClick={()=>{setLevel("P5");void load("P5")}}>P5</button></div><div className="rowActions"><span>{loading?"Loading…":`${contents.length} lessons`}</span><Link className="button secondary" href="/learn/read/history">Past work</Link></div></div><div className="lessonLibrary">{contents.map(c=>{const st=stateOf(c);const passed=c.progress_status==="completed"&&c.progress_percent>=100;const body=<><div className="lessonTopic">{c.topic||"English"} · {c.school_level}</div><div className="lessonCardTitleRow"><h3>{c.title}</h3>{st&&<b className={st.className}>{st.label}</b>}</div><p>{c.description||"Guided reading with questions and vocabulary."}</p><div className="lessonFooter"><span>{passed?"Completed · view in Past work":c.progress_percent>0?`${c.progress_percent}% progress · continue`:"Start lesson"}</span><strong>{passed?"✓":"→"}</strong></div></>;return passed?<Link className="lessonCard completedLessonCard" key={c.id} href={`/learn/read/history/${c.id}`}>{body}</Link>:<Link className="lessonCard" key={c.id} href={`/learn/read/${c.id}`}>{body}</Link>})}</div>{!loading&&contents.length===0&&<div className="emptyState">No published {level} reading lessons yet. Ask an administrator to publish content.</div>}</>;
+}

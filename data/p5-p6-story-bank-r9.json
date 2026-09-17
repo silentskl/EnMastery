@@ -1,0 +1,1828 @@
+{
+  "version": "0.9.0-r9",
+  "count": 120,
+  "stories": [
+    {
+      "id": "story-r9-001",
+      "title": "The perfect thing",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "foundation",
+      "difficulty_score": 4.6,
+      "topic": "Everyday Life",
+      "grading_reason": "Short everyday narrative with clear sequencing and concrete vocabulary.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "9zsKjnLyA9k",
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-002",
+      "title": "Joe goes fishing",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "foundation",
+      "difficulty_score": 4.7,
+      "topic": "Adventure & Nature",
+      "grading_reason": "Concrete actions and chronological events support P5 listening confidence.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-003",
+      "title": "Milly and the rainbow",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "foundation",
+      "difficulty_score": 4.7,
+      "topic": "Nature & Imagination",
+      "grading_reason": "Accessible descriptive language with a clear narrative arc.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-004",
+      "title": "Abdu and the traffic jam",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.1,
+      "topic": "Transport & Community",
+      "grading_reason": "Everyday problem-solving and cause-effect language fit P5 standard listening.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-005",
+      "title": "Nell's book",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "foundation",
+      "difficulty_score": 4.8,
+      "topic": "Books & School",
+      "grading_reason": "School-age context with manageable vocabulary and detail questions.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-006",
+      "title": "Little Monsters",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.2,
+      "topic": "Family & Imagination",
+      "grading_reason": "Expressive storytelling supports emotion, prediction and inference.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "LR62C6JhLdI",
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-007",
+      "title": "The best job in the world",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.3,
+      "topic": "Jobs & Aspirations",
+      "grading_reason": "Useful everyday vocabulary plus character motivation and opinion prompts.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "vx23RX_uc7Y",
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-008",
+      "title": "Back to school",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.0,
+      "topic": "School Life",
+      "grading_reason": "Familiar school context supports gist, detail and sequencing practice.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "qHE6DBSShXw",
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-009",
+      "title": "Sick day",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "foundation",
+      "difficulty_score": 4.8,
+      "topic": "Health & Everyday Life",
+      "grading_reason": "Clear everyday situation suitable for detail listening and retelling.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "vv8xhL7Xstg",
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-010",
+      "title": "Camping",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.1,
+      "topic": "Outdoor Adventure",
+      "grading_reason": "Narrative sequence and outdoor vocabulary suit upper-primary listening.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "ZjkU4GZKaqQ",
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-011",
+      "title": "Football match",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.1,
+      "topic": "Sports",
+      "grading_reason": "Fast but familiar sports context encourages event-order comprehension.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "ikEzzuijaJ0",
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-012",
+      "title": "No pets here",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.0,
+      "topic": "Animals & Rules",
+      "grading_reason": "Rules, reactions and consequences create useful inference questions.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "yDdgNao9clI",
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-013",
+      "title": "School trip",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.2,
+      "topic": "School & Travel",
+      "grading_reason": "Multiple events and details suit PSLE-style listening checks.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "FnxIZ3RxG7o",
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-014",
+      "title": "Rainy day",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "foundation",
+      "difficulty_score": 4.8,
+      "topic": "Weather & Everyday Life",
+      "grading_reason": "Concrete weather vocabulary and a simple narrative structure.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "4XuB_U69nAY",
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-015",
+      "title": "Shopping trip",
+      "source": "BBC Learning English",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.0,
+      "topic": "Everyday Life",
+      "grading_reason": "Everyday dialogue and event details support practical listening.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "H5rAXo-jYV8",
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-016",
+      "title": "Exam time",
+      "source": "BBC Learning English",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.2,
+      "topic": "School & Study",
+      "grading_reason": "Study-related language and feelings support P6 inference and attitude questions.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "6JVgD_QQLlY",
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-017",
+      "title": "Car journey",
+      "source": "BBC Learning English",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.1,
+      "topic": "Travel & Family",
+      "grading_reason": "Longer event chain and conversational details fit P6 standard work.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": "jrFaxNvX2Bo",
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-018",
+      "title": "The boy who cried wolf",
+      "source": "BBC Learning English",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.3,
+      "topic": "Fables & Values",
+      "grading_reason": "Classic fable supports motive, consequence, theme and evidence-based inference.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-019",
+      "title": "The Wedding of the Mouse",
+      "source": "BBC Learning English",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.4,
+      "topic": "Folktales",
+      "grading_reason": "Folktale structure supports comparison, inference and retelling.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-020",
+      "title": "The Children of Lir",
+      "source": "BBC Learning English",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.2,
+      "topic": "Myths & Legends",
+      "grading_reason": "More literary myth language and themes suit stronger P6 listeners.",
+      "reference_url": "https://www.youtube.com/@bbclearningenglish",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mythic_tragedy",
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-021",
+      "title": "The Bigfoot Mystery",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.3,
+      "topic": "Mystery & Adventure",
+      "grading_reason": "Mystery clues invite prediction and inference while language remains upper-primary accessible.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-022",
+      "title": "The Strange Old House",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.4,
+      "topic": "Mystery",
+      "grading_reason": "Suspense and setting details support inference without excessive language complexity.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-023",
+      "title": "The Wrong Kind of Knight",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.2,
+      "topic": "Fantasy & Adventure",
+      "grading_reason": "Playful fantasy vocabulary and clear plot support P5 comprehension.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-024",
+      "title": "Paula the Vet",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "foundation",
+      "difficulty_score": 4.8,
+      "topic": "Animals & Jobs",
+      "grading_reason": "Concrete vocabulary and familiar animal-care context suit P5 foundation work.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-025",
+      "title": "Winnie Goes Batty",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.1,
+      "topic": "Fantasy & Humour",
+      "grading_reason": "Humour and magical events support sequencing and prediction.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-026",
+      "title": "Winnie's Perfect Pet",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.2,
+      "topic": "Animals & Fantasy",
+      "grading_reason": "Character choices and consequences create useful P5 inference practice.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-027",
+      "title": "Winnie and Wilbur Meet Santa",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.2,
+      "topic": "Festivals & Fantasy",
+      "grading_reason": "Familiar festive context with richer event sequencing.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-028",
+      "title": "Chicken Licken",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "foundation",
+      "difficulty_score": 4.6,
+      "topic": "Traditional Tales",
+      "grading_reason": "Repetition and a familiar tale structure build listening accuracy.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-029",
+      "title": "The Little Red Hen",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "foundation",
+      "difficulty_score": 4.6,
+      "topic": "Traditional Tales & Values",
+      "grading_reason": "Clear cause-effect structure and moral support foundational comprehension.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-030",
+      "title": "The King and His Wish",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.1,
+      "topic": "Traditional Tales",
+      "grading_reason": "Wish-consequence structure supports inference and theme.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-031",
+      "title": "The Sand Witch",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.4,
+      "topic": "Fantasy & Chapter Story",
+      "grading_reason": "Longer chapter-style narrative gives stronger P5 students sustained listening practice.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-032",
+      "title": "Yummy Scrummy",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.5,
+      "topic": "Humour & Chapter Story",
+      "grading_reason": "Chapter-book pacing and descriptive language bridge toward P6.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-033",
+      "title": "Doug Lugg, Boy Slug",
+      "source": "Oxford Owl – Learning at Home",
+      "school_level": "P5",
+      "difficulty_band": "advanced",
+      "difficulty_score": 5.9,
+      "topic": "Humour & Chapter Story",
+      "grading_reason": "More sustained narrative and unusual vocabulary suit advanced P5 listeners.",
+      "reference_url": "https://home.oxfordowl.co.uk/storyteller-videos/",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-034",
+      "title": "A Midsummer Night's Dream",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.6,
+      "topic": "Literature & Drama",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/midsummer-nights-dream",
+      "content_flags": [
+        "romantic_theme"
+      ]
+    },
+    {
+      "id": "story-r9-035",
+      "title": "Beatrix Potter",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.5,
+      "topic": "Biography & Literature",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/beatrix-potter",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-036",
+      "title": "Boudica",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.3,
+      "topic": "History & Biography",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/boudica",
+      "content_flags": [
+        "historical_conflict"
+      ]
+    },
+    {
+      "id": "story-r9-037",
+      "title": "Buzz and Bob's big adventure",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.2,
+      "topic": "Adventure",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/buzz-and-bobs-big-adventure",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-038",
+      "title": "Dick Whittington",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.4,
+      "topic": "Traditional Tales",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/dick-whittington",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-039",
+      "title": "Dinosaur Dig",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.3,
+      "topic": "Science & Adventure",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/dinosaur-dig",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-040",
+      "title": "Elizabeth I",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.1,
+      "topic": "History & Biography",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/elizabeth-i",
+      "content_flags": [
+        "historical_conflict"
+      ]
+    },
+    {
+      "id": "story-r9-041",
+      "title": "Emmeline Pankhurst",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.2,
+      "topic": "History & Biography",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/emmeline-pankhurst",
+      "content_flags": [
+        "historical_conflict"
+      ]
+    },
+    {
+      "id": "story-r9-042",
+      "title": "Florence Nightingale",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.6,
+      "topic": "History & Biography",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/florence-nightingale",
+      "content_flags": [
+        "historical_conflict"
+      ]
+    },
+    {
+      "id": "story-r9-043",
+      "title": "George and the dragon",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.4,
+      "topic": "Legends",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/george-and-the-dragon",
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-044",
+      "title": "Hamlet",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 8.0,
+      "topic": "Literature & Drama",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/hamlet",
+      "content_flags": [
+        "mythic_tragedy",
+        "death_theme"
+      ]
+    },
+    {
+      "id": "story-r9-045",
+      "title": "Isaac Newton",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.7,
+      "topic": "Science & Biography",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/isaac-newton",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-046",
+      "title": "Jack and the beanstalk",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.1,
+      "topic": "Traditional Tales",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/jack-and-the-beanstalk",
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-047",
+      "title": "Macbeth",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 8.1,
+      "topic": "Literature & Drama",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/macbeth",
+      "content_flags": [
+        "mythic_tragedy",
+        "death_theme"
+      ]
+    },
+    {
+      "id": "story-r9-048",
+      "title": "Much Ado About Nothing",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.4,
+      "topic": "Literature & Drama",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/much-ado-about-nothing",
+      "content_flags": [
+        "romantic_theme"
+      ]
+    },
+    {
+      "id": "story-r9-049",
+      "title": "Nessie - the Loch Ness Monster",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.5,
+      "topic": "Myths & Mysteries",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/nessie-the-loch-ness-monster",
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-050",
+      "title": "One moment around the world",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.4,
+      "topic": "World & Culture",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/one-moment-around-the-world",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-051",
+      "title": "Planet Earth",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.3,
+      "topic": "Science & Environment",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/planet-earth",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-052",
+      "title": "Pyramids in Paris",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.5,
+      "topic": "Travel & Mystery",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/pyramids-in-paris",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-053",
+      "title": "Ratty robs a bank",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "advanced",
+      "difficulty_score": 5.9,
+      "topic": "Humour & Adventure",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/ratty-robs-a-bank",
+      "content_flags": [
+        "crime_reference"
+      ]
+    },
+    {
+      "id": "story-r9-054",
+      "title": "Record breakers",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.2,
+      "topic": "Facts & Achievements",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/record-breakers",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-055",
+      "title": "Robin Hood",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.4,
+      "topic": "Legends & Values",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/robin-hood",
+      "content_flags": [
+        "historical_conflict"
+      ]
+    },
+    {
+      "id": "story-r9-056",
+      "title": "Romeo and Juliet",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 8.0,
+      "topic": "Literature & Drama",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/romeo-and-juliet",
+      "content_flags": [
+        "romantic_theme",
+        "death_theme"
+      ]
+    },
+    {
+      "id": "story-r9-057",
+      "title": "Spycat",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.5,
+      "topic": "Mystery & Adventure",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/spycat",
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-058",
+      "title": "Superhero High",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.4,
+      "topic": "School & Fantasy",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/superhero-high",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-059",
+      "title": "The animal shelter",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "foundation",
+      "difficulty_score": 4.9,
+      "topic": "Animals & Community",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/the-animal-shelter",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-060",
+      "title": "The bird king",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.2,
+      "topic": "Fables & Values",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/the-bird-king",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-061",
+      "title": "The clever monkey",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "foundation",
+      "difficulty_score": 4.9,
+      "topic": "Fables & Values",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/the-clever-monkey",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-062",
+      "title": "The cold planet",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.4,
+      "topic": "Science Fiction",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/the-cold-planet",
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-063",
+      "title": "The first marathon",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.3,
+      "topic": "History & Sport",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/the-first-marathon",
+      "content_flags": [
+        "historical_conflict"
+      ]
+    },
+    {
+      "id": "story-r9-064",
+      "title": "The great race",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.3,
+      "topic": "Traditional Tales",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/the-great-race",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-065",
+      "title": "The lucky seed",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.1,
+      "topic": "Fables & Values",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/the-lucky-seed",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-066",
+      "title": "The lump of gold",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.2,
+      "topic": "Fables & Values",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/the-lump-of-gold",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-067",
+      "title": "The magic paintbrush",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.2,
+      "topic": "Traditional Tales & Fantasy",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/the-magic-paintbrush",
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-068",
+      "title": "The story of quinine",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.0,
+      "topic": "Science & History",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/the-story-of-quinine",
+      "content_flags": [
+        "illness_theme"
+      ]
+    },
+    {
+      "id": "story-r9-069",
+      "title": "The treasure map",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P5",
+      "difficulty_band": "standard",
+      "difficulty_score": 5.4,
+      "topic": "Adventure & Mystery",
+      "grading_reason": "Clear story structure with upper-primary vocabulary suits P5 listening and retelling.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/the-treasure-map",
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-070",
+      "title": "Twelfth Night",
+      "source": "British Council LearnEnglish Kids",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.5,
+      "topic": "Literature & Drama",
+      "grading_reason": "More complex vocabulary, ideas or literary/historical context suit P6.",
+      "reference_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories",
+      "youtube_video_id": null,
+      "companion_url": "https://learnenglishkids.britishcouncil.org/listen-watch/short-stories/twelfth-night",
+      "content_flags": [
+        "romantic_theme"
+      ]
+    },
+    {
+      "id": "story-r9-071",
+      "title": "The myth of the moon goddess",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.8,
+      "topic": "World Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mythic_tragedy"
+      ]
+    },
+    {
+      "id": "story-r9-072",
+      "title": "The twins who tricked the Maya gods of death",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.5,
+      "topic": "World Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "death_theme",
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-073",
+      "title": "The epic of Gilgamesh, the king who tried to conquer death",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.8,
+      "topic": "World Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "death_theme",
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-074",
+      "title": "The myth of Loki's monstrous children",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.4,
+      "topic": "Norse Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-075",
+      "title": "The tragic myth of the Sun God's son",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.5,
+      "topic": "World Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mythic_tragedy"
+      ]
+    },
+    {
+      "id": "story-r9-076",
+      "title": "The Japanese myth of the trickster raccoon",
+      "source": "TED-Ed",
+      "school_level": "P5",
+      "difficulty_band": "advanced",
+      "difficulty_score": 6.0,
+      "topic": "Japanese Folklore",
+      "grading_reason": "Engaging myth content with manageable structure stretches advanced P5 listeners.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-077",
+      "title": "The myth of Loki and the deadly mistletoe",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.5,
+      "topic": "Norse Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "death_theme"
+      ]
+    },
+    {
+      "id": "story-r9-078",
+      "title": "The myth of Ireland's two greatest warriors",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.4,
+      "topic": "Irish Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "historical_conflict"
+      ]
+    },
+    {
+      "id": "story-r9-079",
+      "title": "The Taino myth of the cursed creator",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.3,
+      "topic": "World Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-080",
+      "title": "The Maya myth of the morning star",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.4,
+      "topic": "Maya Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-081",
+      "title": "The Japanese folktale of the selfish scholar",
+      "source": "TED-Ed",
+      "school_level": "P5",
+      "difficulty_band": "advanced",
+      "difficulty_score": 6.1,
+      "topic": "Japanese Folklore",
+      "grading_reason": "Engaging myth content with manageable structure stretches advanced P5 listeners.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-082",
+      "title": "The myth of Jason and the Argonauts",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.6,
+      "topic": "Greek Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-083",
+      "title": "The Irish myth of the Giant's Causeway",
+      "source": "TED-Ed",
+      "school_level": "P5",
+      "difficulty_band": "advanced",
+      "difficulty_score": 6.1,
+      "topic": "Irish Myths",
+      "grading_reason": "Engaging myth content with manageable structure stretches advanced P5 listeners.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-084",
+      "title": "The myth of the Sampo— an infinite source of fortune and greed",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.4,
+      "topic": "Finnish Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-085",
+      "title": "The Aztec myth of the unlikeliest sun god",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.3,
+      "topic": "Aztec Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-086",
+      "title": "The myth of Loki and the master builder",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.9,
+      "topic": "Norse Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-087",
+      "title": "The Egyptian myth of Isis and the seven scorpions",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.4,
+      "topic": "Egyptian Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-088",
+      "title": "The Egyptian myth of the death of Osiris",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.7,
+      "topic": "Egyptian Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "death_theme"
+      ]
+    },
+    {
+      "id": "story-r9-089",
+      "title": "The Chinese myth of the white snake and the meddling monk",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.3,
+      "topic": "Chinese Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-090",
+      "title": "The myth of Oisín and the land of eternal youth",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.2,
+      "topic": "Irish Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mythic_tragedy"
+      ]
+    },
+    {
+      "id": "story-r9-091",
+      "title": "The Greek myth of Talos, the first robot",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.8,
+      "topic": "Greek Myths & Technology",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-092",
+      "title": "The scientific origins of the Minotaur",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.6,
+      "topic": "Myth & Science",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-093",
+      "title": "The Cambodian myth of lightning, thunder, and rain",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.8,
+      "topic": "World Myths & Nature",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-094",
+      "title": "The science behind the myth: Homer's Odyssey",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.7,
+      "topic": "Myth & Science",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-095",
+      "title": "Savitri and Satyavan: The legend of the princess who outwitted Death",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.7,
+      "topic": "Indian Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "death_theme"
+      ]
+    },
+    {
+      "id": "story-r9-096",
+      "title": "The Chinese myth of the immortal white snake",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.2,
+      "topic": "Chinese Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-097",
+      "title": "The myth of Sisyphus",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.4,
+      "topic": "Greek Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "death_theme"
+      ]
+    },
+    {
+      "id": "story-r9-098",
+      "title": "The myth of Pandora's box",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.8,
+      "topic": "Greek Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-099",
+      "title": "The myth of Hercules: 12 labors in 8-bits",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.5,
+      "topic": "Greek Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mythic_violence"
+      ]
+    },
+    {
+      "id": "story-r9-100",
+      "title": "The myth behind the Chinese zodiac",
+      "source": "TED-Ed",
+      "school_level": "P5",
+      "difficulty_band": "advanced",
+      "difficulty_score": 6.0,
+      "topic": "Chinese Myths",
+      "grading_reason": "Engaging myth content with manageable structure stretches advanced P5 listeners.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-101",
+      "title": "The tragic myth of Orpheus and Eurydice",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.7,
+      "topic": "Greek Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "death_theme",
+        "mythic_tragedy"
+      ]
+    },
+    {
+      "id": "story-r9-102",
+      "title": "The myth of Prometheus",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.4,
+      "topic": "Greek Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-103",
+      "title": "The myth of Icarus and Daedalus",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.9,
+      "topic": "Greek Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "death_theme",
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-104",
+      "title": "The myth of King Midas and his golden touch",
+      "source": "TED-Ed",
+      "school_level": "P5",
+      "difficulty_band": "advanced",
+      "difficulty_score": 6.1,
+      "topic": "Greek Myths & Values",
+      "grading_reason": "Engaging myth content with manageable structure stretches advanced P5 listeners.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-105",
+      "title": "The myth of Thor's journey to the land of giants",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.9,
+      "topic": "Norse Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-106",
+      "title": "The myth of Arachne",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.8,
+      "topic": "Greek Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-107",
+      "title": "The myth of Cupid and Psyche",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.3,
+      "topic": "Greek Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "romantic_theme"
+      ]
+    },
+    {
+      "id": "story-r9-108",
+      "title": "How Thor got his hammer",
+      "source": "TED-Ed",
+      "school_level": "P5",
+      "difficulty_band": "advanced",
+      "difficulty_score": 6.1,
+      "topic": "Norse Myths",
+      "grading_reason": "Engaging myth content with manageable structure stretches advanced P5 listeners.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-109",
+      "title": "The Norse myth that inspired 'The Lord of the Rings'",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.5,
+      "topic": "Norse Myths & Literature",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-110",
+      "title": "The myth of Narcissus and Echo",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.9,
+      "topic": "Greek Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "romantic_theme"
+      ]
+    },
+    {
+      "id": "story-r9-111",
+      "title": "The Chinese myth of the forbidden lovers",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.3,
+      "topic": "Chinese Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "romantic_theme"
+      ]
+    },
+    {
+      "id": "story-r9-112",
+      "title": "The Fijian myth of the greedy god",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.7,
+      "topic": "World Myths & Values",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    },
+    {
+      "id": "story-r9-113",
+      "title": "The Greek myth of Demeter's revenge",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.4,
+      "topic": "Greek Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-114",
+      "title": "The tragedy of the one guy who was right about the Trojan Horse",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.5,
+      "topic": "Greek Myths",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "historical_conflict"
+      ]
+    },
+    {
+      "id": "story-r9-115",
+      "title": "The tale of the boy who tricked a tyrant",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.8,
+      "topic": "World Folklore",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-116",
+      "title": "The real tale of the Monkey King in Heaven",
+      "source": "TED-Ed",
+      "school_level": "P5",
+      "difficulty_band": "advanced",
+      "difficulty_score": 6.2,
+      "topic": "Chinese Myths",
+      "grading_reason": "Engaging myth content with manageable structure stretches advanced P5 listeners.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-117",
+      "title": "Lady Meng Jiang: The legend of the woman who outwitted an evil emperor",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.4,
+      "topic": "Chinese Legends",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "historical_conflict"
+      ]
+    },
+    {
+      "id": "story-r9-118",
+      "title": "The tale of the brothers who outwitted the demon queen",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "advanced",
+      "difficulty_score": 7.2,
+      "topic": "World Folklore",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-119",
+      "title": "The tale of the Monkey King and the Buddha",
+      "source": "TED-Ed",
+      "school_level": "P5",
+      "difficulty_band": "advanced",
+      "difficulty_score": 6.2,
+      "topic": "Chinese Myths",
+      "grading_reason": "Engaging myth content with manageable structure stretches advanced P5 listeners.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": [
+        "mild_peril"
+      ]
+    },
+    {
+      "id": "story-r9-120",
+      "title": "Why do so many cultures have dragon legends?",
+      "source": "TED-Ed",
+      "school_level": "P6",
+      "difficulty_band": "standard",
+      "difficulty_score": 6.4,
+      "topic": "Myths & Critical Thinking",
+      "grading_reason": "Dense narration and abstract cultural ideas support P6 inference, synthesis and vocabulary-in-context.",
+      "reference_url": "https://ed.ted.com/ted_ed_collections/myths-from-around-the-world",
+      "youtube_video_id": null,
+      "companion_url": null,
+      "content_flags": []
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+import { getEnv } from "@/lib/cloudflare";
+import { ensureLearnerSession,learnerCookie } from "@/lib/student/session";
+const STAGES=["P1-P4","P5","P6","S1","S2","S3","S4"];
+export async function GET(request:Request){const env=getEnv(),session=await ensureLearnerSession(request,env.DB),url=new URL(request.url),stage=STAGES.includes(url.searchParams.get("stage")||"")?url.searchParams.get("stage")!:"P5";const rows=await env.DB.prepare("SELECT b.subcategory topic,COUNT(*) count FROM question_bank_items b JOIN questions q ON q.id=b.question_id WHERE b.category='cloze' AND q.status='published' AND q.school_level=? GROUP BY b.subcategory ORDER BY count DESC,b.subcategory").bind(stage).all<{topic:string;count:number}>();const total=rows.results.reduce((a,x)=>a+Number(x.count||0),0);const r=Response.json({stages:STAGES,stage,total,topics:rows.results});if(session.isNew)r.headers.set("Set-Cookie",learnerCookie(session.sessionId));return r}

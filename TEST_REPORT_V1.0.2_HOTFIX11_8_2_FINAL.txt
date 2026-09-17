@@ -1,0 +1,83 @@
+English Mastery v1.0.2 Hotfix 11.8.2
+FINAL TEST REPORT
+Date: 2026-09-01
+
+Scope
+- Preserve legitimate same-day Daily Mission completion across planner upgrades.
+- Repair same-day completion lost by the previously deployed Hotfix 11.8 migration from retained evidence.
+- Make configurable lesson repeat cooldown apply only to genuinely completed/PASS lessons.
+- Rematerialise broken Hotfix 11.8.1 UNAVAILABLE cards with planner cache v11.
+- Vocabulary behaviour remains unchanged.
+
+Root causes fixed
+1. Hotfix 11.8 migration 0055 used >= Singapore today when removing legacy NULL-resource Listening/Reading and resetting Speaking PASS, so deployment could rewrite work already completed earlier that same day.
+2. Planner cooldown treated recent assignment, page opening / started progress, and partial Speaking mode activity as learned/completed evidence. Small visible pools could therefore become falsely exhausted and generate UNAVAILABLE.
+
+Implemented
+- DAILY_PLANNER_VERSION = daily-cache-v11-completion-evidence-cooldown.
+- restoreTodayCompletedAssignments():
+  * Reading/Listening recover only from learner_content_progress status=completed and progress_percent>=100 on the current Singapore day.
+  * Speaking recovers only when all three scored modes (conversation, reading_aloud, stimulus) passed on the current Singapore day.
+  * Recovery is idempotent and restores task XP with deterministic reference ids.
+  * Vocabulary is not touched.
+- Reading/Listening cooldown now requires completed 100% content evidence or a prior daily task with status=done.
+- Speaking cooldown requires a prior done task or a day where all three speaking modes passed.
+- Writing cooldown requires a passed submission or prior done task.
+- Merely assigned, opened, started, or partially-scored lessons do not enter cooldown.
+- clearStaleTodaySelection only removes todo/skipped selections with positive prior completion evidence; same-day PASS is preserved.
+- Fresh-install 0055 data repair uses > Singapore today, not >=, so the deployment day's completed work is not rewritten.
+- Existing deployments that already ran old 0055 recover from retained completion evidence at runtime; no new schema migration is required.
+
+Regression results
+PASS scripts/validate_release.py
+PASS scripts/test_d1_migrations.py
+PASS scripts/test_hotfix5.py
+PASS scripts/test_hotfix52.py
+PASS scripts/test_hotfix6.py
+PASS scripts/test_hotfix61.py
+PASS scripts/test_hotfix7.py
+PASS scripts/test_hotfix8.py
+PASS scripts/test_hotfix9.py
+PASS scripts/test_hotfix10.py
+PASS scripts/test_hotfix11.py
+PASS scripts/test_hotfix112.py
+PASS scripts/test_hotfix113.py
+PASS scripts/test_hotfix114.py
+PASS scripts/test_hotfix115.py
+PASS scripts/test_hotfix116.py
+PASS scripts/test_hotfix117.py
+PASS scripts/test_hotfix118.py
+PASS scripts/test_hotfix1181.py
+PASS scripts/test_hotfix1182.py
+PASS scripts/test_ai_guest_guard.py
+PASS scripts/test_r10_status_gates.py
+PASS scripts/test_r12_work_queue.py
+PASS scripts/test_r13_status_selection.py
+PASS scripts/test_r14_summary_cloze.py
+PASS scripts/test_r15_pass_score_cloze_summary.py
+PASS scripts/test_r16_learn_progress.py
+PASS scripts/test_r24_hotfix1_queue_typing.py
+PASS scripts/audit_styles.py
+PASS bash -n scripts/deploy.sh
+PASS bash -n scripts/install-deps-resilient.sh
+
+Schema/release validation
+- 55 migrations
+- 102 application tables
+- 39 skills
+- 343 published questions
+- 31 qbank sources
+- 337 qbank items
+- 718 vocabulary memberships
+- 84 grammar topics
+- 168 grammar exercises
+
+TypeScript validation
+- 417 TS/TSX files syntax/transpile: 0 errors.
+- lib/student/planner.ts strict semantic TypeScript check with D1 interface shims: PASS.
+- Full dependency-backed `tsc --noEmit` cannot run in this sandbox because the source release has no node_modules and the sandbox lacks @cloudflare/workers-types and node type packages. The observed full-tsc failure is TS2688 missing type definition files only.
+- Run `npm run verify:release` in a normal dependency-enabled release environment before production deployment.
+
+Migration note
+- No new schema migration in Hotfix 11.8.2. Migration count remains 55.
+- The shipped 0055 is made safe for fresh installs. Existing systems where the older 0055 has already been recorded as applied are repaired by planner runtime completion recovery.

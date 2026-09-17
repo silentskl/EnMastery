@@ -1,0 +1,275 @@
+{
+  "version": "SG-PRIMARY-ENGLISH-2020-PSLE-2026",
+  "levels": [
+    "P5",
+    "P6"
+  ],
+  "domains": [
+    {
+      "id": "listening",
+      "name": "Listening",
+      "paper": "Paper 3",
+      "weight": 10,
+      "skills": [
+        {
+          "id": "L-MAIN",
+          "name": "Identify main idea",
+          "level": "P5",
+          "difficulty": 2
+        },
+        {
+          "id": "L-DETAIL",
+          "name": "Retrieve explicit details",
+          "level": "P5",
+          "difficulty": 2
+        },
+        {
+          "id": "L-SEQUENCE",
+          "name": "Follow sequence and relationships",
+          "level": "P5",
+          "difficulty": 2
+        },
+        {
+          "id": "L-INFER",
+          "name": "Make listening inferences",
+          "level": "P6",
+          "difficulty": 3
+        },
+        {
+          "id": "L-EVAL",
+          "name": "Evaluate purpose, attitude and intent",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "L-GRAPHIC",
+          "name": "Interpret audio with graphic stimulus",
+          "level": "P6",
+          "difficulty": 3
+        },
+        {
+          "id": "L-NOTE",
+          "name": "Retain key information across two plays",
+          "level": "P6",
+          "difficulty": 3
+        }
+      ]
+    },
+    {
+      "id": "speaking",
+      "name": "Speaking",
+      "paper": "Paper 4",
+      "weight": 20,
+      "skills": [
+        {
+          "id": "S-PRON",
+          "name": "Pronunciation accuracy",
+          "level": "P5",
+          "difficulty": 2
+        },
+        {
+          "id": "S-FLUENCY",
+          "name": "Reading fluency",
+          "level": "P5",
+          "difficulty": 3
+        },
+        {
+          "id": "S-PROSODY",
+          "name": "Stress, rhythm and expression",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "S-PURPOSE",
+          "name": "Adapt delivery to purpose and audience",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "S-SBC-DESC",
+          "name": "Describe and interpret stimulus",
+          "level": "P5",
+          "difficulty": 2
+        },
+        {
+          "id": "S-SBC-EXP",
+          "name": "Relate stimulus to personal experience",
+          "level": "P5",
+          "difficulty": 3
+        },
+        {
+          "id": "S-SBC-IDEA",
+          "name": "Develop opinions with reasons",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "S-INTERACT",
+          "name": "Sustain interaction and respond to follow-ups",
+          "level": "P6",
+          "difficulty": 4
+        }
+      ]
+    },
+    {
+      "id": "reading",
+      "name": "Reading & Language Use",
+      "paper": "Paper 2",
+      "weight": 45,
+      "skills": [
+        {
+          "id": "R-GRAMMAR",
+          "name": "Grammar in context",
+          "level": "P5",
+          "difficulty": 2
+        },
+        {
+          "id": "R-VOCAB",
+          "name": "Vocabulary in context",
+          "level": "P5",
+          "difficulty": 2
+        },
+        {
+          "id": "R-VOCABCLOZE",
+          "name": "Vocabulary cloze",
+          "level": "P5",
+          "difficulty": 3
+        },
+        {
+          "id": "R-VISUAL",
+          "name": "Visual text comprehension",
+          "level": "P5",
+          "difficulty": 3
+        },
+        {
+          "id": "R-GRAMMARCLOZE",
+          "name": "Grammar cloze",
+          "level": "P5",
+          "difficulty": 3
+        },
+        {
+          "id": "R-EDIT-SPELL",
+          "name": "Editing: spelling",
+          "level": "P5",
+          "difficulty": 2
+        },
+        {
+          "id": "R-EDIT-GRAM",
+          "name": "Editing: grammar",
+          "level": "P5",
+          "difficulty": 3
+        },
+        {
+          "id": "R-COMPCLOZE",
+          "name": "Comprehension cloze",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "R-SYNTH",
+          "name": "Synthesis and transformation",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "R-LITERAL",
+          "name": "Literal comprehension",
+          "level": "P5",
+          "difficulty": 2
+        },
+        {
+          "id": "R-INFER",
+          "name": "Inferential comprehension",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "R-EVAL",
+          "name": "Evaluative comprehension",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "R-EVIDENCE",
+          "name": "Select textual evidence",
+          "level": "P6",
+          "difficulty": 3
+        },
+        {
+          "id": "R-PURPOSE",
+          "name": "Identify purpose, audience and context",
+          "level": "P6",
+          "difficulty": 4
+        }
+      ]
+    },
+    {
+      "id": "writing",
+      "name": "Writing",
+      "paper": "Paper 1",
+      "weight": 25,
+      "skills": [
+        {
+          "id": "W-SW-PAC",
+          "name": "Situational writing: purpose, audience, context",
+          "level": "P5",
+          "difficulty": 3
+        },
+        {
+          "id": "W-SW-POINTS",
+          "name": "Situational writing: cover required points",
+          "level": "P5",
+          "difficulty": 3
+        },
+        {
+          "id": "W-SW-TONE",
+          "name": "Situational writing: register and tone",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "W-CW-PLAN",
+          "name": "Continuous writing: plan and structure",
+          "level": "P5",
+          "difficulty": 3
+        },
+        {
+          "id": "W-CW-IDEAS",
+          "name": "Develop relevant ideas and details",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "W-CW-ORG",
+          "name": "Paragraphing, cohesion and organisation",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "W-CW-VOCAB",
+          "name": "Precise and varied vocabulary",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "W-CW-GRAM",
+          "name": "Accurate and varied sentence structures",
+          "level": "P6",
+          "difficulty": 4
+        },
+        {
+          "id": "W-CW-MECH",
+          "name": "Spelling and punctuation",
+          "level": "P5",
+          "difficulty": 2
+        },
+        {
+          "id": "W-REVISE",
+          "name": "Review and improve own writing",
+          "level": "P6",
+          "difficulty": 4
+        }
+      ]
+    }
+  ]
+}

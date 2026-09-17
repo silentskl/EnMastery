@@ -1,0 +1,80 @@
+English Mastery v1.0.2 Hotfix 9 - Final Validation Report
+Date: 2026-09-01
+
+PURPOSE
+Hotfix 9 fixes the Hotfix 8 availability regression reported in Student Today:
+- "Could not load today’s learning mission. Refresh to try again."
+- "Daily completion is temporarily unavailable. Refresh to try again."
+
+ROOT CAUSE
+Both /api/student/plan and /api/student/progress/calendar entered the Hotfix 8 Daily Task completion-reconciliation path before returning their normal data. That reconciliation contained all-or-nothing activity evidence and stale-task/bookkeeping operations. An exception from an activity-specific historical-data lookup or auxiliary cleanup could therefore turn the entire Today/Calendar request into HTTP 500, even though the learner's persisted task plan was otherwise usable.
+
+FIXES
+1) Today mission availability is primary
+- The Today route first loads an existing complete mission or materialises a missing mission.
+- A complete cached Today mission keeps the existing fast path and is not rebuilt on every refresh.
+- Completion reconciliation runs only after a usable mission is available.
+
+2) Reconciliation is best-effort
+- Reading, Listening, Writing, Speaking and Vocabulary evidence checks are isolated per task.
+- One malformed/legacy/partially migrated evidence source is logged and skipped instead of failing all task cards.
+- /api/student/plan catches reconciliation failure and still returns the mission.
+- /api/student/progress/calendar catches reconciliation failure and still returns persisted calendar data.
+
+3) Stale PASS repair is no longer all-or-nothing
+- The stale adaptive learning task is removed independently.
+- task_complete XP cleanup is isolated.
+- optional daily-game-reward cleanup is isolated.
+- Auxiliary cleanup failure can no longer block mission generation.
+- If a stale current-day card is removed, ensureWeeklyPlan runs again immediately and supplies a replacement when eligible content exists.
+
+4) Completion reward hardening
+- maybeGrantEnglishDailyReward is best-effort after learning-task completion.
+- A reward-table/data issue cannot make a successfully completed learning task fail.
+
+5) Planner cache hardening
+- Future stale-task cache cleanup is best-effort.
+- A cache-hygiene SQL problem cannot block normal plan materialisation.
+
+6) Diagnostics and cache behaviour
+- Degraded cleanup emits server logs with [daily-task], [daily-planner], [student-plan], or [progress-calendar].
+- Plan and calendar responses use Cache-Control: no-store, max-age=0.
+- A degraded plan response may include completionReconciliation="degraded" without blocking task delivery.
+
+DATABASE
+- No new migration is required.
+- Migration count remains 49.
+- Latest migration remains 0049_v102_hotfix7_vocab_books.sql.
+
+VALIDATION RESULTS
+PASS  scripts/validate_release.py
+      49 migrations; 99 tables; 39 skills; 343 published questions;
+      31 qbank sources; 337 qbank items; 718 vocabulary memberships;
+      84 grammar topics; 168 grammar exercises.
+PASS  scripts/test_d1_migrations.py
+PASS  scripts/test_hotfix5.py
+PASS  scripts/test_hotfix52.py
+PASS  scripts/test_hotfix6.py
+PASS  scripts/test_hotfix61.py
+PASS  scripts/test_hotfix7.py
+PASS  scripts/test_hotfix8.py
+PASS  scripts/test_hotfix9.py
+PASS  scripts/test_ai_guest_guard.py
+PASS  scripts/test_r10_status_gates.py
+PASS  scripts/test_r12_work_queue.py
+PASS  scripts/test_r13_status_selection.py
+PASS  scripts/test_r14_summary_cloze.py
+PASS  scripts/test_r15_pass_score_cloze_summary.py
+PASS  scripts/test_r16_learn_progress.py
+PASS  scripts/test_r24_hotfix1_queue_typing.py
+PASS  scripts/audit_styles.py
+PASS  bash -n scripts/deploy.sh
+PASS  bash -n scripts/install-deps-resilient.sh
+PASS  TypeScript parser/transpile across app/components/lib/workers: 404 TS/TSX files, 0 syntax diagnostics.
+
+DEPENDENCY-BACKED TYPECHECK / NEXT / OPENNEXT
+The sandbox does not contain the project's npm dependency tree.
+- Direct npm run typecheck stops before source checking because @cloudflare/workers-types and @types/node are not installed.
+- npm run deps:install attempted registry.npmjs.org but timed out in this sandbox.
+Therefore dependency-backed TypeScript, Next and OpenNext production builds cannot be truthfully marked PASS here.
+The release package retains npm run verify:release as the final dependency-backed production gate.

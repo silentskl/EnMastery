@@ -1,0 +1,59 @@
+English Mastery v1.0.2 Hotfix 6.1 - Final Validation Report
+Date: 2026-08-31
+
+PURPOSE
+Hotfix 6.1 fixes all 9 strict TypeScript diagnostics reported from Hotfix 6:
+- lib/settings/daily-task-policy.ts: 4 diagnostics
+- lib/speaking/prompt-cache.ts: 3 diagnostics
+- lib/vocabulary/enrich.ts: 2 diagnostics
+
+FIXES
+1) daily-task-policy.ts
+   - JSON weekday input explicitly narrows to unknown[].
+   - Number conversion/filtering uses explicit number types.
+   - Set<number> prevents unknown[] inference.
+2) speaking/prompt-cache.ts
+   - All three fallback SpeakingPrompt values include required description.
+3) vocabulary/enrich.ts
+   - synonymNotes returns VocabularySynonym[] directly.
+   - Removed incompatible optional-property type predicate.
+   - Optional properties assigned only when present.
+
+VALIDATION RESULTS
+PASS  scripts/validate_release.py
+      48 migrations; 99 tables; 39 skills; 343 published questions;
+      31 qbank sources; 337 qbank items; 718 vocabulary memberships;
+      84 grammar topics; 168 grammar exercises.
+PASS  scripts/test_d1_migrations.py
+PASS  scripts/test_hotfix5.py
+PASS  scripts/test_hotfix52.py
+PASS  scripts/test_hotfix6.py
+PASS  scripts/test_hotfix61.py
+PASS  scripts/test_ai_guest_guard.py
+PASS  scripts/test_r10_status_gates.py
+PASS  scripts/test_r12_work_queue.py
+PASS  scripts/test_r13_status_selection.py
+PASS  scripts/test_r14_summary_cloze.py
+PASS  scripts/test_r15_pass_score_cloze_summary.py
+PASS  scripts/test_r16_learn_progress.py
+PASS  scripts/test_r24_hotfix1_queue_typing.py
+PASS  scripts/audit_styles.py
+PASS  bash -n scripts/deploy.sh
+PASS  bash -n scripts/install-deps-resilient.sh
+PASS  strict TypeScript harness on the three changed source files: 0 errors
+PASS  TypeScript transpile/parser pass across app/components/lib/workers: 400 files, 0 errors
+
+DEPENDENCY-BACKED FULL TSC / NEXT BUILD
+The release container does not contain this project's node_modules. Running the project tsconfig
+there stops before source checking because @cloudflare/workers-types and @types/node are not
+installed in the container. This is an environment/dependency absence, not a remaining source
+diagnostic. The exact 9 source diagnostics supplied from the real dependency-backed build have
+all been fixed and the affected real source files pass a strict TypeScript harness.
+
+The package keeps the full local gate:
+  npm run check:release
+which runs main TypeScript, Worker TypeScript, D1 regressions, Hotfix regressions, Next build,
+OpenNext build, selfcheck and stylecheck when dependencies are installed.
+
+DATABASE
+No new schema migration in Hotfix 6.1. Migration count remains 48.

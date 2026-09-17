@@ -1,0 +1,33 @@
+interface CloudflareEnv {
+  DB: D1Database;
+  MEDIA: R2Bucket;
+  ASSETS: Fetcher;
+  TASK_QUEUE?: Queue<{ jobId: string }>;
+  APP_ENV: string;
+  MODELBRIDGE_BASE_URL: string;
+  MODELBRIDGE_API_KEY: string;
+  MODELBRIDGE_CHAT_MODEL: string;
+  MODELBRIDGE_STT_MODEL?: string;
+  STT_PROVIDER?: string;
+  MODELBRIDGE_TTS_MODEL?: string;
+  TTS_PROVIDER?: string;
+  MODELBRIDGE_TTS_VOICE?: string;
+  AZURE_SPEECH_REGION?: string;
+  PRONUNCIATION_PROVIDER?: string;
+  AZURE_SPEECH_KEY?: string;
+  DEFAULT_CURRICULUM_VERSION: string;
+  ADMIN_MONITOR_TOKEN?: string;
+  ADMIN_ACCESS_TOKEN?: string;
+  YOUTUBE_API_KEY?: string;
+  SETTINGS_MASTER_KEY?: string;
+  SMTP_ENABLED?: string;
+  SMTP_HOST?: string;
+  SMTP_PORT?: string;
+  SMTP_SECURITY?: string;
+  SMTP_AUTH?: string;
+  SMTP_USERNAME?: string;
+  SMTP_PASSWORD?: string;
+  SMTP_FROM_EMAIL?: string;
+  SMTP_FROM_NAME?: string;
+  SMTP_NOTIFY_TO?: string;
+}

@@ -1,0 +1,19 @@
+English Mastery V1.0.2 Hotfix 11.9.1
+Package: english-mastery-v1.0.2-hotfix11.9.1-cloudflare-free
+
+Release focus
+- Add browser-history Back navigation across all Learn and Practice routes.
+- Put Today's Learning Mission first, Learning Momentum second and Daily Progress last on the Learn page.
+- Comprehensive D1 rows-read optimisation for calendar/streak, vocabulary, Tenant AI usage, dashboard and Work Queue.
+- Indexed cursor sampling replaces unbounded random sorting in Question Bank, Cloze and vocabulary selection.
+- Reading/Listening history and Question Bank visibility use covering/index-bounded SEARCH plans.
+- Preserves every Hotfix 11.8.3 daily lesson selection and completion rule.
+
+Database
+- 56 migrations
+- 106 application tables
+- 17 triggers
+- New migration: 0056_v102_hotfix119_d1_rows_read_optimization.sql
+
+Release gate
+- npm run verify:release

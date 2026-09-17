@@ -1,0 +1,42 @@
+English Mastery V1.0.2 Hotfix 5.2 - Release Test Report
+Date: 2026-08-31
+
+Scope
+1. Compact table layout for Tenant Learning Settings and Practice Settings.
+2. Move Vocabulary Review window / Required reviews from Learning Settings to Vocabulary Practice policy.
+3. Preserve prior configured review values during migration 0045.
+4. Fix Today's learning mission refresh so an existing persisted mission does not wait for weekly plan rebuild.
+
+Database / migration
+PASS - Fresh schema through migration 0045.
+PASS - 45 migrations, 98 application tables.
+PASS - D1 strict compound SELECT compatibility regression executes 0043/0044/0045 with SQLITE_LIMIT_COMPOUND_SELECT=3.
+PASS - 0045 copies existing tenant_daily_task_policy vocabulary review settings to the matching Vocabulary Practice policy.
+PASS - 7 learner stages x 7 practice areas remain seeded (49 rows per Tenant).
+
+Functional regression
+PASS - Learning Settings uses settingsTable layout.
+PASS - Practice Settings uses settingsTable layout.
+PASS - Learning Settings no longer contains Vocabulary Review window / Required reviews controls.
+PASS - Practice Settings Vocabulary row contains Review window / Required reviews.
+PASS - Vocabulary Practice API reads review window / repetitions from tenant_practice_policy.
+PASS - Daily Vocabulary learning does not apply the Practice spaced-review frequency.
+PASS - Existing Hotfix 5 lesson filters, practice policy, stage policy and Practice-page declutter regression.
+PASS - All legacy Python regression tests.
+
+Today's learning mission refresh
+PASS - Compact StudentPlan requests /api/student/plan?scope=today.
+PASS - today-only API queries persisted learning_tasks first.
+PASS - if today's persisted tasks exist, API returns them without calling ensureWeeklyPlan first.
+PASS - weekly generation is invoked only when today's mission is absent.
+PASS - stale indefinite "Building your daily learning mission" copy removed; load failures now surface an explicit retry message.
+
+Static / release gates
+PASS - 399 TS/TSX files parser/transpile gate, 0 diagnostics.
+PASS - scripts/validate_release.py.
+PASS - scripts/audit_styles.py; minimum explicit UI font size 17px.
+PASS - scripts/deploy.sh shell syntax.
+PASS - scripts/install-deps-resilient.sh shell syntax.
+
+Production dependency-backed Next/OpenNext build
+NOT RUN IN THIS SANDBOX - public npm registries remain unreachable from the execution environment. The project retains npm run verify:release with multi-registry dependency failover for a normal deployment host. This item is not reported as PASS.

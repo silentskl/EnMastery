@@ -1,0 +1,76 @@
+English Mastery V1.0.2 Hotfix 11.8 - Final Test Report
+Date: 2026-09-01
+Status: PASS for source/D1/static/targeted TypeScript release gates; dependency-backed Next/OpenNext build not executable in this sandbox because project dependencies are not installed and npm install timed out.
+
+Release scope
+- Daily Reading / Listening / Speaking bind concrete resources; no choose-a-lesson placeholder navigation.
+- Tenant-configurable lesson repeat cooldown: default 7 days, range 0-90 days.
+- Daily Speaking PASS requires Conversation + Reading Aloud + Stimulus, each with a real score >= current Tenant pass threshold.
+- Reading daily-assignment navigation uses a bounded visibility fast path to reduce Cloudflare Worker 1102 risk.
+- Web Speech constructor typing is centralized; component-level global Window declarations were removed to fix TS2717.
+- Migration 0055 adds lesson_repeat_cooldown_days, speaking_daily_mode_progress and related indexes/legacy cleanup.
+
+Database / release validation
+PASS scripts/validate_release.py
+  V1.0.2
+  55 migrations
+  102 application tables
+  39 skills
+  343 published questions
+  31 qbank sources
+  337 qbank items
+  718 vocabulary memberships
+  84 grammar topics
+  168 grammar exercises
+PASS scripts/test_d1_migrations.py
+  SQLITE_LIMIT_COMPOUND_SELECT=3 compatibility through migration 0055
+  cooldown and Speaking-gate schema/policy checks passed
+PASS scripts/audit_styles.py
+  545 CSS classes; 473 literal UI classes checked; minimum explicit font size 17px
+PASS bash -n scripts/deploy.sh
+PASS bash -n scripts/install-deps-resilient.sh
+
+Hotfix regression suite
+PASS scripts/test_hotfix5.py
+PASS scripts/test_hotfix52.py
+PASS scripts/test_hotfix6.py
+PASS scripts/test_hotfix61.py
+PASS scripts/test_hotfix7.py
+PASS scripts/test_hotfix8.py
+PASS scripts/test_hotfix9.py
+PASS scripts/test_hotfix10.py
+PASS scripts/test_hotfix11.py
+PASS scripts/test_hotfix112.py
+PASS scripts/test_hotfix113.py
+PASS scripts/test_hotfix114.py
+PASS scripts/test_hotfix115.py
+PASS scripts/test_hotfix116.py
+PASS scripts/test_hotfix117.py
+PASS scripts/test_hotfix118.py
+
+Historical / queue / mastery regressions
+PASS scripts/test_ai_guest_guard.py
+PASS scripts/test_r10_status_gates.py
+PASS scripts/test_r12_work_queue.py
+PASS scripts/test_r13_status_selection.py
+PASS scripts/test_r14_summary_cloze.py
+PASS scripts/test_r15_pass_score_cloze_summary.py
+PASS scripts/test_r16_learn_progress.py
+PASS scripts/test_r24_hotfix1_queue_typing.py
+
+TypeScript checks
+PASS syntax/transpile scan of app/, components/, lib/, workers/: 417 TS/TSX files, 0 errors.
+PASS strict standalone TypeScript compile of lib/browser/speech-recognition.ts using ES2022 + DOM libraries.
+PASS Hotfix 11.8 regression guard verifies Speaking Workspace, Intensive Listening and Vocabulary trainer do not redeclare global Window SpeechRecognition properties.
+PASS grep audit: no component/lib `declare global` SpeechRecognition / webkitSpeechRecognition declarations remain.
+
+Full `tsc --noEmit` / Next / OpenNext limitation
+- The release source does not include node_modules.
+- Global `tsc --noEmit` reaches the project config but cannot proceed because @cloudflare/workers-types and node type packages are absent.
+- Attempted npm dependency installation timed out in the sandbox; no node_modules were produced.
+- Therefore this report does NOT claim that dependency-backed `npm run typecheck`, `npm run typecheck:workers`, `next build`, or `opennextjs-cloudflare build` ran here.
+- In a normal npm environment run: `npm run verify:release` before production deployment.
+
+Packaging validation
+- Final ZIP is rebuilt after this report and release-guard fix.
+- ZIP CRC/integrity check and unpacked-package revalidation are run after packaging; see final assistant delivery for SHA256.

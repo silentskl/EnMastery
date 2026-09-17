@@ -1,0 +1,72 @@
+English Mastery v1.0.2 Hotfix 11.6 - Final Test Report
+Date: 2026-09-01
+
+Scope
+- Source extraction compatibility and diagnostics
+- Pre-queue/discovery filtering of transactional/service URLs
+- Source-domain ModelBridge JSON repair for Speaking/Writing/Cloze
+- Regression verification against Hotfix 5 through Hotfix 11.5
+
+Implementation verification
+PASS - Multi-strategy extraction candidates: JSON-LD, article, main, content-container, embedded JSON, cleaned page text.
+PASS - Browser-compatible fetch headers: User-Agent / Accept / Accept-Language.
+PASS - Redirect target remains constrained to the configured allowed host.
+PASS - Structured SourceExtractionError diagnostics include code/sourceUrl/finalUrl/httpStatus/contentType/fetchedBytes/extractedCharacters/extractionMethod/title when available.
+PASS - High-confidence Help/Feedback, forms, login, e-service and application/submission URLs are rejected before batch queue creation.
+PASS - Source discovery filters the same transactional/service URL classes.
+PASS - Explicit diagnostics cover fetch failure, HTTP error, challenge/anti-bot page, PDF, unsupported MIME type, non-content URL and too-short readable text.
+PASS - Work Queue logs successful source extraction method and readable-character count.
+PASS - Speaking/Writing/Cloze source-domain generation uses parseModelJson automatic local/model-assisted repair instead of one-shot JSON.parse.
+
+Focused runtime tests
+PASS - PUB-style service URL classifier rejects:
+       https://eservices.pub.gov.sg/helpandfeedback/report/regulatory-submissions
+PASS - PUB content URL classifier allows:
+       https://www.pub.gov.sg/Public/WaterLoop/Sustainability
+PASS - JSON-LD articleBody extraction selected over a short shell body.
+PASS - Service/submission page returns SOURCE_NOT_CONTENT_PAGE.
+PASS - Cloudflare/challenge-like page returns SOURCE_EXTRACTION_BLOCKED.
+PASS - PDF MIME/source returns SOURCE_PDF_REQUIRES_TEXT_EXTRACTION.
+PASS - lib/content/extract.ts strict standalone TypeScript semantic compile.
+PASS - changed Source extraction + Source domain + model-json dependency set strict TypeScript semantic compile.
+
+Regression
+PASS - scripts/test_hotfix5.py
+PASS - scripts/test_hotfix52.py
+PASS - scripts/test_hotfix6.py
+PASS - scripts/test_hotfix61.py
+PASS - scripts/test_hotfix7.py
+PASS - scripts/test_hotfix8.py
+PASS - scripts/test_hotfix9.py
+PASS - scripts/test_hotfix10.py
+PASS - scripts/test_hotfix11.py
+PASS - scripts/test_hotfix112.py
+PASS - scripts/test_hotfix113.py
+PASS - scripts/test_hotfix114.py
+PASS - scripts/test_hotfix115.py
+PASS - scripts/test_hotfix116.py
+PASS - scripts/test_ai_guest_guard.py
+PASS - scripts/test_r10_status_gates.py
+PASS - scripts/test_r12_work_queue.py
+PASS - scripts/test_r13_status_selection.py
+PASS - scripts/test_r14_summary_cloze.py
+PASS - scripts/test_r15_pass_score_cloze_summary.py
+PASS - scripts/test_r16_learn_progress.py
+PASS - scripts/test_r24_hotfix1_queue_typing.py
+PASS - scripts/test_d1_migrations.py
+PASS - scripts/audit_styles.py
+
+TypeScript
+PASS - 415 TS/TSX files syntax/transpile scan: 0 errors.
+PASS - focused strict semantic compilation for lib/content/extract.ts, lib/content/source-domain.ts, lib/ai/model-json.ts, lib/ai/modelbridge.ts and lib/content/cloze-config.ts.
+
+Database
+- No schema migration added in Hotfix 11.6.
+- 54 migrations total.
+- Latest migration remains 0054_v102_hotfix115_daily_plan_resource_indexes.sql.
+- 101 application tables expected/preserved.
+
+Environment limitation
+- The source archive does not contain node_modules in this sandbox.
+- Therefore the full dependency-backed Next/OpenNext production build and complete npm run typecheck/typecheck:workers gate cannot be truthfully executed here.
+- Run `npm run verify:release` in the normal dependency/network-enabled release environment before production deployment.

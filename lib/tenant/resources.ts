@@ -1,0 +1,2 @@
+export type TenantResourceType="content"|"question"|"practice_set"|"assessment";
+export async function resourceVisible(db:D1Database,tenantId:string,type:TenantResourceType,id:string){const map={content:["content_items","id"],question:["questions","id"],practice_set:["practice_sets","id"],assessment:["assessments","id"]} as const;const [table,col]=map[type];return Boolean(await db.prepare(`SELECT ${col} id FROM ${table} WHERE ${col}=? AND (scope='global' OR (scope='tenant' AND tenant_id=?))`).bind(id,tenantId).first());}

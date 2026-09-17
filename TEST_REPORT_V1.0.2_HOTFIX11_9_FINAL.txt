@@ -1,0 +1,43 @@
+English Mastery v1.0.2 Hotfix 11.9
+FINAL TEST REPORT
+Date: 2026-09-02
+
+Scope
+- Comprehensive Cloudflare D1 rows-read optimisation.
+- Question Bank/Cloze indexed sampling and Reading History query-plan audit.
+- Hotfix 5 through Hotfix 11.9 regression, TypeScript, build and release validation.
+
+Schema target
+- 56 migrations
+- 106 application tables
+- 17 triggers
+
+Validation status
+- PASS npm run typecheck
+- PASS npm run typecheck:workers
+- PASS scripts/test_d1_migrations.py
+- PASS Hotfix 5, 5.2, 6, 6.1, 7, 8, 9, 10, 11, 11.2-11.9 regressions
+- PASS scripts/test_ai_guest_guard.py
+- PASS scripts/test_r10_status_gates.py
+- PASS scripts/test_r12_work_queue.py
+- PASS scripts/test_r13_status_selection.py
+- PASS scripts/test_r14_summary_cloze.py
+- PASS scripts/test_r15_pass_score_cloze_summary.py
+- PASS scripts/test_r16_learn_progress.py
+- PASS scripts/test_r24_hotfix1_queue_typing.py
+- PASS npm run build (Next.js 16.3.2; 143 static pages generated)
+- PASS npm run build:cloudflare (OpenNext Worker bundle generated)
+- PASS scripts/validate_release.py
+- PASS scripts/audit_styles.py
+- PASS bash -n scripts/deploy.sh
+- PASS bash -n scripts/install-deps-resilient.sh
+
+D1-specific acceptance
+- Question Bank and Cloze use category/subcategory + sample_key indexed cursor pages with wrap-around.
+- Reading History EXPLAIN uses SEARCH on learner progress and the covering child/content attempt index.
+- Calendar/streak, vocabulary review, AI usage/quota and Work Queue status read bounded rollup rows.
+- Work Queue no longer performs one queue-wide COUNT subquery for every returned job.
+- The sole remaining ORDER BY RANDOM() targets the fixed eight-row reward catalogue.
+
+Release gate
+- PASS npm run check:release

@@ -1,0 +1,64 @@
+English Mastery V1.0.2 Hotfix 11.8.1 - Final Test Report
+Date: 2026-09-01
+
+Scope
+- Fix TypeScript TS2304 release blocker in components/vocabulary/vocabulary-daily-trainer.tsx.
+- Restore a shared typed contract for vocabulary pronunciation scoring.
+- Preserve all Hotfix 11.8 behavior and schema.
+
+Code fix
+- Added VocabularyTrainingProgress and PronunciationResult to lib/vocabulary/types.ts.
+- PronunciationResult uses the existing PronunciationAssessment contract from lib/speaking/types.ts.
+- VocabularyDailyTrainer explicitly imports PronunciationResult from lib/vocabulary/types.ts.
+- Added scripts/test_hotfix1181.py and release-validator guards so the type export/import cannot silently disappear again.
+- No database migration. Latest remains 0055_v102_hotfix118_speaking_cooldown.sql.
+
+Validation completed
+PASS - scripts/test_d1_migrations.py
+PASS - scripts/test_hotfix5.py
+PASS - scripts/test_hotfix52.py
+PASS - scripts/test_hotfix6.py
+PASS - scripts/test_hotfix61.py
+PASS - scripts/test_hotfix7.py
+PASS - scripts/test_hotfix8.py
+PASS - scripts/test_hotfix9.py
+PASS - scripts/test_hotfix10.py
+PASS - scripts/test_hotfix11.py
+PASS - scripts/test_hotfix112.py
+PASS - scripts/test_hotfix113.py
+PASS - scripts/test_hotfix114.py
+PASS - scripts/test_hotfix115.py
+PASS - scripts/test_hotfix116.py
+PASS - scripts/test_hotfix117.py
+PASS - scripts/test_hotfix118.py
+PASS - scripts/test_hotfix1181.py
+PASS - scripts/test_ai_guest_guard.py (12 protected routes)
+PASS - scripts/test_r10_status_gates.py
+PASS - scripts/test_r12_work_queue.py
+PASS - scripts/test_r13_status_selection.py
+PASS - scripts/test_r14_summary_cloze.py
+PASS - scripts/test_r15_pass_score_cloze_summary.py
+PASS - scripts/test_r16_learn_progress.py
+PASS - scripts/test_r24_hotfix1_queue_typing.py
+PASS - scripts/audit_styles.py
+PASS - scripts/validate_release.py
+PASS - bash syntax: scripts/deploy.sh and scripts/install-deps-resilient.sh
+PASS - TypeScript syntax/transpile scan: 417 TS/TSX files, 0 syntax/transpile errors
+PASS - targeted TypeScript semantic compile of VocabularyDailyTrainer with the shared pronunciation response contract
+
+Validated release inventory
+- 55 migrations
+- 102 application tables
+- 39 skills
+- 343 published questions
+- 31 qbank sources
+- 337 qbank items
+- 718 vocabulary memberships
+- 84 grammar topics
+- 168 grammar exercises
+
+Dependency-backed build limitation
+- The release source archive does not contain node_modules in this sandbox.
+- Therefore the complete project dependency-backed `npm run typecheck`, `npm run typecheck:workers`, Next build, and OpenNext build were not claimed as executed here.
+- The exact TS2304 failure reported for PronunciationResult was reproduced from source structure and fixed; a targeted semantic TypeScript compile passes.
+- In a normal dependency-installed environment, run `npm run verify:release` as the final deployment gate.

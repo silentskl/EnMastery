@@ -1,0 +1,50 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "english-mastery-task-runner",
+  "main": "index.ts",
+  "compatibility_date": "2026-08-25",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+  "queues": {
+    "consumers": [
+      {
+        "queue": "english-mastery-jobs",
+        "max_batch_size": 1,
+        "max_batch_timeout": 2,
+        "max_retries": 2,
+        "dead_letter_queue": "english-mastery-jobs-dlq",
+        "max_concurrency": 1
+      }
+    ],
+    "producers": [
+      {
+        "binding": "TASK_QUEUE",
+        "queue": "english-mastery-jobs"
+      }
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "english-mastery",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "english-mastery-media"
+    }
+  ],
+  "vars": {
+    "MODELBRIDGE_BASE_URL": "https://ai.wisewavesg.com",
+    "MODELBRIDGE_CHAT_MODEL": "REPLACE_WITH_MODEL"
+  }
+}

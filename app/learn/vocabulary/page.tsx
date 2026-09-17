@@ -1,0 +1,3 @@
+import { PageIntro } from "@/components/ui";
+import { VocabularyDailyTrainer } from "@/components/vocabulary/vocabulary-daily-trainer";
+export default async function LearnVocabularyPage({searchParams}:{searchParams:Promise<{practice?:string}>}){const q=await searchParams,practiceMode=q.practice==="1";return <><PageIntro eyebrow={practiceMode?"Practice · Vocabulary":"Learn · Vocabulary"} title="Daily vocabulary mastery" description={practiceMode?"Tenant-guided vocabulary retrieval practice using the configured practice target and the learning review schedule.":"Study the Tenant Admin-assigned word book and strengthen pronunciation, recognition, listening, spelling and usage through repeated retrieval."}/><VocabularyDailyTrainer practiceMode={practiceMode}/></>}

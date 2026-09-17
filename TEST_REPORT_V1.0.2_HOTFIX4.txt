@@ -1,0 +1,55 @@
+English Mastery V1.0.2 Hotfix 4 — Release Test Report
+======================================================
+Scope
+-----
+- New-tenant welcome email through Platform SMTP
+- Tenant Admin forgot-password email flow
+- One-time / expiring reset token persistence
+- Login/reset UI
+- Migration 0042 upgrade safety
+- Existing Hotfix3 PSLE Prelim source retained
+
+Compilation / static validation
+-------------------------------
+PASS  npm run typecheck
+      tsc --noEmit
+PASS  npm run typecheck:workers
+      tsc --noEmit -p tsconfig.workers.json
+PASS  python3 scripts/validate_release.py
+      42 migrations / 96 application tables
+PASS  python3 scripts/audit_styles.py
+PASS  bash -n scripts/deploy.sh
+
+Database validation
+-------------------
+PASS  Fresh database applies migrations 0001 -> 0042.
+PASS  Upgrade smoke: apply 0001 -> 0041, then 0042; existing tenant count is unchanged.
+PASS  tenant_password_reset_attempts table/indexes exist.
+PASS  tenant_password_reset_tokens table/indexes exist.
+PASS  Reset-token lifecycle SQL accepts an unused future token and rejects it after consumption.
+PASS  ISO-8601 expiry values are evaluated with SQLite datetime(...) so 30-minute expiry is time-correct.
+
+Security regression checks
+--------------------------
+PASS  Reset token is 32 cryptographic random bytes / 64 hex characters (256 bits).
+PASS  Only SHA-256 token hash is persisted.
+PASS  Reset link expires after 30 minutes.
+PASS  Previous outstanding tokens are invalidated when a new link is issued.
+PASS  Successful reset invalidates all remaining reset links and active Tenant Admin sessions.
+PASS  Unknown account request receives generic response.
+PASS  Account and IP reset-request throttles are stored as hashes.
+PASS  SMTP send failure invalidates the newly issued reset token.
+PASS  Welcome email and reset email never include the Admin password.
+
+Production framework build status in this execution environment
+---------------------------------------------------------------
+ENVIRONMENT BLOCKED  npm install / package-lock generation
+Reason: registry.npmjs.org DNS is unavailable in the artifact runner:
+       EAI_AGAIN getaddrinfo registry.npmjs.org
+
+Because this runner cannot install the full Next 16.3.2 / @opennextjs/cloudflare 1.20.2 runtime packages, it cannot execute a genuine `next build` or `opennextjs-cloudflare build` here. The available local dependency set contains the real TypeScript compiler/types required for both TypeScript programs but only declaration stubs for Next, not the Next build binary. No build result is claimed as PASS for those two commands.
+
+On a normal development machine with dependencies installed, the release gate remains:
+  npm run check:release
+which executes:
+  typecheck -> typecheck:workers -> next build -> OpenNext build -> selfcheck -> stylecheck

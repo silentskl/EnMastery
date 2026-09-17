@@ -1,0 +1,66 @@
+English Mastery V1.0.2 Hotfix 7 - Final Validation Report
+Date: 2026-09-01
+
+SCOPE
+- Tenant Admin vocabulary word-book assignment for Learning and Practice.
+- Tenant-owned lesson/task learning-stage reassignment.
+- Source Cloze min/max character and exact blank-count configuration.
+
+FUNCTIONAL / SCHEMA VALIDATION
+PASS  scripts/validate_release.py
+      49 migrations; 99 tables; 39 skills; 343 published questions;
+      31 qbank sources; 337 qbank items; 718 vocabulary memberships;
+      84 grammar topics; 168 grammar exercises.
+PASS  scripts/test_d1_migrations.py
+      Strict D1 compatibility through migration 0049; existing settings preserved.
+PASS  scripts/test_hotfix7.py
+      Word-book policy, lesson-stage wiring and configurable Cloze generation checks.
+PASS  scripts/test_hotfix5.py
+PASS  scripts/test_hotfix52.py
+PASS  scripts/test_hotfix6.py
+PASS  scripts/test_hotfix61.py
+PASS  scripts/test_ai_guest_guard.py
+PASS  scripts/test_r10_status_gates.py
+PASS  scripts/test_r12_work_queue.py
+PASS  scripts/test_r13_status_selection.py
+PASS  scripts/test_r14_summary_cloze.py
+PASS  scripts/test_r15_pass_score_cloze_summary.py
+PASS  scripts/test_r16_learn_progress.py
+PASS  scripts/test_r24_hotfix1_queue_typing.py
+PASS  scripts/audit_styles.py
+PASS  bash -n scripts/deploy.sh
+PASS  bash -n scripts/install-deps-resilient.sh
+
+TYPESCRIPT
+PASS  TypeScript transpile/parser across app/components/lib/workers: 403 files, 0 errors.
+PASS  Hotfix 7 changed server files strict TypeScript harness using installed TypeScript and local Cloudflare/framework interface shims.
+PASS  Hotfix 7 changed component files strict TypeScript harness using installed TypeScript and local React/JSX interface shims.
+
+CLOZE HARD VALIDATION
+- Requested min/max passage character range is included in ModelBridge instruction.
+- Requested words-to-fill is an exact blank count.
+- Passage must contain ordered ___1___ through ___N___ markers exactly once/in order.
+- Generated question count must equal N.
+- Each question must use grammar_cloze, vocabulary_cloze or comprehension_cloze.
+- Each item requires four distinct options and an answer matching an option.
+- Duplicate detection includes min/max/blanks configuration.
+
+VOCABULARY POLICY
+- Learning and Practice policies store independent vocabulary_collection_id values.
+- Tenant Admin assignment accepts published system word books only.
+- Daily Planner and student training prefer the configured Learning word book.
+- Vocabulary Practice uses its independently configured book and practice count/review policy.
+- Practice session completion does not complete the Daily Learning vocabulary mission.
+
+LESSON STAGE REASSIGNMENT
+- Tenant ownership is required; global content cannot be moved by Tenant Admin.
+- Generating content is blocked from reassignment.
+- Linked questions are updated to the new stage without changing IDs.
+- Existing attempts/history remain linked to the same content/question IDs.
+- Future unstarted adaptive tasks in affected stages are invalidated for replanning.
+
+DEPENDENCY-BACKED NEXT / OPENNEXT BUILD
+NOT EXECUTABLE IN THIS SANDBOX.
+The sandbox cannot resolve public npm registry hosts (DNS failure), and the release source does not bundle node_modules. The production command remains:
+  npm run verify:release
+Run it on the deployment host/network where project dependencies are available. This limitation is environmental; all source-level and migration/regression gates above passed.

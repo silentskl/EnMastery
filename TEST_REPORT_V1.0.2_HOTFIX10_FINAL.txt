@@ -1,0 +1,77 @@
+English Mastery v1.0.2 Hotfix 10 - Final Validation Report
+Date: 2026-09-01
+
+PURPOSE
+Move vocabulary word-book bulk import to Tenant Admin and make it a persistent background workflow in the existing Task Queue. Student learning pages must not expose bulk import or word-book administration. Multiple import jobs must execute in FIFO order with only one job running at a time.
+
+IMPLEMENTED
+1. Tenant Admin Word Books
+   - Create an empty tenant-managed custom word book.
+   - Create a word book and queue TXT/CSV/pasted-text import.
+   - Queue TXT/CSV/pasted-text import into an existing tenant word book.
+   - Server-side parsing, normalization, case-insensitive deduplication and synonym merging.
+   - Import payload limit: 2 MB; up to 2,000 unique terms per job.
+
+2. Persistent background import
+   - Imports are stored as generation_jobs with jobType=vocabulary_import before processing.
+   - Existing TASK_QUEUE/task-runner is reused; no browser-owned processing loop.
+   - Processing is checkpointed in chunks of up to 20 terms.
+   - Cursor and counters are persisted in the job request/result so refresh, navigation, logout or worker reinvocation does not lose progress.
+   - Work Queue shows target word book and processed/total/added/updated/skipped/failed counts.
+
+3. FIFO / single concurrency
+   - Existing persisted-job selection is ORDER BY COALESCE(enqueued_at,created_at) ASC, rowid ASC.
+   - task-runner max_batch_size remains 1.
+   - task-runner max_concurrency remains 1.
+   - A partially completed vocabulary import retains its original enqueued_at when re-queued, so later import jobs cannot overtake it.
+   - Failed items are recorded without aborting the rest of the job; a terminally failed job does not block the next queued job.
+
+4. Student permissions / lesson workflow
+   - Student bulk import endpoints return 403 and the Student UI no longer exposes TXT/CSV/editor import, custom word-book creation or deletion.
+   - Tenant-managed custom word books are visible to students in the same tenant.
+   - Students can continue to save an unknown word/phrase selected in a lesson into an available tenant custom word book.
+   - Tenant Admin Learning/Practice policies can select published system books or tenant-managed custom books.
+
+5. Database
+   - Added migration 0050_v102_hotfix10_tenant_vocabulary_import.sql.
+   - vocabulary_collections now supports tenant ownership and tenant lookup indexing.
+
+FINAL VALIDATION RESULTS
+PASS  scripts/validate_release.py
+      V1.0.2; 50 migrations; 99 tables; 39 skills; 343 published questions;
+      31 qbank sources; 337 qbank items; 718 vocabulary memberships;
+      84 grammar topics; 168 grammar exercises.
+PASS  scripts/test_d1_migrations.py
+PASS  scripts/test_hotfix5.py
+PASS  scripts/test_hotfix52.py
+PASS  scripts/test_hotfix6.py
+PASS  scripts/test_hotfix61.py
+PASS  scripts/test_hotfix7.py
+PASS  scripts/test_hotfix8.py
+PASS  scripts/test_hotfix9.py
+PASS  scripts/test_hotfix10.py
+PASS  scripts/test_ai_guest_guard.py
+PASS  scripts/test_r10_status_gates.py
+PASS  scripts/test_r12_work_queue.py
+PASS  scripts/test_r13_status_selection.py
+PASS  scripts/test_r14_summary_cloze.py
+PASS  scripts/test_r15_pass_score_cloze_summary.py
+PASS  scripts/test_r16_learn_progress.py
+PASS  scripts/test_r24_hotfix1_queue_typing.py
+PASS  scripts/audit_styles.py
+PASS  bash -n scripts/deploy.sh
+PASS  bash -n scripts/install-deps-resilient.sh
+PASS  TypeScript syntax/transpile scan: 410 TS/TSX files, 0 errors
+PASS  Student bulk-import UI marker scan: no Import TXT / Create & import / Load TXT / CSV controls
+PASS  Queue configuration inspection: max_batch_size=1; max_concurrency=1; DB FIFO order preserved
+
+DEPENDENCY-BACKED BUILD GATE
+The sandbox does not contain this project's node_modules. A direct npm registry reachability check against https://registry.npmjs.org timed out after 30 seconds, and the prior dependency installation attempt also timed out. Therefore the dependency-backed TypeScript, Next and OpenNext production build gate cannot be truthfully marked PASS in this sandbox.
+
+The package retains the production command:
+  npm run verify:release
+which installs dependencies and then runs typecheck, Worker typecheck, D1/hotfix regressions, Next build, OpenNext build, selfcheck and stylecheck. Run this command in the deployment environment when npm registry access is available.
+
+RELEASE STATUS
+Hotfix 10 source-level, migration, queue, permission, regression and syntax validation: PASS.
+Dependency-backed production build: NOT EXECUTED because npm registry access timed out in the sandbox.

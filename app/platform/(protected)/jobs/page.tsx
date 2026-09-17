@@ -1,0 +1,1 @@
+import{AdminJobManager}from"@/components/admin-job-manager";export default function Page(){return <><div className="sectionHeading"><div><span>Platform · Operations</span><h1>Work Queue</h1><p>Global view of persisted background tasks across tenants. The runner executes one job at a time in FIFO queue-entry order.</p></div></div><AdminJobManager/></>}

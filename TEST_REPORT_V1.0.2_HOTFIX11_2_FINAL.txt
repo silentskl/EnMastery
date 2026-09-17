@@ -1,0 +1,70 @@
+English Mastery v1.0.2 Hotfix 11.2 - Final Validation Report
+Date: 2026-09-01
+
+ISSUES FIXED
+1. Vocabulary import could fail when ModelBridge returned almost-valid JSON, for example a trailing comma:
+   SyntaxError: Expected double-quoted property name in JSON ...
+2. Reading import used the same direct JSON.parse pattern and could fail for the same reason.
+3. A partially completed vocabulary import needed to be safely runnable again without duplicate terms.
+
+IMPLEMENTATION
+- Added lib/ai/model-json.ts as the shared resilient model JSON parser.
+- JSON parsing pipeline:
+  1) extract fenced/prose-wrapped JSON;
+  2) strict parse;
+  3) conservative local syntax repair for trailing commas/comments/literal control characters;
+  4) strict parse again;
+  5) if still invalid, one ModelBridge JSON-syntax repair request;
+  6) validate repaired root type and then run domain validation.
+- Final JSON errors include initial parse error, repair parse error and a bounded source excerpt.
+- Vocabulary batch enrichment falls back to individual term enrichment if the repaired batch still cannot be used.
+- Individual failures are logged without discarding successfully imported terms from the same chunk.
+- Vocabulary import is idempotent per Tenant word book:
+  * source items normalized by trim + whitespace collapse + case-insensitive key;
+  * duplicates inside TXT/CSV/editor input are merged before queueing;
+  * existing target-book normalized terms are checked before AI enrichment;
+  * already imported terms therefore do not consume another enrichment request on rerun;
+  * collection insertion checks normalized_text, not just vocabulary_id, preventing legacy-ID duplicates;
+  * new synonym annotations merge into an existing term instead of creating another term;
+  * result includes duplicates as a subset of skipped.
+- Work Queue vocabulary summaries now show duplicate counts.
+
+VALIDATION
+PASS scripts/test_hotfix5.py
+PASS scripts/test_hotfix52.py
+PASS scripts/test_hotfix6.py
+PASS scripts/test_hotfix61.py
+PASS scripts/test_hotfix7.py
+PASS scripts/test_hotfix8.py
+PASS scripts/test_hotfix9.py
+PASS scripts/test_hotfix10.py
+PASS scripts/test_hotfix11.py
+PASS scripts/test_hotfix112.py
+PASS scripts/test_ai_guest_guard.py
+PASS scripts/test_r10_status_gates.py
+PASS scripts/test_r12_work_queue.py
+PASS scripts/test_r13_status_selection.py
+PASS scripts/test_r14_summary_cloze.py
+PASS scripts/test_r15_pass_score_cloze_summary.py
+PASS scripts/test_r16_learn_progress.py
+PASS scripts/test_r24_hotfix1_queue_typing.py
+PASS scripts/test_d1_migrations.py
+PASS scripts/audit_styles.py
+PASS bash -n scripts/deploy.sh
+PASS bash -n scripts/install-deps-resilient.sh
+PASS focused strict TypeScript semantic check for model-json/enrich/adapt
+PASS focused strict TypeScript semantic check for dispatch/collections with Cloudflare interface stubs
+PASS TypeScript transpile/parser pass across app/components/lib/workers: 413 files, 0 errors
+PASS model JSON local-repair runtime test for fenced/prose-wrapped object/array JSON with trailing commas
+
+RELEASE VALIDATION SUMMARY
+51 migrations; 100 tables; 39 skills; 343 published questions; 31 qbank sources;
+337 qbank items; 718 vocabulary memberships; 84 grammar topics; 168 grammar exercises.
+
+DEPENDENCY-BACKED FULL BUILD
+The current sandbox cannot reach registry.npmjs.org (npm view timed out), so node_modules cannot be installed here and the full dependency-backed Next/OpenNext build cannot be executed in this environment. The release package retains:
+  npm run verify:release
+which runs main TypeScript, Worker TypeScript, D1 regressions, all Hotfix regressions including Hotfix 11.2, Next build, OpenNext build, selfcheck and stylecheck when dependencies are available.
+
+DATABASE
+No new migration. Migration count remains 51; latest migration remains 0051_v102_hotfix11_queue_timeout.sql.

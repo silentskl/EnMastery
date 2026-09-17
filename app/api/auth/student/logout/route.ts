@@ -1,0 +1,1 @@
+import{getEnv}from"@/lib/cloudflare";import{clearCookie,deleteUserSession,authCookieNames}from"@/lib/auth/user";export async function POST(request:Request){const env=getEnv();await deleteUserSession(request,env.DB,"student");const r=Response.json({ok:true});r.headers.append("Set-Cookie",clearCookie(authCookieNames.student));return r;}

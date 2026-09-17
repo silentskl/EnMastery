@@ -1,0 +1,32 @@
+English Mastery v1.0.2 Hotfix 11.9.1
+FINAL TEST REPORT
+Date: 2026-09-02
+
+Scope
+- Route-level Back navigation for all Learn and Practice pages.
+- Learn page order: Today's Learning Mission, Learning Momentum, Daily Progress.
+- Full historical regression, TypeScript, Next.js and Cloudflare release validation.
+
+Schema target
+- 56 migrations
+- 106 application tables
+- 17 triggers
+
+Validation status
+- PASS npm run typecheck
+- PASS npm run typecheck:workers
+- PASS scripts/test_d1_migrations.py
+- PASS Hotfix 5, 5.2, 6, 6.1, 7, 8, 9, 10, 11, 11.2-11.9.1 regressions
+- PASS scripts/test_hotfix1191.py
+- PASS npm run build (Next.js 16.3.2; 143 static pages generated)
+- PASS npm run build:cloudflare (OpenNext Worker bundle generated)
+- PASS scripts/validate_release.py
+- PASS scripts/audit_styles.py
+
+Hotfix 11.9.1 acceptance
+- Learn and Practice layouts render the shared Back button across all nested routes.
+- Back uses browser history and provides a direct-visit section/Home fallback.
+- Learn renders Today's Learning Mission before Learning Momentum and Daily Progress.
+
+Release gate
+- PASS npm run check:release

@@ -1,0 +1,20 @@
+English Mastery V0.9.0 R19 Hotfix 3
+
+Changes
+- NASA podcast source: allow safe feed redirects from nasa.gov to the explicit official audio-podcast-files.s3.amazonaws.com host only.
+- Curated Story Bank: return and render concrete per-story queue failure reasons instead of only "Could not queue curated stories".
+- Task runner version log updated to R19 Hotfix 3.
+
+Validation
+- Release validator: PASS (33 migrations / 93 tables)
+- Style audit: PASS (minimum explicit font-size 17px)
+- R10 status gate: PASS
+- R12 FIFO work queue: PASS
+- R13 status selection: PASS
+- R14 Summary/Cloze: PASS
+- R15 unified pass score: PASS
+- R16/R18 Learn progress: PASS
+- NASA redirect/curated queue diagnostic static regression: PASS
+- Changed TS/TSX syntax transpilation: PASS
+
+No migration added.

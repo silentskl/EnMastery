@@ -1,0 +1,47 @@
+English Mastery v1.0.2 Hotfix 11.4 — Final Validation
+Date: 2026-09-01
+
+Scope
+- Tenant Admin can control learner visibility of published System vocabulary books.
+- Default learner-visible System books: P1-P4, P5, P6.
+- Default hidden System books: S1-S4 and exam-oriented System collections.
+- Tenant Admin can explicitly override either direction per System book.
+- Tenant custom word books remain learner-visible within the Tenant.
+- Visibility is separate from Daily Learning / Practice assignment. A hidden System book that is explicitly assigned still loads in the locked training session.
+
+Implementation
+- Migration: 0053_v102_hotfix114_system_wordbook_visibility.sql
+- New table: tenant_system_vocabulary_visibility
+- Tenant Admin API: /api/admin/vocabulary/system-visibility
+- Tenant Admin Word Books cards expose "Visible to students".
+- Student collection listing filters System books using Tenant override + default policy.
+
+Validation results
+PASS scripts/test_d1_migrations.py
+  - 0043-0053 execute under strict SQLITE_LIMIT_COMPOUND_SELECT=3
+PASS scripts/test_hotfix5.py
+PASS scripts/test_hotfix52.py
+PASS scripts/test_hotfix6.py
+PASS scripts/test_hotfix61.py
+PASS scripts/test_hotfix7.py
+PASS scripts/test_hotfix8.py
+PASS scripts/test_hotfix9.py
+PASS scripts/test_hotfix10.py
+PASS scripts/test_hotfix11.py
+PASS scripts/test_hotfix112.py
+PASS scripts/test_hotfix113.py
+PASS scripts/test_hotfix114.py
+PASS scripts/audit_styles.py
+PASS scripts/validate_release.py
+  - 53 migrations
+  - 101 application tables
+  - 39 skills
+  - 343 published questions
+  - 31 question-bank sources
+  - 337 question-bank items
+  - 718 vocabulary memberships
+  - 84 grammar topics
+  - 168 grammar exercises
+
+Dependency-backed gate
+NOT RUN in this sandbox: project node_modules is absent. The global tsc binary is present, but @cloudflare/workers-types and Node project type packages are unavailable locally. Run `npm run verify:release` in the normal dependency-enabled build environment before production deployment.

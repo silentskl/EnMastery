@@ -1,0 +1,1 @@
+import{TenantQuestionManager}from"@/components/tenant-question-manager";export default function Page(){return <><div className="sectionHeading"><div><span>Tenant Admin · Paper 2</span><h1>Question engine</h1><p>View published platform questions together with tenant-owned questions; new generation uses this tenant's ModelBridge account.</p></div></div><TenantQuestionManager/></>}

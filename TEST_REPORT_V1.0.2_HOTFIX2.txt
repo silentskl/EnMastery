@@ -1,0 +1,35 @@
+English Mastery v1.0.2 Hotfix 2 - Test Report
+Date: 2026-08-31
+
+Issue fixed
+-----------
+Next/OpenNext build failed during page-data collection for:
+/api/platform/settings/integrations/test
+because lib/notifications/smtp.ts had a top-level import from the Workers-only module cloudflare:sockets.
+
+Fix
+---
+1. Removed cloudflare:sockets from the shared Next.js/Worker SMTP module.
+2. SMTP transport now uses node:net and node:tls, both supported by Cloudflare Workers with the project's 2026-08-25 compatibility date and nodejs_compat.
+3. Preserved SMTP modes:
+   - plain TCP
+   - implicit TLS / port 465
+   - STARTTLS / port 587
+   - AUTH LOGIN
+   - AUTH PLAIN
+4. Port 25 remains blocked intentionally.
+
+Validation performed
+--------------------
+PASS - targeted TypeScript compilation of lib/notifications/smtp.ts with strict mode and socket API declarations.
+PASS - transpiled SMTP module imports successfully under Node.js without evaluating any Workers-only module.
+PASS - no cloudflare:sockets imports remain under lib/, app/, or workers/ TypeScript source.
+PASS - root wrangler.jsonc uses compatibility_date 2026-08-25 and nodejs_compat.
+PASS - syllabus-monitor wrangler.jsonc uses compatibility_date 2026-08-25 and nodejs_compat.
+PASS - release self-check: 40 migrations, 94 tables, 39 skills, 343 published questions, 30 qbank sources, 337 qbank items, 140 vocabulary memberships, 56 grammar topics, 112 grammar exercises.
+PASS - CSS/style audit.
+PASS - scripts/deploy.sh shell syntax.
+
+Environment limitation
+----------------------
+A complete npm dependency reinstall + full Next/OpenNext production build was not rerun in this container because registry package installation was unavailable/timed out. The specific Node build-time module-evaluation failure reported by the user was reproduced conceptually and removed: the shared SMTP module now imports only Node built-ins that are available during Next's Node build phase.

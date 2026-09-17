@@ -1,0 +1,92 @@
+English Mastery V1.0.2 Hotfix 5 - Release Test Report
+Date: 2026-08-31
+
+FUNCTIONAL SCOPE
+----------------
+- Learning Settings stages: P1-P4, P5, P6, S1, S2, S3, S4.
+- Listening video maximum duration per stage.
+- Reading maximum word count per stage.
+- Vocabulary Daily Task size + spaced-review window/repetition settings.
+- Daily Task lesson selection restricted to published/visible lessons satisfying tenant policy.
+- Tenant Admin Practice Settings for Listening, Speaking, Reading, Writing, Vocabulary, Grammar and Cloze.
+- Per-practice content stage, item/question count and difficulty.
+- Student Practice page removes Today's four-skill mission / StudentPlan.
+- New tenants receive all Learning/Daily Task/Practice policy defaults.
+
+LOCAL RELEASE GATES - PASS
+--------------------------
+PASS - Hotfix 5 functional regression
+  - 7 Learning stages found and persisted.
+  - 7 Practice areas x 7 learner stages = 49 default policy rows per tenant.
+  - Practice content-stage / question-count / difficulty constraints verified.
+  - Listening/Reading Daily Task cap behavior verified.
+  - Vocabulary spaced review uses distinct learning days.
+  - Multiple vocabulary exercise modes on one day count once.
+  - Practice-page declutter guard verifies StudentPlan/four-skill mission is absent.
+
+PASS - All Python regression tests
+  - AI guest guard
+  - Hotfix 5 settings and spaced review
+  - R10 status gates
+  - R12 work queue FIFO/retry
+  - R13 status selection
+  - R14 summary/cloze
+  - R15 unified pass score
+  - R16/R18 learn progress
+  - R24 queue typing guard
+
+PASS - Release self-check
+  44 migrations
+  98 application tables
+  39 skills
+  343 published questions
+  31 Question Bank sources
+  337 Question Bank items
+  140 vocabulary memberships
+  56 grammar topics
+  112 grammar exercises
+
+PASS - Whole-source TS/TSX parser/transpile gate
+  399 app/components/lib/workers .ts/.tsx files
+  TypeScript parser/transpile diagnostics: 0
+
+PASS - UI style audit
+  520 CSS rules/classes
+  455 literal UI classes checked
+  Minimum explicit CSS font-size: 17px
+
+PASS - scripts/deploy.sh shell syntax
+PASS - resilient dependency installer shell syntax
+PASS - build-environment diagnostic script shell syntax
+PASS - ZIP integrity (performed after final packaging)
+
+DEPENDENCY / PRODUCTION BUILD ENVIRONMENT
+-----------------------------------------
+The execution sandbox used for this release has hard outbound network restrictions. The issue is not a single npm mirror.
+The following registries/mirrors were independently attempted and are unreachable from the sandbox:
+
+  https://registry.npmjs.org/
+  https://registry.npmmirror.com/
+  https://mirrors.cloud.tencent.com/npm/
+  https://repo.huaweicloud.com/repository/npm/
+  https://registry.yarnpkg.com/
+
+The host reports NETWORK=caas_packages_only. DNS resolution fails for all public registries, and direct-origin connectivity tests also fail, so changing npm registry alone cannot create node_modules in this sandbox. No usable preinstalled Next/OpenNext node_modules or npm cache exists here.
+
+Therefore a real dependency-backed invocation of these commands cannot be truthfully marked PASS inside this sandbox:
+
+  npm run typecheck
+  npm run typecheck:workers
+  npm run build
+  npm run build:cloudflare
+
+This package contains a resilient installer to solve ordinary registry outages on deployment/test hosts:
+
+  npm run deps:install
+
+It tries NPM_REGISTRY (if supplied), npmjs, npmmirror, Tencent, Huawei and Yarn in order.
+For a full one-command release gate on a normal networked host:
+
+  npm run verify:release
+
+`verify:release` installs real dependencies, then executes typecheck -> Workers typecheck -> Hotfix5 regression -> Next build -> OpenNext build -> selfcheck -> stylecheck.

@@ -1,0 +1,1 @@
+import{AdminQuestionManager}from"@/components/admin-question-manager";export default function Page(){return <><div className="sectionHeading"><div><span>Paper 2</span><h1>Question engine</h1><p>Generate, validate, review and publish questions across all PSLE Paper 2 families.</p></div></div><AdminQuestionManager/></>}

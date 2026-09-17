@@ -1,0 +1,54 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "english-mastery",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-08-25",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "english-mastery",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "english-mastery-media"
+    }
+  ],
+  "vars": {
+    "APP_ENV": "production",
+    "MODELBRIDGE_BASE_URL": "https://ai.wisewavesg.com",
+    "MODELBRIDGE_CHAT_MODEL": "REPLACE_WITH_MODEL",
+    "DEFAULT_CURRICULUM_VERSION": "SG-PRIMARY-ENGLISH-2020-PSLE-2026",
+    "MODELBRIDGE_STT_MODEL": "",
+    "MODELBRIDGE_TTS_MODEL": "",
+    "MODELBRIDGE_TTS_VOICE": "alloy",
+    "AZURE_SPEECH_REGION": ""
+  },
+  "routes": [
+    {
+      "pattern": "study.wisewavesg.com",
+      "custom_domain": true
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "TASK_QUEUE",
+        "queue": "english-mastery-jobs"
+      }
+    ]
+  }
+}
