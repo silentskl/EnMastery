@@ -16,7 +16,7 @@ need('app/api/admin/practice-settings/route.ts','vocabularyCollections','vocabul
 need('app/api/student/vocabulary/training/route.ts','policyCollection','dailyPolicy.vocabularyCollectionId','practicePolicy?.vocabularyCollectionId')
 need('components/vocabulary/vocabulary-daily-trainer.tsx','policyLocked','Assigned by Tenant Admin','if(!practiceMode)await fetch("/api/student/vocabulary/training/complete"')
 need('lib/student/planner.ts','PLANNER_VERSION','policy.vocabularyCollectionId')
-need('app/api/admin/content/[id]/stage/route.ts',"scope='tenant'",'UPDATE questions SET school_level','learning_tasks')
+need('app/api/admin/content/[id]/stage/route.ts',"scope='tenant'",'UPDATE questions SET school_level','Existing daily assignments keep their persisted content id')
 need('components/tenant-content-manager.tsx','changeStage','/stage')
 need('components/tenant-listening-manager.tsx','changeStage','/stage')
 need('components/tenant-writing-manager.tsx','changeStage','/stage')

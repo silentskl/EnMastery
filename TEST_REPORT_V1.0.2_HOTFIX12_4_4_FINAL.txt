@@ -1,0 +1,26 @@
+English Mastery V1.0.2 Hotfix 12.4.4 — Final Validation Report
+Date: 2026-09-24
+
+SCOPE
+1. Vocabulary Specialist accepts a single word OR a multi-word English phrase as one vocabulary item.
+2. Phrases remain intact through MCQ generation, de-duplication, specialist word book/history and final 5+5 mixed cloze.
+3. Daily Mission Listen / Speak / Read / Write lessons use a hard minimum 7-day assignment cooldown.
+4. A task's completion state does not weaken the cooldown: todo, in_progress and done all count as prior exposure.
+5. Existing generated Daily Missions remain immutable.
+
+VALIDATION
+PASS — scripts/test_hotfix1244.py
+PASS — Hotfix 11.8 / 11.8.2 / 11.8.3 planner regressions under assignment-based cooldown semantics
+PASS — Hotfix 12.1 immutable Daily Mission regression
+PASS — Hotfix 12.4 / 12.4.1 / 12.4.2 / 12.4.3 Vocabulary Specialist/deployment regressions
+PASS — scripts/test_d1_migrations.py (0043–0060)
+PASS — scripts/audit_styles.py
+PASS — scripts/validate_release.py
+PASS — TypeScript syntax/transpile scan: 440 app/components/lib/workers TS/TSX files, 0 syntax diagnostics
+
+DATABASE
+No new migration. Latest remains 0060.
+Validated inventory: 60 migrations / 113 application tables.
+
+DEPENDENCY-BACKED BUILD LIMITATION
+The packaging environment has no project node_modules. A direct `tsc --noEmit` therefore stops before project source checking because @cloudflare/workers-types and @types/node are unavailable locally. The release keeps Hotfix 12.4.3's dependency readiness gate so `npm run verify:release` installs required devDependencies and then runs tsc, Worker tsc, Next.js build and OpenNext build on the deployment host.

@@ -1,0 +1,24 @@
+English Mastery v1.0.2 Hotfix 12.3.1 - Final Test Report
+
+Fix
+- Resolved TS2352 in app/api/student/progress/calendar/route.ts.
+- Removed the incomplete cast `{results: []} as D1Result<StudyRow>`.
+- Study-time D1 query now resolves to StudyRow[] and falls back to [] on query failure.
+- Calendar aggregation consumes StudyRow[] directly.
+
+Validation
+PASS - scripts/test_hotfix123.py
+PASS - scripts/test_hotfix1231.py
+PASS - scripts/test_d1_migrations.py
+PASS - all Hotfix 5 through 12.3.1 Python regression gates
+PASS - scripts/audit_styles.py
+PASS - scripts/validate_release.py
+PASS - 59 migrations / 108 tables
+
+TypeScript environment note
+- A full npm typecheck was attempted after npm ci.
+- npm ci timed out in the container before dependencies finished installing.
+- The subsequent tsc invocation therefore stopped at missing @cloudflare/workers-types and node type definitions; it did not reach application source checking.
+- The specific TS2352 source pattern reported by the user is removed and protected by test_hotfix1231.py.
+
+No database migration is required for Hotfix 12.3.1.

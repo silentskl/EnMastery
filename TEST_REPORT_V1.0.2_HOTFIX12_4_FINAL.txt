@@ -1,0 +1,32 @@
+English Mastery V1.0.2 Hotfix 12.4 — Validation Report
+Date: 2026-09-19
+
+FEATURE CONTRACT
+PASS — Tenant Admin daily Vocabulary Specialist target is configurable per P1-P4 / P5 / P6 / S1 / S2 / S3 / S4, clamped to 1–30, default 10.
+PASS — Learner enters one English word, then receives one original PSLE-style four-option MCQ generated through Tenant ModelBridge.
+PASS — Duplicate words are blocked within the same daily session; unfinished generated questions survive reloads.
+PASS — MCQ correctness is recorded without blocking progress to the next word.
+PASS — After all configured words are answered, final cloze generation uses every daily word exactly once as numbered placeholders.
+PASS — Filled cloze word count is validated at 400–500 words.
+PASS — Final PASS requires 100% correct blanks; failed attempts remain stored and can be revised/re-submitted.
+PASS — All entered words are de-duplicated into an independent Vocabulary Specialist word book.
+PASS — Student history exposes generated questions, selected/correct answers, explanations and every cloze attempt.
+PASS — Tenant Admin can review the same per-student learning evidence and set the daily target.
+PASS — Admin navigation/page supports existing English / 中文 UI-language behavior.
+PASS — Vocabulary Specialist remains separate from existing Today Mission and Vocabulary SRS/word-book policy.
+
+DATABASE / D1
+PASS — migration 0060 creates 5 Vocabulary Specialist tables and indexes.
+PASS — existing tenants receive 7 stage policy rows at default 10 words.
+PASS — 0043–0060 execute under SQLITE_LIMIT_COMPOUND_SELECT=3.
+PASS — complete migration-chain execution in scripts/test_hotfix124.py.
+
+REGRESSION
+PASS — all scripts/test_hotfix*.py tests (Hotfix 5 through Hotfix 12.4).
+PASS — scripts/test_d1_migrations.py.
+PASS — scripts/audit_styles.py; minimum explicit CSS font size remains 17px and every literal UI class has a CSS contract.
+PASS — bash -n scripts/deploy.sh.
+PASS — TypeScript isolated syntax/transpile scan: 440 TS/TSX files, 0 syntax diagnostics.
+
+ENVIRONMENT LIMITATION
+NOT RUN — full project `tsc --noEmit`, Next.js build and OpenNext Cloudflare build in this packaging environment because the baseline archive did not contain node_modules and dependency installation could not complete; offline npm reported a missing cached @types/react-dom package. The source-level TypeScript syntax scan and project regression tests above passed. The normal deployment/check:release flow retains its typecheck/build gates for the deployment machine.

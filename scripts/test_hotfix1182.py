@@ -19,19 +19,18 @@ planner=need('lib/student/planner.ts',
     'restoreTodayCompletedAssignments',
     'recoveredFromTodayCompletion:true',
     "learned.status='completed' AND learned.progress_percent>=100",
-    "recent.status='done' AND recent.task_date>=?",
+    "recent.task_date>=? AND recent.task_date<?",
     "p.status='completed' AND p.progress_percent>=100",
     "w.prompt_id=learning_tasks.activity_id AND w.passed=1",
     "COUNT(DISTINCT sp2.mode)",
 )
-# Cooldown must be based on completion, not assignment/open/start evidence.
-for forbidden in [
-    "recent.activity_type='reading' AND recent.activity_id=c.id AND recent.task_date>=? AND recent.task_date<?)",
-    "recent.activity_type='listening' AND recent.activity_id=c.id AND recent.task_date>=? AND recent.task_date<?)",
-    "date(p.updated_at,'+8 hours')>=?",
-]:
-    if forbidden in planner: errors.append(f'planner still treats non-completed activity as cooldown evidence: {forbidden}')
-if "recent.status='done'" not in planner: errors.append('planner cooldown must require done daily-task evidence')
+# Hotfix 12.4.4 supersedes the old completion-only rule: any Daily Mission assignment blocks reuse for at least 7 days.
+for activity in ['reading','listening','speaking','writing']:
+    marker=f"recent.activity_type='{activity}' AND recent.activity_id=c.id"
+    pos=planner.find(marker)
+    if pos<0: errors.append(f'missing {activity} assignment cooldown')
+    elif "recent.status='done'" in planner[pos:pos+220]: errors.append(f'{activity} cooldown must not depend on completion')
+if 'Math.max(7,cooldownDays)' not in planner: errors.append('planner must enforce a hard minimum 7-day cooldown')
 if "passed_modes||0)>=3" not in planner: errors.append('same-day Speaking recovery must require all three scored modes')
 
 migration=need('migrations/0055_v102_hotfix118_speaking_cooldown.sql',
@@ -71,4 +70,4 @@ if errors:
     print('HOTFIX11.8.2 TEST FAIL')
     for e in errors: print('-',e)
     sys.exit(1)
-print('HOTFIX11.8.2 TEST PASS: same-day PASS preservation/recovery and completion-only lesson cooldown validated')
+print('HOTFIX11.8.2 TEST PASS: same-day PASS preservation/recovery and assignment-based hard 7-day lesson cooldown validated')

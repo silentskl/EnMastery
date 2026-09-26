@@ -1,1 +1,10 @@
-import type{ReactNode}from"react";import{cookies}from"next/headers";import{redirect}from"next/navigation";import{getEnv}from"@/lib/cloudflare";import{getTenantSessionFromRaw,TENANT_COOKIE}from"@/lib/auth/tenant";export const dynamic="force-dynamic";export default async function Layout({children}:{children:ReactNode}){const jar=await cookies(),session=await getTenantSessionFromRaw(getEnv().DB,jar.get(TENANT_COOKIE)?.value);if(!session)redirect("/admin/login");return children;}
+import type { ReactNode } from "react";
+import { TenantAuthGate } from "@/components/tenant-auth-gate";
+
+// Keep Admin pages statically renderable. Authentication remains enforced by every
+// /api/admin/* endpoint; this client gate only controls access to the UI shell.
+// Avoiding per-navigation Next.js SSR + D1 auth work materially lowers Cloudflare
+// Worker CPU usage and prevents Error 1102 on the Admin route itself.
+export default function Layout({ children }: { children: ReactNode }) {
+  return <TenantAuthGate>{children}</TenantAuthGate>;
+}

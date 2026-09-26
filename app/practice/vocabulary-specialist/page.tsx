@@ -1,0 +1,2 @@
+import {PageIntro}from"@/components/ui";import{VocabularySpecialistWorkspace}from"@/components/vocabulary-specialist/vocabulary-specialist-workspace";
+export default function Page(){return <><PageIntro eyebrow="Practice · Vocabulary Specialist" title="Turn your own words into PSLE-style practice." description="Enter today's words one by one, answer a four-option vocabulary question for each, then complete a 400–500 word final cloze with 100% accuracy."/><VocabularySpecialistWorkspace/></>}

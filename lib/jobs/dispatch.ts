@@ -14,7 +14,7 @@ import { evaluateSummary } from "@/lib/summaries/evaluate";
 import type { ListeningDiscoveredItem, ListeningSource, ListeningMaterial, QuestionBasis } from "@/lib/listening/types";
 import { integrationCredentialState, resolveIntegrations } from "@/lib/settings/runtime";
 import { resolveTenantIntegrations } from "@/lib/settings/tenant-runtime";
-import { completeMatchingTasks, sgDate } from "@/lib/student/tasks";
+import { completeMatchingTasks } from "@/lib/student/tasks";
 import { updateSkillEvidence } from "@/lib/student/mastery";
 import { finaliseSpecialisedSession } from "@/lib/question-bank/session";
 import { evaluateConversation, heuristicPronunciation } from "@/lib/speaking/evaluate";
@@ -295,7 +295,6 @@ async function writingFeedback(id:string,req:Record<string,unknown>,env:JobEnv){
  const promptId=String(req.promptId||"");
  if(passed){
   await completeMatchingTasks(env.DB,childId,"writing",promptId||undefined);
-  if(promptId)await env.DB.prepare("DELETE FROM learning_tasks WHERE child_id=? AND activity_type='writing' AND activity_id=? AND source='adaptive' AND status IN ('todo','skipped') AND task_date>?").bind(childId,promptId,sgDate()).run();
  }
  await setJob(env.DB,id,{status:"succeeded",stage:passed?"passed":"revision_required",progress:100,result:{submissionId,feedback:storedFeedback,reviewScore,passed,passMark},completed:true,request:{submissionId,childId,promptId,schoolLevel,writingType,prompt,text:"redacted_after_generation"}});
 }

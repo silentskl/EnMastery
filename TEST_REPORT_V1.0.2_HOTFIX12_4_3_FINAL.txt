@@ -1,0 +1,31 @@
+English Mastery V1.0.2 Hotfix 12.4.3 - Deployment Dependency Gate
+Date: 2026-09-19
+
+PURPOSE
+Fix deploy/update failure where node_modules exists but TypeScript CLI is missing:
+  sh: tsc: command not found
+
+ROOT CAUSE
+scripts/deploy.sh previously treated the existence of the node_modules directory as proof that dependencies were complete. A stale/partial or production-only install can contain node_modules and Wrangler while omitting devDependencies such as TypeScript.
+
+FIX
+- deploy.sh now validates required local binaries under node_modules/.bin.
+- Normal deploy/update requires: wrangler, tsc, next, opennextjs-cloudflare.
+- --skip-build only requires wrangler.
+- An incomplete install triggers scripts/install-deps-resilient.sh automatically.
+- install-deps-resilient.sh explicitly passes --include=dev.
+- --skip-install fails early and lists missing binaries instead of failing later at typecheck.
+- Added Hotfix 12.4.3 regression gate and integrated it into check:release and validate_release.py.
+- No database migration; no student/admin application behavior change.
+
+VALIDATION
+PASS bash -n scripts/deploy.sh
+PASS bash -n scripts/install-deps-resilient.sh
+PASS scripts/test_hotfix1243.py
+PASS all 30 Hotfix Python regression tests
+PASS scripts/test_d1_migrations.py (migrations 0043-0060 under constrained SQLite compound SELECT limit)
+PASS scripts/audit_styles.py
+PASS scripts/validate_release.py
+
+NOTE
+A full dependency-backed tsc/Next/OpenNext build was not run in the packaging container because project node_modules are not installed there. Hotfix 12.4.3 specifically repairs the deployment path so the target host installs missing devDependencies before those gates run.

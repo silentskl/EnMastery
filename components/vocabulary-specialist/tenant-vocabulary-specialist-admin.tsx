@@ -1,0 +1,36 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useUiLanguage } from "@/components/ui-language";
+
+type Level="P1-P4"|"P5"|"P6"|"S1"|"S2"|"S3"|"S4";
+type Policy={learnerStage:Level;dailyWords:number};
+type Student={id:string;nickname:string;school_level:Level;word_count:number};
+type Session={id:string;child_id:string;nickname:string;task_date:string;school_level:Level;daily_target:number;status:string;words_completed:number;question_count:number;mcq_correct:number;cloze_attempts:number;passed_at:string|null};
+type Detail={session:any;questions:any[];clozeAttempts:any[]};
+const levels:Level[]=["P1-P4","P5","P6","S1","S2","S3","S4"];
+const display=(x:string)=>x==="P1-P4"?"P1–P4":x;
+
+export function TenantVocabularySpecialistAdmin(){
+ const {language}=useUiLanguage(),zh=language==="zh-CN",L=(en:string,cn:string)=>zh?cn:en;
+ const[policies,setPolicies]=useState<Policy[]>([]),[students,setStudents]=useState<Student[]>([]),[sessions,setSessions]=useState<Session[]>([]),[level,setLevel]=useState<Level>("P6"),[student,setStudent]=useState("all"),[detail,setDetail]=useState<Detail|null>(null),[busy,setBusy]=useState(false),[msg,setMsg]=useState("");
+ async function load(){const r=await fetch("/api/admin/vocabulary-specialist",{cache:"no-store"}),b=await r.json().catch(()=>({})) as any;if(!r.ok){setMsg(L("Could not load Vocabulary Specialist settings","无法加载词汇专项设置"));return}setPolicies(b.policies||[]);setStudents(b.students||[]);setSessions(b.sessions||[])}
+ useEffect(()=>{void load()},[]);
+ const active=policies.find(x=>x.learnerStage===level)?.dailyWords??10;
+ const filtered=useMemo(()=>sessions.filter(x=>student==="all"||x.child_id===student),[sessions,student]);
+ async function save(value:number){setBusy(true);setMsg("");const r=await fetch("/api/admin/vocabulary-specialist",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({learnerStage:level,dailyWords:value})});setBusy(false);setMsg(r.ok?L(`${display(level)} daily target saved.`,`${display(level)} 每日单词数量已保存。`):L("Could not save setting","无法保存设置"));if(r.ok)await load()}
+ async function open(id:string){setDetail(null);const r=await fetch(`/api/admin/vocabulary-specialist?sessionId=${encodeURIComponent(id)}`,{cache:"no-store"}),b=await r.json().catch(()=>({})) as any;if(r.ok)setDetail(b.detail||null);else setMsg(L("Could not load record","无法加载学习记录"))}
+ const clozeItems:Array<any>=detail?.session?.cloze_blanks||[];
+ return <div className="vocabSpecialAdmin">
+  <section className="card">
+   <div className="cardHeader"><div><h2>{L("Daily vocabulary target","每日单词数量")}</h2><p>{L("Minimum 10 vocabulary terms. The target is snapshotted when a learner starts that day. If the target is above 10, the final mixed cloze selects 10 words from the completed daily set.","最少 10 个单词。学员当天开始练习时会锁定当天数量；如果每日数量超过 10，最终混合完型会从当天已完成的单词中挑选 10 个。")}</p></div></div>
+   <div className="tabs settingsStageTabs">{levels.map(x=><button type="button" key={x} className={level===x?"active":""} onClick={()=>setLevel(x)}>{display(x)}</button>)}</div>
+   <div className="vocabSpecialSettingRow"><label><span>{L("Words per day","每天单词数")}</span><input type="number" min={10} max={30} value={active} onChange={e=>{const n=Math.max(10,Math.min(30,Number(e.target.value)||10));setPolicies(old=>[...old.filter(x=>x.learnerStage!==level),{learnerStage:level,dailyWords:n}])}}/></label><button className="button primary" disabled={busy} onClick={()=>void save(active)}>{busy?L("Saving…","保存中…"):L("Save target","保存数量")}</button></div>{msg&&<div className="notice">{msg}</div>}
+  </section>
+  <section className="card" style={{marginTop:20}}>
+   <div className="cardHeader"><div><h2>{L("Learning records","学习记录")}</h2><p>{L("Open a date to inspect all generated questions, answers and every final mixed-cloze submission.","打开某一天即可查看所有生成的题目、作答结果以及每一次最终混合完型提交。")}</p></div><select value={student} onChange={e=>setStudent(e.target.value)}><option value="all">{L("All students","全部学生")}</option>{students.map(s=><option value={s.id} key={s.id}>{s.nickname} · {display(s.school_level)} · {s.word_count} {L("words","个单词")}</option>)}</select></div>
+   <div className="settingsTableWrap"><table className="dataTable vocabSpecialAdminTable"><thead><tr><th>{L("Date","日期")}</th><th>{L("Student","学生")}</th><th>{L("Stage","学段")}</th><th>{L("MCQ","单选题")}</th><th>{L("Mixed cloze","混合完型")}</th><th>{L("Status","状态")}</th><th></th></tr></thead><tbody>{filtered.map(s=><tr key={s.id}><td>{s.task_date}</td><td><strong>{s.nickname}</strong></td><td>{display(s.school_level)}</td><td>{s.mcq_correct}/{s.question_count} {L("correct","正确")}</td><td>{s.cloze_attempts} {L(s.cloze_attempts===1?"attempt":"attempts","次尝试")}</td><td><span className={`statusPill ${s.status==="passed"?"published":""}`}>{s.status==="passed"?"PASS":L("In progress","进行中")}</span></td><td><button className="button ghost" onClick={()=>void open(s.id)}>{L("View","查看")}</button></td></tr>)}</tbody></table>{!filtered.length&&<div className="emptyState">{L("No specialist practice records yet.","暂无词汇专项学习记录。")}</div>}</div>
+  </section>
+  {detail&&<section className="card vocabSpecialRecord" style={{marginTop:20}}><div className="cardHeader"><div><h2>{detail.session.nickname} · {detail.session.task_date}</h2><p>{display(detail.session.school_level)} · {detail.session.status==="passed"?"PASS":L("Not passed","尚未通过")}</p></div><button className="button ghost" onClick={()=>setDetail(null)}>{L("Close","关闭")}</button></div><div className="vocabSpecialRecordGrid"><div><h3>{L("Multiple-choice questions","单选题记录")}</h3>{detail.questions.map(q=><article className="vocabSpecialRecordItem" key={q.id}><strong>{q.item_order}. {q.term}</strong><p>{q.stem}</p><ol>{q.options.map((o:string,i:number)=><li key={i}><span>{o}</span>{i===q.answer_index?<b> {L("Correct answer","正确答案")}</b>:i===q.selected_index&&!q.correct?<em> {L("Student answer","学生答案")}</em>:null}</li>)}</ol><small>{q.correct?L("Correct","正确"):L("Incorrect","错误")} · {q.explanation}</small></article>)}</div><div><h3>{L("Final mixed cloze","最终混合完型")}</h3>{detail.session.cloze_title&&<><strong>{detail.session.cloze_title}</strong><p className="vocabSpecialAdminPassage">{detail.session.cloze_passage}</p></>}{clozeItems.length>0&&<div className="vocabSpecialAnswerKey"><strong>{L("Answer key","答案明细")}</strong>{clozeItems.map((item:any,i:number)=>{const kind=item.kind==="synonym_choice"?"synonym_choice":"fill",target=item.targetWord||item.word||item.answer||"",answer=item.answer||item.word||item.targetWord||"";return <div key={`${item.index||i}-${target}`}><b>{item.index||i+1}.</b> {kind==="synonym_choice"?L("Synonym choice","同义/近义词选择"):L("Fill-in","填空")} · {L("target","目标词")}: {target} · {L("answer","答案")}: {answer}{kind==="synonym_choice"&&Array.isArray(item.options)?` · ${L("options","选项")}: ${item.options.join(" / ")}`:""}</div>})}</div>}{detail.clozeAttempts.map((a:any,i:number)=><article className="vocabSpecialRecordItem" key={a.id}><strong>{L("Attempt","第")} {i+1}{zh?" 次":""} · {a.correct_count}/{a.total_count} · {a.passed?"PASS":"FAIL"}</strong><p>{a.answers.map((x:string,j:number)=>`${j+1}. ${x||"—"}`).join(" · ")}</p></article>)}{!detail.clozeAttempts.length&&<p className="tableSub">{L("No mixed-cloze submission yet.","暂无混合完型提交记录。")}</p>}</div></div></section>}
+ </div>
+}

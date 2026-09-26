@@ -10,8 +10,8 @@ def require(x,msg):
 require('daily-cache-v12-eligible-before-limit' in planner,'planner v12 marker missing')
 require('dailyLimitRelaxed:Boolean(r.daily_limit_relaxed)' in planner,'Reading availability fallback metadata missing')
 require('dailyLimitRelaxed:Boolean(l.daily_limit_relaxed)' in planner,'Listening availability fallback metadata missing')
-require("recent_write.passed=1" in planner,'Writing cooldown must require actual PASS')
-require("passed_mode.passed=1 AND passed_mode.mode IN ('conversation','reading_aloud','stimulus')" in planner,'Speaking cooldown must require all scored PASS modes')
+require("recent_write.passed=1" in planner,'Writing PASS history remains supported in addition to assignment cooldown')
+require("passed_mode.passed=1 AND passed_mode.mode IN ('conversation','reading_aloud','stimulus')" in planner,'Speaking PASS history remains supported in addition to assignment cooldown')
 
 def sql_for(name):
     m=re.search(rf"async function {name}\([^)]*\)[^{{]*\{{.*?db\.prepare\(`(.*?)`\)",planner,re.S)
@@ -28,7 +28,7 @@ for name,sql in [('reading',read_sql),('listening',listen_sql),('speaking',speak
     # The only LIMIT must be after the cooldown predicates.
     if sql:
         limit_pos=sql.rfind('LIMIT ?')
-        cooldown_pos=max(sql.rfind("recent.status='done'"),sql.rfind('recent_write.passed=1'),sql.rfind('passed_mode.passed=1'))
+        cooldown_pos=max(sql.rfind('recent.task_date>=?'),sql.rfind('recent_write.passed=1'),sql.rfind('passed_mode.passed=1'))
         require(limit_pos>cooldown_pos>=0,f'{name}: tenant limit still runs before completion/cooldown eligibility')
 
 if not errors:
@@ -47,7 +47,7 @@ if not errors:
             con.execute('INSERT INTO content_items VALUES(?,?,?,?,?,?,?,?,?,?,?)',(f'{prefix}{i}',f'{prefix.upper()} {i}',typ,None,'published','P5','global',None,1,'2026-08-01',f'2026-08-{i:02d}'))
             if typ=='article': con.execute('INSERT INTO content_versions VALUES(?,?,?)',(f'{prefix}{i}',1,'{"text":"short readable passage"}'))
             if typ=='audio': con.execute('INSERT INTO content_media VALUES(?,?,?)',(f'{prefix}{i}','audio',120))
-    # First two of every domain completed within cooldown. With lessonLimit=2,
+    # First two of every domain assigned within cooldown (status is irrelevant). With lessonLimit=2,
     # the old pre-limit query returned nothing; v12 must return #3 and #4.
     for typ,prefix in [('reading','r'),('listening','l'),('speaking','s'),('writing','w')]:
         for i in (1,2): con.execute('INSERT INTO learning_tasks VALUES(?,?,?,?,?)',('child',typ,f'{prefix}{i}','done','2026-08-30'))

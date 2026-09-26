@@ -1,0 +1,2 @@
+import { TenantVocabularySpecialistAdmin } from "@/components/vocabulary-specialist/tenant-vocabulary-specialist-admin";
+export default function Page(){return <><div className="sectionHeading"><div><span>Tenant Admin · Practice</span><h1>Vocabulary Specialist</h1><p>Set the daily learner-entered word / phrase target and review every generated multiple-choice question, final mixed-cloze attempt and specialist word book.</p></div></div><TenantVocabularySpecialistAdmin/></>}

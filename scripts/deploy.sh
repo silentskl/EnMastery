@@ -129,13 +129,52 @@ EOF
 
 wrangler(){ npx --no-install wrangler "$@"; }
 
+required_node_bins(){
+  local bins=(wrangler)
+  if (( ! SKIP_BUILD )); then
+    bins+=(tsc next opennextjs-cloudflare)
+  fi
+  printf '%s\n' "${bins[@]}"
+}
+
+node_deps_ready(){
+  [[ -d node_modules ]] || return 1
+  local bin
+  while IFS= read -r bin; do
+    [[ -x "node_modules/.bin/$bin" ]] || return 1
+  done < <(required_node_bins)
+  return 0
+}
+
 install_deps(){
-  if (( SKIP_INSTALL )); then return; fi
-  if [[ ! -d node_modules ]]; then
-    log "Installing npm dependencies..."
-    npm install --no-audit --no-fund
+  if node_deps_ready; then
+    log "Required npm dependencies are present; dependency install skipped."
+    return
+  fi
+
+  local missing=()
+  local bin
+  while IFS= read -r bin; do
+    [[ -x "node_modules/.bin/$bin" ]] || missing+=("$bin")
+  done < <(required_node_bins)
+
+  if (( SKIP_INSTALL )); then
+    die "--skip-install was requested, but required npm commands are missing: ${missing[*]}. Run npm run deps:install (or npm install --include=dev) and retry."
+  fi
+
+  warn "node_modules is missing or incomplete; required npm commands missing: ${missing[*]}. Reinstalling dependencies including devDependencies..."
+  if [[ -x scripts/install-deps-resilient.sh ]]; then
+    bash scripts/install-deps-resilient.sh
   else
-    log "node_modules exists; dependency install skipped."
+    npm install --include=dev --no-audit --no-fund
+  fi
+
+  if ! node_deps_ready; then
+    missing=()
+    while IFS= read -r bin; do
+      [[ -x "node_modules/.bin/$bin" ]] || missing+=("$bin")
+    done < <(required_node_bins)
+    die "Dependency installation completed but required npm commands are still missing: ${missing[*]}. Check NODE_ENV/npm_config_omit and the npm registry, then retry."
   fi
 }
 
@@ -480,7 +519,7 @@ PY
 }
 
 if [[ "$MODE" == "status" ]]; then
-  if [[ ! -d node_modules ]]; then install_deps; fi
+  if ! node_deps_ready; then install_deps; fi
   show_status
   exit 0
 fi

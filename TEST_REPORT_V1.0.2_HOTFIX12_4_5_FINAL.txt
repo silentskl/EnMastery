@@ -1,0 +1,45 @@
+English Mastery V1.0.2 Hotfix 12.4.5 — Final Validation Report
+Date: 2026-09-25
+
+ROOT CAUSE VERIFIED
+- Hotfix 12.4.4 enforced the 7-day cooldown only on the outer learning_tasks Speaking activity_id.
+- The Speaking page API still returned the complete cached/live prompt catalogue.
+- SpeakingWorkspace selected the first item for each mode, so Conversation / Reading Aloud / Stimulus could stay unchanged across days.
+- The screenshot title "AI Talking · Everyday Decisions" matches the old fixed cache fallback, confirming this bypass path.
+
+FIX CONTRACT
+PASS — one persisted daily assignment per Speaking mode: conversation / reading_aloud / stimulus.
+PASS — each mode independently excludes prompts assigned in the previous configured window, with a hard minimum of 7 days.
+PASS — prior assignment, prior attempt/score, and prior outer Daily Mission prompt evidence all block reuse.
+PASS — completion is not required for cooldown evidence.
+PASS — same-day refresh returns the same persisted three-prompt bundle.
+PASS — old cache catalogue is no longer used by the Daily Speaking prompts route.
+PASS — Daily Speaking API uses private, no-store caching.
+PASS — pool exhaustion never silently repeats a blocked prompt.
+PASS — default P5/P6 pools contain >=8 prompts in each Speaking mode after migration 0061.
+PASS — existing Vocabulary Specialist word/phrase support remains intact.
+PASS — existing outer Daily Mission hard >=7-day assignment cooldown remains intact.
+
+DATABASE / D1
+PASS — scripts/test_d1_migrations.py
+PASS — migrations 0043–0061 execute under SQLITE_LIMIT_COMPOUND_SELECT=3.
+PASS — migration 0061 creates speaking_daily_prompt_assignments and rotation index.
+PASS — migration 0061 backfills available prompt evidence from speaking_daily_mode_progress.
+PASS — validated inventory: 61 migrations / 114 application tables / 17 triggers.
+
+REGRESSION
+PASS — scripts/test_hotfix5.py through scripts/test_hotfix1245.py (all applicable Hotfix regressions).
+PASS — scripts/test_ai_guest_guard.py.
+PASS — scripts/test_r10_status_gates.py.
+PASS — scripts/test_r12_work_queue.py.
+PASS — scripts/test_r13_status_selection.py.
+PASS — scripts/test_r14_summary_cloze.py.
+PASS — scripts/test_r15_pass_score_cloze_summary.py.
+PASS — scripts/test_r16_learn_progress.py.
+PASS — scripts/test_r24_hotfix1_queue_typing.py.
+PASS — scripts/audit_styles.py.
+PASS — scripts/validate_release.py.
+PASS — TypeScript syntax/transpile scan: 441 app/components/lib/workers TS/TSX files, 0 syntax diagnostics.
+
+DEPENDENCY-BACKED BUILD NOTE
+The packaging environment does not contain project node_modules. Direct `tsc --noEmit` stops at dependency resolution because @cloudflare/workers-types and @types/node are not installed in this packaging environment. Next.js/OpenNext builds are therefore left to the existing `npm run verify:release` deployment gate, which installs/repairs devDependencies first.

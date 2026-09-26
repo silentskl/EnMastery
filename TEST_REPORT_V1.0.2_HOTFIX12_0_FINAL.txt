@@ -1,0 +1,15 @@
+English Mastery V1.0.2 Hotfix 12.0 - Final Test Report
+
+PASS  scripts/validate_release.py
+      57 migrations; 107 tables; release structural/schema validation passed.
+PASS  scripts/test_d1_migrations.py
+      D1 low compound-SELECT compatibility migration test passed through migration 0057.
+PASS  scripts/test_hotfix120.py
+      New Learning/Review split, configurable daily counts, configurable dictation repeats,
+      four-stage vocabulary flow, review scheduling semantics, group completion gating,
+      planner metadata and Chinese-meaning enrichment markers validated.
+
+Environment note:
+Full TypeScript/build gate was not executed in this container because the dependency installation
+was incomplete (type packages were left empty by the package-install timeout). No TypeScript/build
+PASS is claimed in this report.

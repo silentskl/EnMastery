@@ -13,7 +13,7 @@ for marker in ['Review window','Required reviews','vocabularyReviewWindowDays','
 for marker in ['Review window','Required reviews','vocabularyReviewWindowDays','vocabularyReviewRepetitions']:
     if marker in learn: errors.append(f'Learning Settings incorrectly contains {marker}')
 if '?scope=today' not in plan: errors.append('compact StudentPlan does not use fast today-only API')
-if 'todayNeedsMaterialization' not in plan_api or 'today-bounded' not in plan_api or 'isCurrentOrPreserved' not in plan_api: errors.append('plan API does not use persisted complete Today mission fast path')
+if 'todayNeedsMaterialization' not in plan_api or 'today-bounded' not in plan_api or 'repairTodayWritingTaskCompletion' not in plan_api: errors.append('plan API does not use persisted complete Today mission fast path')
 if 'Building your daily learning mission' in plan: errors.append('stale Building message remains in StudentPlan')
 
 # Upgrade preservation: 0044 old values -> 0045 vocabulary practice values.

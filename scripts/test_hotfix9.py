@@ -43,4 +43,4 @@ except Exception as exc: errors.append(f'Hotfix 9 schema/runtime test failed: {e
 
 if errors:
  print('HOTFIX9 TEST FAIL'); [print('-',e) for e in errors]; sys.exit(1)
-print('HOTFIX9 TEST PASS: Today/calendar GETs are read-mostly; completion utilities remain isolated; stale selection cleanup is bounded to today')
+print('HOTFIX9 TEST PASS: Today/calendar GETs are read-mostly; completion utilities remain isolated; immutable-plan policy supersedes stale selection deletion')

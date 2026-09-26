@@ -1,6 +1,6 @@
 "use client";
 
-export type StudentProgressCalendar={month:string;today:string;streak:number;days:Array<{date:string;total:number;done:number;percent:number}>;requestId?:string};
+export type StudentProgressCalendar={month:string;today:string;streak:number;days:Array<{date:string;total:number;done:number;percent:number;studySeconds:number;studyMinutes:number;idleCount:number}>;requestId?:string};
 type ApiError={error?:string|{code?:string;message?:string;stage?:string;requestId?:string}};
 const inflight=new Map<string,Promise<StudentProgressCalendar>>();
 

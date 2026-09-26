@@ -11,7 +11,7 @@ def need(path,*markers):
   if m not in s: errors.append(f'{path}: missing {m}')
  return s
 
-planner=need('lib/student/planner.ts','daily-cache-v12-eligible-before-limit','CANDIDATE_RETURN_LIMIT = 24','ensureTodayPlan','ensureWeeklyPlan','dayCount: 1 | 7','db.batch(statements)','clearStaleTodaySelection','Daily vocabulary assignment is controlled only by Tenant Admin policy')
+planner=need('lib/student/planner.ts','daily-cache-v12-eligible-before-limit','CANDIDATE_RETURN_LIMIT = 24','ensureTodayPlan','ensureWeeklyPlan','dayCount: 1 | 7','db.batch(statements)','Persisted daily missions are immutable','Daily vocabulary assignment is controlled only by Tenant Admin policy')
 if 'getVisibleLessonIds' in planner: errors.append('planner still builds four large visible-ID sets')
 if 'LIMIT 200`' in planner: errors.append('planner still returns 200 heavy candidate rows')
 if ' LIKE ' in planner.upper() or ' GLOB ' in planner.upper(): errors.append('planner reintroduced LIKE/GLOB')

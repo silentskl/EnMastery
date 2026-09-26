@@ -19,13 +19,14 @@ calendar=need('components/learning-progress-calendar.tsx','fetchStudentProgressC
 
 # Today fast path is resource bounded and complete: mandatory four areas must exist before cache is accepted.
 plan=need('app/api/student/plan/route.ts','scope','ensureTodayPlan','todayNeedsMaterialization','today-bounded')
-for m in ['"listening","speaking","reading","vocabulary"','DAILY_PLANNER_VERSION']:
+for m in ['"listening","speaking","reading","vocabulary"','repairTodayWritingTaskCompletion']:
  if m not in plan: errors.append(f'Today plan fast path missing {m}')
 planner=need('lib/student/planner.ts','daily-cache-v12-eligible-before-limit','CANDIDATE_RETURN_LIMIT','ensureTodayPlan','vocab.id')
 
-# Speaking must have all three modes from live cache or persisted/builtin fallback.
+# Speaking retains the legacy cache schema for compatibility, while Daily Learn now
+# serves a persisted one-prompt-per-mode rotation bundle (Hotfix 12.4.5).
 cache=need('lib/speaking/prompt-cache.ts','reading_aloud','stimulus','conversation','speaking_prompt_cache','builtin-v1')
-prompts=need('app/api/student/speaking/prompts/route.ts','ensureSpeakingModeCache','readingAloud','stimulus','stale-while-revalidate=3600')
+prompts=need('app/api/student/speaking/prompts/route.ts','ensureDailySpeakingPromptAssignments','private, no-store','rotation:')
 
 # Game unlock: all daily core learn tasks, plus writing when scheduled; tenant duration control present.
 reward=need('lib/student/game-rewards.ts','ALWAYS_REQUIRED','listening','speaking','reading','vocabulary','writingReady','daily-mission:${date}')
@@ -34,11 +35,11 @@ admin_api=need('app/api/admin/learn-settings/route.ts','dailyGameMinutes','writi
 need('migrations/0046_v102_daily_learning_reward_writing_speaking_cache.sql','daily_game_minutes','DEFAULT 10','writing_weekdays_json','writing_min_words','speaking_prompt_cache')
 
 # Student cannot choose daily Learn vocabulary count; backend planner uses tenant policy.
-trainer=need('components/vocabulary/vocabulary-daily-trainer.tsx','Set by your Tenant Admin Learning Settings','Tenant Practice Settings controls the vocabulary item target for this session.')
+trainer=need('components/vocabulary/vocabulary-daily-trainer.tsx','Assigned by Tenant Admin','Students cannot change the word book.','New learning + scheduled review')
 if re.search(r'<select[^>]*value=\{target\}',trainer,re.I): errors.append('student vocabulary learn UI still exposes daily-count select')
-need('app/api/student/vocabulary/training/settings/route.ts','dailyPolicy.vocabularyDailyWords')
-need('app/api/student/vocabulary/training/route.ts','dailyPolicy.vocabularyDailyWords')
-need('lib/student/planner.ts','target: policy.vocabularyDailyWords')
+need('app/api/student/vocabulary/training/settings/route.ts','dailyPolicy.vocabularyNewWords')
+need('app/api/student/vocabulary/training/route.ts','dailyPolicy.vocabularyNewWords')
+need('lib/student/planner.ts','target: policy.vocabularyNewWords')
 
 # Word-book synonym annotations remain supported. Bulk import UI moved to Tenant Admin in Hotfix 10.
 need('lib/vocabulary/collections.ts','import_synonyms_json','import_synonym_notes_json','detail.synonymNotes')

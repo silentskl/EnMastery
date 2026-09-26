@@ -11,10 +11,17 @@ def need(path,*markers):
  return text
 
 required=[
+ 'V1_0_2_HOTFIX12_4_5_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_5_FINAL.txt','scripts/test_hotfix1245.py','migrations/0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql','lib/speaking/daily-prompt-assignment.ts',
+ 'V1_0_2_HOTFIX12_4_4_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_4_FINAL.txt','scripts/test_hotfix1244.py',
+ 'V1_0_2_HOTFIX12_4_1_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_1_FINAL.txt','scripts/test_hotfix1241.py',
+ 'V1_0_2_HOTFIX12_4_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_FINAL.txt','scripts/test_hotfix124.py','migrations/0060_v102_hotfix124_vocabulary_specialist.sql','lib/vocabulary-specialist/policy.ts','lib/vocabulary-specialist/generate.ts','app/api/student/vocabulary-specialist/route.ts','app/api/admin/vocabulary-specialist/route.ts','components/vocabulary-specialist/vocabulary-specialist-workspace.tsx','components/vocabulary-specialist/tenant-vocabulary-specialist-admin.tsx','app/practice/vocabulary-specialist/page.tsx','app/admin/(protected)/vocabulary-specialist/page.tsx',
+ 'V1_0_2_HOTFIX12_3_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_3_FINAL.txt','scripts/test_hotfix123.py','migrations/0059_v102_hotfix123_effective_study_time.sql','components/effective-study-time-tracker.tsx','app/api/student/study-time/route.ts',
+ 'V1_0_2_HOTFIX12_2_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_2_FINAL.txt','scripts/test_hotfix122.py','migrations/0058_v102_hotfix122_embedded_reward_games.sql','components/reward-game-workspace.tsx','components/embedded-reward-games.tsx','app/rewards/game/page.tsx',
+ 'V1_0_2_HOTFIX12_1_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_1_FINAL.txt','scripts/test_hotfix121.py','V1_0_2_HOTFIX12_0_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_0_FINAL.txt','scripts/test_hotfix120.py',
  'V1_0_2_HOTFIX11_9_1_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_9_1_FINAL.txt','scripts/test_hotfix1191.py','components/route-back-button.tsx','app/learn/layout.tsx','app/practice/layout.tsx',
  'V1_0_2_HOTFIX11_9_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_9_FINAL.txt','scripts/test_hotfix119.py','lib/d1/indexed-sample.ts','migrations/0056_v102_hotfix119_d1_rows_read_optimization.sql',
  'package.json','VERSION','V1_0_2_HOTFIX11_8_3_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_8_3_FINAL.txt','V1_0_2_HOTFIX11_8_2_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_8_2_FINAL.txt','V1_0_2_HOTFIX11_8_1_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_8_1_FINAL.txt','V1_0_2_HOTFIX11_8_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_8_FINAL.txt','V1_0_2_HOTFIX11_7_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_7_FINAL.txt','V1_0_2_HOTFIX11_6_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_6_FINAL.txt','V1_0_2_HOTFIX11_5_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_5_FINAL.txt','V1_0_2_HOTFIX11_4_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_4_FINAL.txt','V1_0_2_HOTFIX11_3_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_3_FINAL.txt','V1_0_2_HOTFIX11_2_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_2_FINAL.txt','V1_0_2_HOTFIX11_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX11_FINAL.txt','V1_0_2_HOTFIX10_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX10_FINAL.txt','V1_0_2_HOTFIX9_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX9_FINAL.txt','RELEASE_MANIFEST.txt','data/p5-p6-story-bank-r9.json','wrangler.jsonc','open-next.config.ts','cloudflare-env.d.ts','scripts/deploy.sh','scripts/test_d1_migrations.py','scripts/test_hotfix8.py','scripts/test_hotfix9.py','scripts/test_hotfix10.py','scripts/test_hotfix11.py','scripts/test_hotfix112.py','scripts/test_hotfix113.py','scripts/test_hotfix114.py','scripts/test_hotfix115.py','scripts/test_hotfix116.py','scripts/test_hotfix117.py','scripts/test_hotfix118.py','scripts/test_hotfix1181.py','scripts/test_hotfix1182.py','scripts/test_hotfix1183.py',
- 'migrations/0017_v06_multitenant.sql','migrations/0018_v06_r2_parent_student_roles.sql','migrations/0019_v06_r3_single_tenant_admin.sql','migrations/0020_v06_r4_legacy_admin_ownership.sql','migrations/0021_v07_language_foundations.sql','migrations/0022_v08_exam_wordbooks_training.sql','migrations/0023_v09_singapore_science.sql','migrations/0024_v09_daily_game_rewards.sql','migrations/0025_v09_writing_progression_history.sql','migrations/0026_v09_mastery_gates_daily_reward.sql','migrations/0027_v09_r8_learn_availability_speaking_writing.sql','migrations/0028_v09_r9_curated_story_bank.sql','migrations/0029_v09_r10_learning_status_retry_history.sql','migrations/0030_v09_r12_work_queue_fifo.sql','migrations/0031_v09_r14_summary_mastery_cloze.sql','migrations/0032_v09_r15_unified_pass_score_cloze_summary.sql','migrations/0033_v09_r19_job_event_logs.sql','migrations/0034_v09_r19_hotfix4_publisher_fallback.sql','migrations/0035_v09_r19_hotfix5_british_council_publisher_first.sql','migrations/0036_v09_r19_hotfix7_external_video_media_kind.sql','migrations/0037_v09_r19_hotfix9_youtube_setting_alias.sql','migrations/0038_v09_r20_visibility_speaking_sources.sql','migrations/0039_v09_r21_public_tenant_registration.sql','migrations/0040_v101_content_source_domains.sql','migrations/0041_v102_psle_prelim_mindpath_source.sql','migrations/0042_v102_account_email_password_reset.sql','migrations/0043_v102_daily_task_filters_learning_stages.sql','migrations/0044_v102_learning_vocabulary_practice_policy.sql','migrations/0045_v102_practice_vocab_review_and_settings_tables.sql','migrations/0046_v102_daily_learning_reward_writing_speaking_cache.sql','migrations/0047_v102_vocabulary_synonym_annotations.sql','migrations/0048_v102_vocabulary_grammar_completeness.sql','migrations/0049_v102_hotfix7_vocab_books.sql','migrations/0050_v102_hotfix10_tenant_vocabulary_import.sql','migrations/0051_v102_hotfix11_queue_timeout.sql','migrations/0052_v102_hotfix113_tenant_wordbooks_planner.sql','migrations/0053_v102_hotfix114_system_wordbook_visibility.sql','migrations/0054_v102_hotfix115_daily_plan_resource_indexes.sql','migrations/0055_v102_hotfix118_speaking_cooldown.sql',
+ 'migrations/0017_v06_multitenant.sql','migrations/0018_v06_r2_parent_student_roles.sql','migrations/0019_v06_r3_single_tenant_admin.sql','migrations/0020_v06_r4_legacy_admin_ownership.sql','migrations/0021_v07_language_foundations.sql','migrations/0022_v08_exam_wordbooks_training.sql','migrations/0023_v09_singapore_science.sql','migrations/0024_v09_daily_game_rewards.sql','migrations/0025_v09_writing_progression_history.sql','migrations/0026_v09_mastery_gates_daily_reward.sql','migrations/0027_v09_r8_learn_availability_speaking_writing.sql','migrations/0028_v09_r9_curated_story_bank.sql','migrations/0029_v09_r10_learning_status_retry_history.sql','migrations/0030_v09_r12_work_queue_fifo.sql','migrations/0031_v09_r14_summary_mastery_cloze.sql','migrations/0032_v09_r15_unified_pass_score_cloze_summary.sql','migrations/0033_v09_r19_job_event_logs.sql','migrations/0034_v09_r19_hotfix4_publisher_fallback.sql','migrations/0035_v09_r19_hotfix5_british_council_publisher_first.sql','migrations/0036_v09_r19_hotfix7_external_video_media_kind.sql','migrations/0037_v09_r19_hotfix9_youtube_setting_alias.sql','migrations/0038_v09_r20_visibility_speaking_sources.sql','migrations/0039_v09_r21_public_tenant_registration.sql','migrations/0040_v101_content_source_domains.sql','migrations/0041_v102_psle_prelim_mindpath_source.sql','migrations/0042_v102_account_email_password_reset.sql','migrations/0043_v102_daily_task_filters_learning_stages.sql','migrations/0044_v102_learning_vocabulary_practice_policy.sql','migrations/0045_v102_practice_vocab_review_and_settings_tables.sql','migrations/0046_v102_daily_learning_reward_writing_speaking_cache.sql','migrations/0047_v102_vocabulary_synonym_annotations.sql','migrations/0048_v102_vocabulary_grammar_completeness.sql','migrations/0049_v102_hotfix7_vocab_books.sql','migrations/0050_v102_hotfix10_tenant_vocabulary_import.sql','migrations/0051_v102_hotfix11_queue_timeout.sql','migrations/0052_v102_hotfix113_tenant_wordbooks_planner.sql','migrations/0053_v102_hotfix114_system_wordbook_visibility.sql','migrations/0054_v102_hotfix115_daily_plan_resource_indexes.sql','migrations/0055_v102_hotfix118_speaking_cooldown.sql','migrations/0056_v102_hotfix119_d1_rows_read_optimization.sql','migrations/0057_v102_hotfix120_vocab_daily_new_review.sql','migrations/0058_v102_hotfix122_embedded_reward_games.sql','migrations/0059_v102_hotfix123_effective_study_time.sql','migrations/0060_v102_hotfix124_vocabulary_specialist.sql','migrations/0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql',
  'lib/listening/catalog.ts','lib/listening/catalog-queue.ts','lib/auth/admin.ts','lib/auth/tenant.ts','lib/auth/accounts.ts','lib/auth/user.ts','lib/auth/password-reset.ts','lib/notifications/account-emails.ts','lib/settings/tenant-runtime.ts','lib/vocabulary/import.ts','lib/jobs/dispatch.ts','lib/jobs/store.ts','lib/jobs/timeout.ts','lib/jobs/lesson-create.ts',
  'app/platform/login/page.tsx','app/api/platform/listening/catalog/route.ts','app/platform/(protected)/tenants/page.tsx','app/api/platform/tenants/route.ts','app/api/platform/tenants/[id]/admin/route.ts','app/register/page.tsx','app/api/auth/tenant/register/route.ts','app/api/auth/tenant/forgot-password/route.ts','app/api/auth/tenant/reset-password/route.ts','components/tenant-registration-form.tsx','components/tenant-forgot-password-form.tsx','components/tenant-reset-password-form.tsx','app/admin/forgot-password/page.tsx','app/admin/reset-password/page.tsx',
  'app/admin/login/page.tsx','app/admin/(protected)/layout.tsx','app/admin/(protected)/learn-settings/page.tsx','app/admin/(protected)/practice-settings/page.tsx','app/admin/(protected)/vocabulary/page.tsx','app/admin/(protected)/speaking/page.tsx','app/admin/(protected)/students/page.tsx','app/admin/(protected)/sources/page.tsx','app/admin/(protected)/content/page.tsx','app/admin/(protected)/listening/page.tsx','app/admin/(protected)/writing/page.tsx','app/admin/(protected)/questions/page.tsx','app/admin/(protected)/question-bank/page.tsx','app/admin/(protected)/practice/page.tsx','app/admin/(protected)/jobs/page.tsx','app/admin/(protected)/courses/page.tsx','app/admin/(protected)/assignments/page.tsx',
@@ -35,14 +42,21 @@ try:
  scripts=pkg.get('scripts',{})
  if scripts.get('build:cloudflare')!='opennextjs-cloudflare build': errors.append('build:cloudflare script missing or unexpected')
  expected_check='npm run typecheck && npm run typecheck:workers && npm run test:d1-migrations && npm run test:hotfix5 && npm run test:hotfix52 && npm run test:hotfix6 && npm run test:hotfix61 && npm run test:hotfix7 && npm run test:hotfix8 && npm run test:hotfix9 && npm run test:hotfix10 && npm run test:hotfix11 && npm run test:hotfix112 && npm run test:hotfix113 && npm run test:hotfix114 && npm run test:hotfix115 && npm run test:hotfix116 && npm run test:hotfix117 && npm run test:hotfix118 && npm run test:hotfix1181 && npm run test:hotfix1182 && npm run test:hotfix1183 && npm run build && npm run build:cloudflare && npm run selfcheck && npm run stylecheck'
- expected_check=expected_check.replace(' && npm run build',' && npm run test:hotfix119 && npm run test:hotfix1191 && npm run build',1)
+ expected_check=expected_check.replace(' && npm run build',' && npm run test:hotfix119 && npm run test:hotfix1191 && npm run test:hotfix120 && npm run test:hotfix121 && npm run test:hotfix122 && npm run test:hotfix123 && npm run test:hotfix1231 && npm run test:hotfix124 && npm run test:hotfix1241 && npm run test:hotfix1242 && npm run test:hotfix1243 && npm run test:hotfix1244 && npm run test:hotfix1245 && npm run test:hotfix1247 && npm run build',1)
  if scripts.get('check:release')!=expected_check: errors.append('check:release must cover main TS, Worker TS, D1 migration compatibility, Hotfix5 behavior tests, Next build, OpenNext build, selfcheck and stylecheck')
  if scripts.get('test:d1-migrations')!='python3 scripts/test_d1_migrations.py': errors.append('test:d1-migrations script missing or unexpected')
  if scripts.get('test:hotfix5')!='python3 scripts/test_hotfix5.py': errors.append('test:hotfix5 script missing or unexpected')
+ if scripts.get('test:hotfix1241')!='python3 scripts/test_hotfix1241.py': errors.append('test:hotfix1241 script missing or unexpected')
+ if scripts.get('test:hotfix1242')!='python3 scripts/test_hotfix1242.py': errors.append('test:hotfix1242 script missing or unexpected')
+ if scripts.get('test:hotfix1243')!='python3 scripts/test_hotfix1243.py': errors.append('test:hotfix1243 script missing or unexpected')
+ if scripts.get('test:hotfix1244')!='python3 scripts/test_hotfix1244.py': errors.append('test:hotfix1244 script missing or unexpected')
+ if scripts.get('test:hotfix1245')!='python3 scripts/test_hotfix1245.py': errors.append('test:hotfix1245 script missing or unexpected')
+ if scripts.get('test:hotfix1247')!='python3 scripts/test_hotfix1247.py': errors.append('test:hotfix1247 script missing or unexpected')
  if scripts.get('test:hotfix61')!='python3 scripts/test_hotfix61.py': errors.append('test:hotfix61 script missing or unexpected')
  if scripts.get('test:hotfix7')!='python3 scripts/test_hotfix7.py': errors.append('test:hotfix7 script missing or unexpected')
  if scripts.get('test:hotfix8')!='python3 scripts/test_hotfix8.py': errors.append('test:hotfix8 script missing or unexpected')
  if scripts.get('test:hotfix9')!='python3 scripts/test_hotfix9.py': errors.append('test:hotfix9 script missing or unexpected')
+ if scripts.get('test:hotfix1231')!='python3 scripts/test_hotfix1231.py': errors.append('test:hotfix1231 script missing or unexpected')
  if scripts.get('test:hotfix10')!='python3 scripts/test_hotfix10.py': errors.append('test:hotfix10 script missing or unexpected')
  if scripts.get('test:hotfix11')!='python3 scripts/test_hotfix11.py': errors.append('test:hotfix11 script missing or unexpected')
  if scripts.get('test:hotfix112')!='python3 scripts/test_hotfix112.py': errors.append('test:hotfix112 script missing or unexpected')
@@ -53,6 +67,12 @@ try:
  if scripts.get('test:hotfix118')!='python3 scripts/test_hotfix118.py': errors.append('test:hotfix118 script missing or unexpected')
  if scripts.get('test:hotfix1181')!='python3 scripts/test_hotfix1181.py': errors.append('test:hotfix1181 script missing or unexpected')
  if scripts.get('test:hotfix1182')!='python3 scripts/test_hotfix1182.py': errors.append('test:hotfix1182 script missing or unexpected')
+ if scripts.get('test:hotfix120')!='python3 scripts/test_hotfix120.py': errors.append('test:hotfix120 script missing or unexpected')
+ if scripts.get('test:hotfix121')!='python3 scripts/test_hotfix121.py': errors.append('test:hotfix121 script missing or unexpected')
+ if scripts.get('test:hotfix122')!='python3 scripts/test_hotfix122.py': errors.append('test:hotfix122 script missing or unexpected')
+ if scripts.get('test:hotfix123')!='python3 scripts/test_hotfix123.py': errors.append('test:hotfix123 script missing or unexpected')
+ if scripts.get('test:hotfix124')!='python3 scripts/test_hotfix124.py': errors.append('test:hotfix124 script missing or unexpected')
+ if 'npm run test:hotfix124' not in scripts.get('check:release',''): errors.append('check:release missing Hotfix12.4 gate')
  if scripts.get('test:hotfix1183')!='python3 scripts/test_hotfix1183.py': errors.append('test:hotfix1183 script missing or unexpected')
  if scripts.get('test:hotfix119')!='python3 scripts/test_hotfix119.py': errors.append('test:hotfix119 script missing or unexpected')
  if scripts.get('test:hotfix1191')!='python3 scripts/test_hotfix1191.py': errors.append('test:hotfix1191 script missing or unexpected')
@@ -128,7 +148,7 @@ except Exception as e: errors.append(f'R3 style validation: {e}')
 try:
  db=sqlite3.connect(':memory:');migrations=sorted((root/'migrations').glob('*.sql'))
  if len(migrations)<56: errors.append(f'expected at least 56 migrations, found {len(migrations)}')
- if not migrations or migrations[-1].name!='0056_v102_hotfix119_d1_rows_read_optimization.sql': errors.append('latest migration must be 0056_v102_hotfix119_d1_rows_read_optimization.sql')
+ if not migrations or migrations[-1].name!='0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql': errors.append('latest migration must be 0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql')
  for m in migrations: db.executescript(m.read_text())
  counts['tables']=db.execute("select count(*) from sqlite_master where type='table' and name not like 'sqlite_%'").fetchone()[0]
  counts['skills']=db.execute('select count(*) from skills').fetchone()[0]
@@ -207,8 +227,8 @@ try:
  # V0.9 R2 reward catalogue and idempotent entitlement schema.
  counts['reward_games']=db.execute("select count(*) from reward_game_catalog where enabled=1").fetchone()[0]
  if counts['reward_games']!=8: errors.append(f'expected 8 enabled reward games, found {counts["reward_games"]}')
- for url, in db.execute("select url from reward_game_catalog"):
-  if not url.startswith('https://poki.com/en/g/'): errors.append(f'non-Poki reward URL seeded: {url}')
+ for url,enabled in db.execute("select url,enabled from reward_game_catalog"):
+  if enabled and not url.startswith('/rewards/game?game='): errors.append(f'non-embedded enabled reward URL seeded: {url}')
  for t in ['reward_game_catalog','daily_game_rewards']:
   if not db.execute("select 1 from sqlite_master where type='table' and name=?",(t,)).fetchone(): errors.append(f'V0.9 R2 reward table missing: {t}')
 except Exception as e: errors.append(f'SQL migration validation: {e}')
@@ -390,7 +410,7 @@ need('migrations/0022_v08_exam_wordbooks_training.sql','vocabulary_collections',
 need('components/vocabulary/vocabulary-wordbooks.tsx','Daily Learning assignment is managed by Tenant Admin','TXT / CSV import, word-book creation and Daily Learning assignment are not exposed in Student view.','Custom word books')
 need('components/student-vocabulary-manager.tsx','＋ Add word / phrase','Review due')
 need('app/api/student/vocabulary/import/route.ts','bulk import is managed by Tenant Admin')
-trainer_v08=need('components/vocabulary/vocabulary-daily-trainer.tsx','Listen & read aloud','Record pronunciation','Stop & check','Microphone required','Record again','Listen & write','Definition → spelling','Use in a sentence')
+trainer_v08=need('components/vocabulary/vocabulary-daily-trainer.tsx','Chinese meaning · listen & read aloud','Record pronunciation','Stop & check','Microphone required','Record again','Listen & spell','Choose the English definition','Complete the sentence','spellingRepetitions','New learning','Review')
 if 'I read it aloud' in trainer_v08: errors.append('Daily Vocabulary pronunciation still contains the old self-confirmation bypass')
 if 'mode===\"pronounce\"?\"Record again\"' not in trainer_v08: errors.append('Pronunciation failures must force Record again')
 need('app/api/student/vocabulary/training/pronunciation/route.ts','A real microphone recording is required','matchScore','score>=85','ensureCollectionAccess','recordTrainingAttempt','vocabulary_pronunciation_stt')
@@ -424,9 +444,9 @@ need('app/api/student/writing/submissions/route.ts','versionNumber','prompt_titl
 need('app/api/student/writing/submissions/[id]/route.ts','prompt_body_snapshot','prompt_title_snapshot')
 planner=need('lib/student/planner.ts','daily-cache-v12-eligible-before-limit','getTenantDailyTaskPolicy','daily-task-lesson-filter','CANDIDATE_RETURN_LIMIT','ensureTodayPlan')
 if "FROM writing_submissions recent_write" not in planner or "recent_write.passed=1" not in planner: errors.append('Writing planner does not apply passed-submission cooldown evidence')
-if 'its task choices are cached' not in planner: errors.append('Daily planner must cache generated task choices')
+if 'task choices are locked and reused unchanged' not in planner: errors.append('Daily planner must lock generated task choices')
 deploy=need('scripts/deploy.sh','ensure_queue(){','code:[[:space:]]*11009','already[[:space:]]+(taken|exists)','continuing idempotently')
-need('lib/jobs/dispatch.ts',"activity_type='writing'","task_date>?",'sgDate')
+need('lib/jobs/dispatch.ts','completeMatchingTasks(env.DB,childId,"writing"')
 if 'wrangler queues create "$name"' not in deploy: errors.append('Deploy queue ensure helper is not authoritative/conflict-tolerant')
 try:
  r4db=sqlite3.connect(':memory:')
@@ -438,11 +458,19 @@ try:
 except Exception as e: errors.append(f'R4 writing schema validation: {e}')
 
 # Daily reward regression guards.
-need('migrations/0024_v09_daily_game_rewards.sql','reward_game_catalog','daily_game_rewards','https://poki.com/en/g/2048','https://poki.com/en/g/monkey-mart')
+need('migrations/0024_v09_daily_game_rewards.sql','reward_game_catalog','daily_game_rewards')
+need('migrations/0058_v102_hotfix122_embedded_reward_games.sql','game_minutes','em-memory-garden','em-reaction-sprint','enabled=0')
+need('migrations/0059_v102_hotfix123_effective_study_time.sql','learner_study_sessions','client_idle_count','idle_count','idx_learner_study_sessions_child_date')
+need('components/effective-study-time-tracker.tsx','IDLE_MS=60_000','pendingQuietSeconds','registerIdle','idleCount','mediaIsPlaying','voiceIsLive')
+need('app/api/student/study-time/route.ts','reportedIdle','acceptedIdle','client_idle_count','idle_count')
+need('app/api/student/progress/calendar/route.ts','SUM(active_seconds) study_seconds','SUM(idle_count) idle_count','idleCount')
+need('components/learning-progress-calendar.tsx','effective study time and idle episodes','Idle {cell.record?.idleCount||0}×')
 need('lib/student/tasks.ts','maybeGrantEnglishDailyReward','completeMatchingTasks')
 need('app/api/student/science/daily/complete/route.ts','rewardUnlocked:false','Science session')
-need('components/daily-game-reward.tsx','Play one game','/api/student/rewards/play','daily-game-reward-unlocked','Poki')
-need('app/api/student/rewards/play/route.ts','ORDER BY RANDOM()','hostname!=="poki.com"',"status='used'")
+need('components/daily-game-reward.tsx','Play one game','/rewards/game?rewardId=','daily-game-reward-unlocked','current tab')
+need('components/reward-game-workspace.tsx','EmbeddedRewardGame','expiresAt','Time&apos;s up!','router.replace')
+need('components/embedded-reward-games.tsx','MemoryGame','MathGame','WordGame','ReactionGame')
+need('app/api/student/rewards/play/route.ts','ORDER BY RANDOM()','/rewards/game?game=',"status='used'",'game_minutes','expiresAt')
 
 # R8 Learn availability + original syllabus-aligned Writing/Speaking expansion.
 need('migrations/0027_v09_r8_learn_availability_speaking_writing.sql','tenant_learn_availability','r8-write-p6-speak-up','r8-speak-p6-public-spaces','English Mastery original')
@@ -598,11 +626,11 @@ need('lib/vocabulary/collections.ts','listTenantCollectionItems','updateTenantCu
 
 # V1.0.2 Hotfix 11.3 Tenant-only word books + D1-safe Today planner.
 need('migrations/0052_v102_hotfix113_tenant_wordbooks_planner.sql','owner_child_id = NULL','tenant-default','idx_vocab_collections_tenant_stage')
-need('lib/student/planner.ts','instr(metadata_json,?)=0','Daily vocabulary assignment is controlled only by Tenant Admin policy','clearStaleTodaySelection')
+need('lib/student/planner.ts','Persisted daily missions are immutable','Daily vocabulary assignment is controlled only by Tenant Admin policy','task choices are locked and reused unchanged')
 need('app/api/student/plan/route.ts','daily-fallback-v4','SELECT DISTINCT activity_type','today-bounded')
 need('app/api/student/vocabulary/training/settings/route.ts','policyLocked:true','Daily vocabulary word books are assigned by Tenant Admin')
 need('components/vocabulary/vocabulary-wordbooks.tsx','Daily Learning assignment is managed by Tenant Admin')
-need('components/tenant-learn-settings.tsx','Use for daily learning','Students cannot override this assignment')
+need('components/tenant-learn-settings.tsx','Use for daily learning','Students cannot change the word book')
 if ' LIKE ' in (root/'lib/student/planner.ts').read_text(errors='ignore').upper() or ' GLOB ' in (root/'lib/student/planner.ts').read_text(errors='ignore').upper(): errors.append('Hotfix11.3 planner must not use LIKE/GLOB')
 if 'Use for daily learning' in (root/'components/vocabulary/vocabulary-wordbooks.tsx').read_text(errors='ignore'): errors.append('Student word-book view still exposes Use for daily learning')
 
@@ -620,8 +648,8 @@ need('lib/jobs/dispatch.ts','eventType:"source_extracted"','extractionMethod','e
 need('lib/content/source-domain.ts','parseModelJson','source lesson generation')
 need('lib/browser/speech-recognition.ts','getSpeechRecognitionCtor','SpeechRecognitionLike')
 need('lib/student/speaking-daily.ts','REQUIRED_MODES','passedModes','progress.completed','completeMatchingTasks')
-need('lib/settings/learning-policy.ts','DEFAULT_LESSON_REPEAT_COOLDOWN_DAYS=7','getTenantLessonRepeatCooldownDays')
-need('components/tenant-learn-settings.tsx','Lesson repeat cooldown','default is 7 days')
+need('lib/settings/learning-policy.ts','DEFAULT_LESSON_REPEAT_COOLDOWN_DAYS=7','Math.max(7,Math.min(90,n))','getTenantLessonRepeatCooldownDays')
+need('components/tenant-learn-settings.tsx','Lesson repeat cooldown','minimum and default is 7 days','min={7} max={90}')
 need('app/learn/read/[id]/page.tsx','"use client"','StudentReader')
 need('app/api/student/content/[id]/route.ts','isLessonVisible(env.DB,tenantId,level,"read",id,session.childId)')
 need('components/student-plan.tsx','prefetch={false}','No eligible lesson is available under the current Tenant policy/cooldown.')
@@ -660,7 +688,12 @@ _planner=(root/'lib/student/planner.ts').read_text(errors='ignore')
 if 'daily-cache-v12-eligible-before-limit' not in _planner: errors.append('Hotfix11.8.3 planner version missing')
 if 'restoreTodayCompletedAssignments' not in _planner: errors.append('Hotfix11.8.2 same-day completion recovery missing')
 if "learned.status='completed' AND learned.progress_percent>=100" not in _planner: errors.append('Hotfix11.8.2 Reading/Listening cooldown is not completion-only')
-if "recent.status='done'" not in _planner: errors.append('Hotfix11.8.2 daily-task cooldown must require PASS/done')
+if "Math.max(7,cooldownDays)" not in _planner: errors.append('Hotfix12.4.4 planner must enforce a hard minimum 7-day lesson cooldown')
+for _activity in ('reading','listening','speaking','writing'):
+    _marker=f"recent.activity_type='{_activity}' AND recent.activity_id=c.id"
+    _pos=_planner.find(_marker)
+    if _pos < 0 or 'recent.task_date>=?' not in _planner[_pos:_pos+220]: errors.append(f'Hotfix12.4.4 {_activity} assignment cooldown missing')
+    elif "recent.status='done'" in _planner[_pos:_pos+220]: errors.append(f'Hotfix12.4.4 {_activity} cooldown still depends on completion')
 _m55=(root/'migrations/0055_v102_hotfix118_speaking_cooldown.sql').read_text(errors='ignore')
 if "task_date>=date('now','+8 hours')" in _m55: errors.append('0055 still destructively rewrites same-day completed tasks')
 
@@ -674,6 +707,23 @@ for _name in ['readingCandidates','listeningCandidates','speakingCandidates','wr
 if 'dailyLimitRelaxed:Boolean(r.daily_limit_relaxed)' not in _planner: errors.append('Hotfix11.8.3 Reading fallback metadata missing')
 if 'dailyLimitRelaxed:Boolean(l.daily_limit_relaxed)' not in _planner: errors.append('Hotfix11.8.3 Listening fallback metadata missing')
 
+# Hotfix 12.1 immutable Daily Mission + Writing PASS repair.
+_h121_planner=(root/'lib/student/planner.ts').read_text(errors='ignore')
+_h121_plan=(root/'app/api/student/plan/route.ts').read_text(errors='ignore')
+_h121_tasks=(root/'lib/student/tasks.ts').read_text(errors='ignore')
+_h121_admin=(root/'app/api/admin/learn-settings/route.ts').read_text(errors='ignore')
+_h121_stage=(root/'app/api/admin/content/[id]/stage/route.ts').read_text(errors='ignore')
+_h121_dispatch=(root/'lib/jobs/dispatch.ts').read_text(errors='ignore')
+if 'daily-locked-v14-hard-7d-assignment-cooldown' not in _h121_planner: errors.append('Current immutable planner marker missing')
+for _m in ['Persisted daily missions are immutable','Every persisted task is current','rows.length === 0 && writingScheduledForDate']:
+ if _m not in _h121_planner: errors.append(f'Hotfix12.1 planner invariant missing: {_m}')
+if 'repairTodayWritingTaskCompletion' not in _h121_plan or 'repair_today_writing' not in _h121_plan: errors.append('Hotfix12.1 Writing PASS self-heal is not wired to Today plan')
+for _m in ['recoveredAfterPlannerRefresh','w.prompt_id=t.activity_id','datetime(t.created_at)>datetime']:
+ if _m not in _h121_tasks: errors.append(f'Hotfix12.1 Writing recovery marker missing: {_m}')
+if 'DELETE FROM learning_tasks' in _h121_admin: errors.append('Admin Learning Settings still invalidates persisted Daily Mission cards')
+if 'DELETE FROM learning_tasks' in _h121_stage: errors.append('Content stage change still invalidates persisted Daily Mission cards')
+if 'task_date>?' in _h121_dispatch and 'learning_tasks' in _h121_dispatch: errors.append('Writing PASS still deletes future persisted task cards')
+
 # Hotfix 11.8.1 vocabulary pronunciation TypeScript contract.
 _vtypes=(root/'lib/vocabulary/types.ts').read_text(errors='ignore')
 _vtrainer=(root/'components/vocabulary/vocabulary-daily-trainer.tsx').read_text(errors='ignore')
@@ -681,6 +731,33 @@ if 'export type PronunciationResult' not in _vtypes: errors.append('Pronunciatio
 if 'export type VocabularyTrainingProgress' not in _vtypes: errors.append('VocabularyTrainingProgress shared type missing')
 if 'import type { PronunciationResult, VocabularyDetail } from "@/lib/vocabulary/types";' not in _vtrainer: errors.append('VocabularyDailyTrainer PronunciationResult import missing')
 
+
+# V1.0.2 Hotfix 12.4 · Vocabulary Specialist invariants.
+need('migrations/0060_v102_hotfix124_vocabulary_specialist.sql','tenant_vocabulary_specialist_policy','vocabulary_specialist_sessions','vocabulary_specialist_wordbook','vocabulary_specialist_question_attempts','vocabulary_specialist_cloze_attempts')
+need('lib/vocabulary-specialist/generate.ts','400–500','{{1}}','generateSpecialistQuestion','generateSpecialistCloze')
+need('app/api/student/vocabulary-specialist/route.ts','add_word','answer_question','generate_cloze','submit_cloze','correctCount===items.length')
+need('components/vocabulary-specialist/vocabulary-specialist-workspace.tsx','PSLE-style','400–500','5 synonym/near-synonym choices and 5 direct fill-ins')
+need('app/api/admin/vocabulary-specialist/route.ts','dailyWords','sessionId')
+need('lib/vocabulary-specialist/generate.ts','const targetIsCorrect = randomBoolean()','The target term (word or phrase) MUST NOT be the correct answer','five synonym-choice terms and five fill-in terms','const chosen = shuffled(unique).slice(0, 10)')
+need('lib/vocabulary-specialist/policy.ts','MIN_VOCABULARY_SPECIALIST_DAILY_WORDS = 10')
+need('components/vocabulary-specialist/vocabulary-specialist-workspace.tsx','Blanks 1–5:','Blanks 6–10:','vocabSpecialChoice')
+need('components/vocabulary-specialist/tenant-vocabulary-specialist-admin.tsx','Minimum 10 vocabulary terms','min={10}')
+
+# Hotfix 12.4.5: Speaking's three tabs are a persisted daily bundle with their
+# own per-mode >=7-day rotation.  The old prompt-cache catalogue must not choose
+# the first item every day.
+need('migrations/0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql','speaking_daily_prompt_assignments','idx_speaking_daily_prompt_rotation','hf1245-speak-p5-practice-time','hf1245-speak-p6-balance')
+need('lib/speaking/daily-prompt-assignment.ts','ensureDailySpeakingPromptAssignments','Math.max(7, await getTenantLessonRepeatCooldownDays','speaking_daily_prompt_assignments assigned','speaking_daily_mode_progress attempted',"recent_task.activity_type=\'speaking\'")
+_h1245_prompts=need('app/api/student/speaking/prompts/route.ts','ensureDailySpeakingPromptAssignments','private, no-store','rotation:')
+if 'ensureSpeakingModeCache' in _h1245_prompts: errors.append('Hotfix12.4.5 Speaking route still serves old first-item cache catalogue')
+need('scripts/test_hotfix1245.py','HOTFIX 12.4.5 PASS')
+
 if errors:
  print('FAIL');[print('-',e) for e in errors];sys.exit(1)
 print('PASS')
+
+need('migrations/0057_v102_hotfix120_vocab_daily_new_review.sql','vocabulary_new_words','vocabulary_review_words','vocabulary_spelling_repetitions','vocabulary_daily_group_completions')
+
+# Hotfix 12.4.4: word/phrase specialist input + hard assignment-based 7-day Daily Mission cooldown.
+need('scripts/test_hotfix1244.py','HOTFIX 12.4.4 PASS')
+need('lib/vocabulary-specialist/generate.ts','term.length > 90','words.length > 12','word or phrase')

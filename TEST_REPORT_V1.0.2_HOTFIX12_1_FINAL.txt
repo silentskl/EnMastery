@@ -1,0 +1,30 @@
+English Mastery V1.0.2 Hotfix 12.1 - Final Test Report
+
+PASS  scripts/test_hotfix121.py
+      Daily Mission remains immutable across planner/application version changes, Tenant Admin
+      Learning Settings changes and content-stage changes. Same-day Writing PASS recovery repairs
+      an upgrade-regenerated Writing todo card without adopting unrelated prior Writing work.
+
+PASS  scripts/test_d1_migrations.py
+      D1 migration compatibility regression passed.
+
+PASS  scripts/validate_release.py
+      57 migrations; 107 application tables; release structural/schema validation passed.
+
+PASS  TypeScript isolated syntax transpilation
+      lib/student/planner.ts
+      app/api/student/plan/route.ts
+      lib/student/tasks.ts
+      app/api/admin/learn-settings/route.ts
+      app/api/admin/content/[id]/stage/route.ts
+      lib/jobs/dispatch.ts
+
+Database
+- No new migration in Hotfix 12.1.
+- Schema remains 57 migrations / 107 application tables / 17 maintenance triggers.
+
+Environment note
+Full dependency-based TypeScript typecheck, Next build and OpenNext/Cloudflare build were not
+claimed in this container because dependency installation timed out and a complete node_modules
+installation was unavailable. The release-specific Python gates and isolated TypeScript syntax
+transpilation above passed.

@@ -1,3 +1,41 @@
+## V1.0.2 Hotfix 12.4.5 — 2026-09-25
+
+- Fix Daily Speaking's three tabs bypassing the 7-day no-repeat rule. Conversation, Reading Aloud and Stimulus now each persist one daily prompt and independently exclude the previous seven days.
+- Stop Daily Speaking from choosing the first item of the old prompt cache every day; API responses are now day-specific and `private, no-store`.
+- Add migration 0061 with `speaking_daily_prompt_assignments`, history backfill and enough original P5/P6 prompts to sustain a strict seven-day rotation.
+- If a mode has no eligible prompt under the hard cooldown, do not silently repeat blocked content.
+
+## V1.0.2 Hotfix 12.4.4 — 2026-09-24
+
+- Vocabulary Specialist now accepts a single English word or a multi-word phrase as one vocabulary term (up to 12 words / 90 characters).
+- MCQ generation, synonym-choice generation, direct-fill cloze, de-duplication, word book and history preserve phrases intact instead of splitting on spaces.
+- Daily Mission Listen / Speak / Read / Write lessons now have a hard minimum 7-day assignment cooldown: if a lesson appeared on a Daily Mission, it cannot appear again during the following seven days whether it was completed, started or left untouched.
+- Existing generated Daily Missions remain immutable; the stricter rule applies when generating dates that do not yet have a mission.
+
+
+## V1.0.2 Hotfix 12.4.3 — 2026-09-19
+- Deployment now detects incomplete `node_modules` by checking required local CLIs instead of the directory alone.
+- Missing TypeScript/Next/OpenNext/Wrangler dependencies trigger a resilient reinstall with devDependencies included.
+- Added regression coverage for the dependency-readiness gate.
+
+## V1.0.2 Hotfix 12.4.2
+- Fix Vocabulary Specialist TypeScript literal-union widening for `StoredClozeItem.kind`.
+- Add a release regression guard for the type narrowing.
+- No schema or runtime behavior change.
+
+# Hotfix 12.4
+
+- Add Vocabulary Specialist under Practice: learner-entered words generate original PSLE-style four-option questions through the existing Tenant ModelBridge integration.
+- Add Tenant Admin daily target by stage (1–30 words, default 10) with per-day target snapshotting.
+- Generate a 400–500 word final cloze after all daily MCQs are answered; PASS requires every blank to be correct.
+- Add an independent learner specialist word book and full MCQ/cloze learning history for learners and Tenant Admin.
+- Add migration 0060 and D1-safe regression coverage; existing Daily Mission and Vocabulary SRS flows remain unchanged.
+
+# Hotfix 12.3.1
+
+- Fix TypeScript `TS2352` in the student progress calendar by returning a plain `StudyRow[]` from the optional study-time query fallback instead of casting `{results: []}` to `D1Result<StudyRow>`.
+- No schema change.
+
 # V1.0.2 Hotfix 11.9.1
 
 - Add a shared Back button across all Learn and Practice routes with browser-history navigation and safe section fallbacks.
@@ -319,3 +357,41 @@ Layout-preserving Duolingo-inspired color and progress visualization refresh.
 - Added D1-safe incremental rollups for daily learning progress, vocabulary review, Tenant AI usage and Work Queue status.
 - Replaced growing candidate-set random sorting with indexed cursor sampling for Question Bank, Cloze and vocabulary practice.
 - Removed O(n²) Work Queue position counting and added covering indexes/EXPLAIN release gates for Reading History and other hot paths.
+
+## V1.0.2 Hotfix 12.0
+- Split Daily Vocabulary into New Learning and Review groups with independently configurable daily counts.
+- Added the four-stage vocabulary flow: Chinese meaning + read-aloud, repeated dictation, English-definition choice and cloze.
+- Re-defined Review window / Required reviews as review appearances required inside the configured post-learning window.
+- Added migration `0057_v102_hotfix120_vocab_daily_new_review.sql`.
+
+## V1.0.2 Hotfix 12.1
+- Made persisted Daily Learning Missions immutable after first materialisation; app/planner upgrades no longer reselect Today tasks.
+- Tenant Admin Learning Settings and content-stage changes now apply prospectively and do not delete already-generated daily cards.
+- Added conservative same-day Writing PASS recovery for upgrade-regenerated todo cards.
+- Writing PASS no longer deletes already-generated future Writing cards.
+- No database migration; schema remains at 57 migrations / 107 application tables.
+
+## V1.0.2 Hotfix 12.2
+- Moved Daily Reward games into the English Mastery application shell; reward play no longer uses browser popups/new tabs.
+- Added eight built-in reward entries across Memory, Numbers, Words and Reflex mini-game engines so the game experience has no third-party iframe dependency.
+- Game time is frozen when a reward starts and survives page refresh; expiry immediately stops the game and requires Confirm to return to learning.
+- Added migration `0058_v102_hotfix122_embedded_reward_games.sql`.
+
+## V1.0.2 Hotfix 12.3
+- Added effective daily study-time tracking that starts only after genuine learner activity; merely leaving a learning page open is not counted.
+- A continuous 60-second inactive period is excluded in full from study time; audio/video playback, YouTube playback, text/keyboard interaction, microphone recording and speech recognition keep the session active.
+- Added daily idle/away count. One continuous idle episode counts once, and a later idle after resumed activity counts again.
+- Added effective study time and `Idle N×` to the Daily Progress calendar.
+- Added migration `0059_v102_hotfix123_effective_study_time.sql` and delta/idempotency guards for client heartbeats.
+
+## V1.0.2 Hotfix 12.4.1
+- Vocabulary Specialist MCQs no longer make the learner-entered target word the answer every time; target-correct and target-distractor modes are selected randomly and option order remains shuffled.
+- Replaced the final all-fill cloze with one 400–500 word mixed cloze: 5 synonym/near-synonym multiple-choice blanks plus 5 direct fill-in blanks.
+- Final mixed cloze selects exactly 10 words from the completed daily set and still requires 100% (10/10) to PASS.
+- Vocabulary Specialist daily target now has an application-level minimum of 10 words and maximum of 30; unfinished same-day legacy sessions below 10 are raised to 10.
+- Existing Hotfix 12.4 all-fill historical records remain compatible; no new D1 migration is required.
+
+## V1.0.2 Hotfix 12.4.6.1
+- Repaired release-gate source markers for Speaking Web Speech de-duplication and duplicate start protection after the 12.4.6 image-display refactor.
+- Raised the stimulus-image fallback hint to the project minimum 17px font size.
+- No schema change; migration 0061 remains latest.

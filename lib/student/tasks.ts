@@ -46,6 +46,40 @@ async function removeStaleAdaptiveTask(db:D1Database,childId:string,date:string,
  return true;
 }
 
+
+export async function repairTodayWritingTaskCompletion(db:D1Database,childId:string){
+ const date=sgDate();
+ const row=await db.prepare(`SELECT t.id task_id,t.activity_id current_activity_id,t.metadata_json,t.created_at,t.xp_reward,
+      w.prompt_id passed_prompt_id,COALESCE(w.passed_at,w.updated_at) passed_at,COALESCE(w.prompt_title_snapshot,c.title,'Writing task') prompt_title
+    FROM learning_tasks t
+    JOIN writing_submissions w ON w.child_id=t.child_id AND w.passed=1
+    LEFT JOIN content_items c ON c.id=w.prompt_id
+    WHERE t.child_id=? AND t.task_date=? AND t.cadence='daily' AND t.source='adaptive'
+      AND t.activity_type='writing' AND t.status!='done'
+      AND date(COALESCE(w.passed_at,w.updated_at),'+8 hours')=?
+      AND (
+        w.prompt_id=t.activity_id
+        OR (
+          datetime(t.created_at)>datetime(COALESCE(w.passed_at,w.updated_at))
+          AND EXISTS (SELECT 1 FROM learning_tasks prior
+            WHERE prior.child_id=t.child_id AND prior.task_date=t.task_date AND prior.cadence='daily'
+              AND prior.source='adaptive' AND prior.id<>t.id
+              AND datetime(prior.created_at)<=datetime(COALESCE(w.passed_at,w.updated_at)))
+        )
+      )
+    ORDER BY CASE WHEN w.prompt_id=t.activity_id THEN 0 ELSE 1 END,datetime(COALESCE(w.passed_at,w.updated_at)) DESC
+    LIMIT 1`).bind(childId,date,date).first<{task_id:string;current_activity_id:string|null;metadata_json:string|null;created_at:string;xp_reward:number;passed_prompt_id:string;passed_at:string;prompt_title:string}>();
+ if(!row)return false;
+ if(row.current_activity_id!==row.passed_prompt_id){
+  let metadata:Record<string,unknown>={};try{metadata=row.metadata_json?JSON.parse(row.metadata_json) as Record<string,unknown>:{};}catch{}
+  metadata={...metadata,href:`/learn/write?prompt=${encodeURIComponent(row.passed_prompt_id)}`,recoveredAfterPlannerRefresh:true,recoveredPassedAt:row.passed_at};
+  await db.prepare("UPDATE learning_tasks SET activity_id=?,title=?,metadata_json=? WHERE id=? AND child_id=? AND status!='done'")
+   .bind(row.passed_prompt_id,`Write · ${row.prompt_title}`,JSON.stringify(metadata),row.task_id,childId).run();
+ }
+ await completeMatchingTasks(db,childId,"writing",row.passed_prompt_id,true);
+ return true;
+}
+
 /**
  * Reconcile today's cards only from evidence created on the same Singapore day.
  * IMPORTANT: every activity-specific evidence lookup is isolated. Historical or

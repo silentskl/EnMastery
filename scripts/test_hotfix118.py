@@ -40,7 +40,7 @@ planner=need('lib/student/planner.ts',
     'Listening · No eligible lesson available',
     'getTenantLessonRepeatCooldownDays',
     "learned.status='completed' AND learned.progress_percent>=100",
-    "recent.status='done'",
+    "Math.max(7,cooldownDays)",
 )
 for forbidden in ['choose a reading lesson','choose a listening lesson']:
     if forbidden in planner.lower():
@@ -51,9 +51,9 @@ if 'WHERE NOT EXISTS (SELECT 1 FROM writing_submissions w WHERE w.prompt_id=c.id
     errors.append('passed Writing prompts are permanently excluded instead of becoming reusable after cooldown')
 
 # 3) Cooldown is Tenant configurable, default 7, and applies to all stage rotations.
-policy=need('lib/settings/learning-policy.ts','DEFAULT_LESSON_REPEAT_COOLDOWN_DAYS=7','clampLessonRepeatCooldownDays','Math.max(0,Math.min(90,n))','getTenantLessonRepeatCooldownDays')
-api=need('app/api/admin/learn-settings/route.ts','lessonRepeatCooldownDays','previousCooldownDays!==lessonRepeatCooldownDays','Tenant-wide')
-ui=need('components/tenant-learn-settings.tsx','Lesson repeat cooldown','lessonRepeatCooldownDays','default is 7 days','min={0} max={90}')
+policy=need('lib/settings/learning-policy.ts','DEFAULT_LESSON_REPEAT_COOLDOWN_DAYS=7','clampLessonRepeatCooldownDays','Math.max(7,Math.min(90,n))','getTenantLessonRepeatCooldownDays')
+api=need('app/api/admin/learn-settings/route.ts','lessonRepeatCooldownDays','Persisted daily missions are immutable','never delete today')
+ui=need('components/tenant-learn-settings.tsx','Lesson repeat cooldown','lessonRepeatCooldownDays','minimum and default is 7 days','min={7} max={90}')
 
 # 4) Speaking completion is a three-mode score gate, never a tab-click gate.
 speaking=need('lib/student/speaking-daily.ts',
@@ -117,4 +117,4 @@ if errors:
     print('HOTFIX11.8 TEST FAIL')
     for e in errors: print('-',e)
     sys.exit(1)
-print('HOTFIX11.8 TEST PASS: concrete Daily resources, configurable 7-day lesson cooldown, scored three-part Speaking gate, bounded Reading navigation and shared Web Speech types validated')
+print('HOTFIX11.8 TEST PASS: concrete Daily resources, hard-minimum 7-day lesson cooldown, scored three-part Speaking gate, bounded Reading navigation and shared Web Speech types validated')

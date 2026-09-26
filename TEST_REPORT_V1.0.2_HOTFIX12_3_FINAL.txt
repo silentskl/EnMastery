@@ -1,0 +1,53 @@
+English Mastery v1.0.2 Hotfix 12.3 - Final Test Report
+Date: 2026-09-02 (Singapore)
+
+Scope
+- Effective daily study time.
+- 60-second inactivity exclusion.
+- Daily idle/away episode count.
+- Calendar aggregation/display.
+- HTML media, YouTube, microphone and browser SpeechRecognition activity recognition.
+
+PASS - python3 scripts/test_hotfix123.py
+  Effective study-time/idle source, API, calendar, speech-recognition and migration contracts validated.
+
+PASS - python3 scripts/test_d1_migrations.py
+  Migrations 0043-0059 execute under SQLITE_LIMIT_COMPOUND_SELECT=3.
+  0059 learner_study_sessions active/idle columns and index validated.
+
+PASS - prior Hotfix regression scripts
+  scripts/test_hotfix5.py through scripts/test_hotfix123.py all PASS.
+
+PASS - python3 scripts/audit_styles.py
+  CSS rules/classes: 577 classes.
+  Minimum explicit CSS font-size: 17px.
+
+PASS - modified TypeScript/TSX syntax transpilation
+  components/effective-study-time-tracker.tsx
+  app/api/student/study-time/route.ts
+  app/api/student/progress/calendar/route.ts
+  components/learning-progress-calendar.tsx
+  lib/client/progress-calendar.ts
+  lib/browser/speech-recognition.ts
+  components/question-bank/session-runner.tsx
+  components/student-listening-player.tsx
+  components/app-shell.tsx
+
+Database after migration
+- 59 migrations
+- 108 application tables
+- 17 maintenance/rollup triggers
+
+Behavioral rules
+- Simply opening a study page does not count study time.
+- A quiet interval is pending until another valid activity arrives before 60 seconds.
+- If 60 continuous seconds pass without valid activity, that whole quiet interval is discarded and exactly one idle episode is added.
+- Staying idle does not repeatedly increment the counter.
+- After activity resumes, a later independent 60-second idle period increments idle again.
+- Valid activity includes mouse/touch/keyboard/text input, supported audio/video/YouTube playback, microphone recording and browser speech recognition.
+- Reward-game routes are excluded from study time.
+- Daily calendar shows effective study duration plus Idle N×.
+
+Environment note
+- The release tree does not contain node_modules, so a full dependency-based Next/OpenNext build is not claimed here.
+- Modified TS/TSX files passed TypeScript transpile syntax diagnostics using the available TypeScript runtime.

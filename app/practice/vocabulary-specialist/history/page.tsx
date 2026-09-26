@@ -1,0 +1,1 @@
+import{PageIntro}from"@/components/ui";import{VocabularySpecialistHistory}from"@/components/vocabulary-specialist/vocabulary-specialist-history";export default function Page(){return <><PageIntro eyebrow="Vocabulary Specialist" title="Learning history" description="Review every generated question, answer and final cloze attempt by date."/><VocabularySpecialistHistory/></>}

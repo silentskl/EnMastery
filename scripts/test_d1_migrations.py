@@ -53,6 +53,11 @@ if not errors:
             '0054_v102_hotfix115_daily_plan_resource_indexes.sql',
             '0055_v102_hotfix118_speaking_cooldown.sql',
             '0056_v102_hotfix119_d1_rows_read_optimization.sql',
+            '0057_v102_hotfix120_vocab_daily_new_review.sql',
+            '0058_v102_hotfix122_embedded_reward_games.sql',
+            '0059_v102_hotfix123_effective_study_time.sql',
+            '0060_v102_hotfix124_vocabulary_specialist.sql',
+            '0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql',
         ]:
             sql = (root / 'migrations' / name).read_text()
             executable = '\n'.join(line.split('--',1)[0] for line in sql.splitlines())
@@ -108,6 +113,46 @@ if not errors:
         errors.append(f'0056 expected 17 total rollup/maintenance triggers, got {trigger_count}')
     if 'sample_key' not in {row[1] for row in db.execute('PRAGMA table_info(question_bank_items)')}:
         errors.append('0056 missing question_bank_items.sample_key')
+    reward_cols={row[1] for row in db.execute('PRAGMA table_info(daily_game_rewards)')}
+    if 'game_minutes' not in reward_cols:
+        errors.append('0058 missing daily_game_rewards.game_minutes')
+    embedded=db.execute("SELECT COUNT(*) FROM reward_game_catalog WHERE enabled=1 AND url LIKE '/rewards/game?game=%'").fetchone()[0]
+    if embedded!=8:
+        errors.append(f'0058 expected 8 enabled embedded reward games, got {embedded}')
+    poki_enabled=db.execute("SELECT COUNT(*) FROM reward_game_catalog WHERE enabled=1 AND id LIKE 'poki-%'").fetchone()[0]
+    if poki_enabled:
+        errors.append(f'0058 left {poki_enabled} external Poki reward games enabled')
+    study_cols={row[1] for row in db.execute('PRAGMA table_info(learner_study_sessions)')}
+    study_required={'client_active_seconds','active_seconds','client_idle_count','idle_count','study_date','last_path'}
+    study_missing=study_required-study_cols
+    if study_missing:
+        errors.append(f'0059 missing effective-study columns: {sorted(study_missing)}')
+    if not db.execute("SELECT 1 FROM sqlite_master WHERE type='index' AND name='idx_learner_study_sessions_child_date'").fetchone():
+        errors.append('0059 missing learner study-date index')
+    specialist_tables=['tenant_vocabulary_specialist_policy','vocabulary_specialist_sessions','vocabulary_specialist_wordbook','vocabulary_specialist_question_attempts','vocabulary_specialist_cloze_attempts']
+    for table in specialist_tables:
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",(table,)).fetchone():
+            errors.append(f'0060 missing Vocabulary Specialist table: {table}')
+    specialist_policy=db.execute("SELECT learner_stage,daily_words FROM tenant_vocabulary_specialist_policy WHERE tenant_id='tenant-default' ORDER BY learner_stage").fetchall()
+    if len(specialist_policy)!=7 or any(int(row[1])!=10 for row in specialist_policy):
+        errors.append(f'0060 expected 7 default Vocabulary Specialist policy rows at 10 words, got {specialist_policy}')
+    if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='speaking_daily_prompt_assignments'").fetchone():
+        errors.append('0061 missing speaking_daily_prompt_assignments')
+    else:
+        assignment_cols={row[1] for row in db.execute('PRAGMA table_info(speaking_daily_prompt_assignments)')}
+        for col in ['child_id','task_date','mode','prompt_id']:
+            if col not in assignment_cols: errors.append(f'0061 speaking_daily_prompt_assignments missing {col}')
+    for level in ['P5','P6']:
+        rows=db.execute("SELECT v.body_json FROM content_items c JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version WHERE c.content_type='oral_prompt' AND c.status='published' AND c.school_level=?",(level,)).fetchall()
+        mode_counts={'conversation':0,'reading_aloud':0,'stimulus':0}
+        import json as _json
+        for (raw,) in rows:
+            try: mode=_json.loads(raw or '{}').get('mode','conversation')
+            except Exception: mode='conversation'
+            if mode not in mode_counts: mode='conversation'
+            mode_counts[mode]+=1
+        for mode,count in mode_counts.items():
+            if count<8: errors.append(f'0061 {level} {mode} pool too small for hard 7-day rotation: {count}')
 
 if errors:
     print('D1 MIGRATION COMPAT TEST FAIL')
@@ -115,4 +160,4 @@ if errors:
         print('-', error)
     sys.exit(1)
 
-print('D1 MIGRATION COMPAT TEST PASS: 0043-0056 execute under SQLITE_LIMIT_COMPOUND_SELECT=3; settings preserved; Hotfix 11.9 rollups, sampling indexes and maintenance triggers validated')
+print('D1 MIGRATION COMPAT TEST PASS: 0043-0061 execute under SQLITE_LIMIT_COMPOUND_SELECT=3; settings preserved; Hotfix 11.9 rollups plus embedded reward-game plus effective-study/idle plus Vocabulary Specialist migration validated')

@@ -25,7 +25,7 @@ for r in "${REGISTRIES[@]}"; do
   [[ $seen -eq 0 ]] && UNIQUE+=("$r")
 done
 
-INSTALL_ARGS=(install --no-audit --no-fund --fetch-retries=1 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=4000 --fetch-timeout=30000)
+INSTALL_ARGS=(install --include=dev --no-audit --no-fund --fetch-retries=1 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=4000 --fetch-timeout=30000)
 
 for registry in "${UNIQUE[@]}"; do
   echo "[deps] Trying registry: $registry"

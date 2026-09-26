@@ -121,11 +121,12 @@ export async function getTrainingSettings(db:D1Database,childId:string){
 }
 
 export type TrainingItem={id:string;detail:VocabularyDetail;mastery:number;pronunciationScore:number;recognitionScore:number;listeningScore:number;spellingScore:number;usageScore:number};
-export async function getTrainingQueue(db:D1Database,childId:string,collectionId:string,count:number,reviewPolicy?:{windowDays:number;reviewRepetitions:number;difficulty?:"adaptive"|"easy"|"medium"|"hard"}){
+export async function getTrainingQueue(db:D1Database,childId:string,collectionId:string,count:number,reviewPolicy?:{windowDays:number;reviewRepetitions:number;difficulty?:"adaptive"|"easy"|"medium"|"hard"},queueMode:"new"|"review"|"mixed"="mixed"){
   await ensureCollectionAccess(db,childId,collectionId);const n=Math.max(1,Math.min(50,Math.round(count||10)));
   const windowDays=Math.max(1,Math.min(30,Math.round(reviewPolicy?.windowDays||7))),reviews=Math.max(0,Math.min(10,Math.round(reviewPolicy?.reviewRepetitions??2))),difficulty=reviewPolicy?.difficulty||"adaptive";
   const modifier=`-${Math.max(0,windowDays-1)} days`,requiredAppearances=reviews+1;
-  const rows=await db.prepare(`SELECT v.id,v.lemma,v.entry_type,v.part_of_speech,v.details_json,
+  const modeFilter=queueMode==="new"?" AND COALESCE(ed.appearance_days,0)=0 ":queueMode==="review"?" AND COALESCE(ed.appearance_days,0)>0 AND ed.first_training_day>=date('now','+8 hours',?) AND COALESCE(ed.appearance_days,0)<? AND COALESCE(ed.last_training_day,'')<>date('now','+8 hours') ":"";
+  const sql=`SELECT v.id,v.lemma,v.entry_type,v.part_of_speech,v.details_json,
       COALESCE(tp.mastery,0) mastery,COALESCE(tp.pronunciation_score,0) pronunciation_score,COALESCE(tp.recognition_score,0) recognition_score,
       COALESCE(tp.listening_score,0) listening_score,COALESCE(tp.spelling_score,0) spelling_score,COALESCE(tp.usage_score,0) usage_score,
       CASE WHEN ed.first_training_day>=date('now','+8 hours',?) AND COALESCE(ed.appearance_days,0)<? AND COALESCE(ed.last_training_day,'')<>date('now','+8 hours') THEN 0 ELSE 1 END review_rank,
@@ -133,8 +134,10 @@ export async function getTrainingQueue(db:D1Database,childId:string,collectionId
     FROM vocabulary_collection_items ci JOIN vocabulary_items v ON v.id=ci.vocabulary_id
     LEFT JOIN vocabulary_training_progress tp ON tp.vocabulary_id=v.id AND tp.child_id=?
     LEFT JOIN vocabulary_training_rollups ed ON ed.vocabulary_id=v.id AND ed.child_id=?
-    WHERE ci.collection_id=?
-    ORDER BY review_rank,difficulty_rank,COALESCE(tp.last_trained_at,'1970-01-01'),v.id LIMIT ?`).bind(modifier,requiredAppearances,difficulty,childId,childId,collectionId,n).all<{id:string;lemma:string;entry_type:string;part_of_speech:string|null;details_json:string;mastery:number;pronunciation_score:number;recognition_score:number;listening_score:number;spelling_score:number;usage_score:number;review_rank:number}>();
+    WHERE ci.collection_id=? ${modeFilter}
+    ORDER BY review_rank,difficulty_rank,COALESCE(tp.last_trained_at,'1970-01-01'),v.id LIMIT ?`;
+  const params=queueMode==="review"?[modifier,requiredAppearances,difficulty,childId,childId,collectionId,modifier,requiredAppearances,n]:[modifier,requiredAppearances,difficulty,childId,childId,collectionId,n];
+  const rows=await db.prepare(sql).bind(...params).all<{id:string;lemma:string;entry_type:string;part_of_speech:string|null;details_json:string;mastery:number;pronunciation_score:number;recognition_score:number;listening_score:number;spelling_score:number;usage_score:number;review_rank:number}>();
   return rows.results.map(r=>{const fallback:VocabularyDetail={term:r.lemma,normalizedTerm:r.lemma.toLowerCase(),entryType:r.entry_type==="phrase"?"phrase":"word",partOfSpeech:r.part_of_speech||undefined,meanings:[{definition:r.lemma}],examples:[],synonyms:[],antonyms:[],collocations:[],wordFamily:[],grammarPatterns:[],usageNotes:[],commonMistakes:[],topicTags:[]};return{id:r.id,detail:safeJson<VocabularyDetail>(r.details_json,fallback),mastery:r.mastery||0,pronunciationScore:r.pronunciation_score||0,recognitionScore:r.recognition_score||0,listeningScore:r.listening_score||0,spellingScore:r.spelling_score||0,usageScore:r.usage_score||0} satisfies TrainingItem;});
 }
 

@@ -1,19 +1,42 @@
-English Mastery V1.0.2 Hotfix 11.9.1
-Package: english-mastery-v1.0.2-hotfix11.9.1-cloudflare-free
+English Mastery V1.0.2 Hotfix 12.4.7 — Release Manifest
+Package: english-mastery-v1.0.2-hotfix12.4.7-admin-worker-resource-optimization-cloudflare-free-englist_mastery
+Base: english-mastery-v1.0.2-hotfix12.4.6.1-speaking-stimulus-image-gatefix-cloudflare-free-englist_mastery
+Deployment: Cloudflare Workers + D1 (existing runtime/bindings retained)
+Database: no new migration; schema remains through 0061
 
-Release focus
-- Add browser-history Back navigation across all Learn and Practice routes.
-- Put Today's Learning Mission first, Learning Momentum second and Daily Progress last on the Learn page.
-- Comprehensive D1 rows-read optimisation for calendar/streak, vocabulary, Tenant AI usage, dashboard and Work Queue.
-- Indexed cursor sampling replaces unbounded random sorting in Question Bank, Cloze and vocabulary selection.
-- Reading/Listening history and Question Bank visibility use covering/index-bounded SEARCH plans.
-- Preserves every Hotfix 11.8.3 daily lesson selection and completion rule.
+Admin Worker resource optimisation
+- app/admin/(protected)/layout.tsx
+  * removes force-dynamic authenticated SSR from the Tenant Admin route group
+  * protected UI is now opened by a client TenantAuthGate after /api/admin/session validation
+  * all /api/admin/* endpoints retain server-side tenant-session enforcement
+- components/tenant-auth-gate.tsx
+  * one session validation per mounted Admin route group
+  * no automatic retry loop after transient Worker/API failure
+  * shares display identity through sessionStorage + browser event
+- components/current-user-badge.tsx
+  * reuses auth-gate identity instead of making a second /api/admin/session request
+- lib/auth/tenant.ts
+  * staff_sessions.last_seen_at heartbeat throttled to at most once per 10 minutes
+  * guarded UPDATE prevents parallel Admin API fan-out from amplifying D1 writes
+- app/api/admin/dashboard/route.ts
+  * one D1 batch of index-bounded counts / rollups
+  * removes scalar count subqueries
+  * removes the second tenantAiQuotaStatus query
 
-Database
-- 56 migrations
-- 106 application tables
-- 17 triggers
-- New migration: 0056_v102_hotfix119_d1_rows_read_optimization.sql
+Expected production effect
+- /admin HTML navigation no longer consumes Worker CPU for Next/OpenNext SSR + D1 auth.
+- one fewer session fetch on Admin load.
+- sharply fewer staff-session D1 writes when Admin pages load several resources concurrently.
+- predictable bounded D1 work for the dashboard.
 
-Release gate
-- npm run verify:release
+Regression / release gates
+- scripts/test_hotfix1247.py
+- npm run check:release includes test:hotfix1247
+- no schema migration change
+
+Validation completed in packaging environment
+- PASS scripts/test_hotfix1247.py
+- PASS scripts/test_d1_migrations.py through 0061
+- PASS scripts/validate_release.py: 61 migrations / 114 tables
+- PASS scripts/audit_styles.py; minimum explicit CSS font-size 17px
+- Full dependency-backed TypeScript/Next/OpenNext build was not run in this packaging container because node_modules are not present; deploy-time verify:release remains the final production gate.

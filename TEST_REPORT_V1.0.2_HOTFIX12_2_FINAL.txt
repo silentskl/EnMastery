@@ -1,0 +1,22 @@
+English Mastery v1.0.2 Hotfix 12.2 - Final Test Report
+Date: 2026-09-02
+
+Scope
+- Daily Reward games stay inside the English Mastery application shell.
+- No reward game uses window.open/new browser tab.
+- Built-in Memory / Numbers / Words / Reflex mini-game engines replace external reward-page launches.
+- Tenant game-time limit is frozen when the reward starts and survives refresh.
+- Expiry immediately removes the game and shows a blocking Time's up dialog.
+- Confirm exits the embedded game workspace and returns to the launching page.
+
+Validation
+PASS  scripts/test_hotfix122.py
+PASS  scripts/test_d1_migrations.py (0043-0058 under SQLITE_LIMIT_COMPOUND_SELECT=3)
+PASS  scripts/validate_release.py (58 migrations / 107 application tables)
+PASS  scripts/audit_styles.py (minimum explicit font size 17px)
+PASS  Hotfix 5 through Hotfix 12.2 Python regression suite
+PASS  TypeScript transpile/syntax check for all Hotfix 12.2 modified TS/TSX files
+
+Build environment note
+- The working container does not contain project node_modules, so a full Next.js/OpenNext dependency-based build was not claimed as executed here.
+- The release package excludes node_modules, .next, .open-next, __pycache__ and tsconfig.tsbuildinfo artifacts.

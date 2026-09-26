@@ -1,0 +1,45 @@
+English Mastery V1.0.2 Hotfix 12.4.1 — Final Validation Report
+Date: 2026-09-19
+
+SCOPE
+1. Vocabulary Specialist MCQs no longer make the learner-entered target word correct every time.
+2. Final 400–500 word exercise is a mixed cloze: 5 synonym/near-synonym choices + 5 direct fill-ins.
+3. Final PASS remains strict 100%: 10/10 correct.
+4. Daily target remains configurable, now 10–30; targets above 10 sample 10 completed words for the final passage.
+5. Existing Hotfix 12.4 all-fill historical records remain compatible; no new D1 migration.
+
+FUNCTIONAL / CONTRACT REGRESSION
+PASS — scripts/test_hotfix124.py
+PASS — scripts/test_hotfix1241.py
+PASS — target-correct / target-distractor generation contract present
+PASS — learner-entered target is forced into the distractor set in target-distractor mode when required
+PASS — four-option order remains shuffled
+PASS — mixed cloze contains exactly 5 synonym/near-synonym choice items and 5 direct fill-in items
+PASS — final passage validates 400–500 words after correct answers are filled
+PASS — mixed cloze selects exactly 10 distinct words from completed daily words
+PASS — unfinished same-day sessions below 10 are raised to a target of 10
+PASS — student history hides synonym-choice answer keys before PASS
+PASS — Tenant Admin can review mixed-cloze types/options/answers
+
+FULL PYTHON REGRESSION
+PASS — all 37 scripts/test_*.py tests, including Hotfix 5 through Hotfix 12.4.1, AI guest guard, D1 migration compatibility, Today/Calendar, Work Queue, status gates, Summary/Cloze and queue typing.
+
+DATABASE
+PASS — 60 migrations
+PASS — 113 application tables
+PASS — migrations 0043–0060 under SQLITE_LIMIT_COMPOUND_SELECT=3
+PASS — migration 0060 retained as latest schema migration; no Hotfix 12.4.1 migration required
+
+UI / STATIC VALIDATION
+PASS — scripts/audit_styles.py: 626 CSS classes, 539 literal UI classes, minimum explicit font size 17px
+PASS — scripts/validate_release.py
+PASS — TypeScript syntax/transpile scan: 440 app/components/lib/workers TS/TSX files, 0 syntax errors
+PASS — bash syntax validation for scripts/deploy.sh and scripts/install-deps-resilient.sh
+
+ENVIRONMENT-LIMITED CHECKS
+NOT RUN — complete `tsc --noEmit`: the packaging environment does not contain project node_modules and stops before source checking because @cloudflare/workers-types and @types/node are unavailable.
+NOT RUN — Next.js/OpenNext production builds for the same dependency reason.
+The packaged `check:release` / `verify:release` flow retains the full dependency install, TypeScript, Next.js and OpenNext build gates for the deployment machine.
+
+STATUS
+PASS — Hotfix 12.4.1 release package is ready for deployment-machine `npm run verify:release` and Cloudflare update.

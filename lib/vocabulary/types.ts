@@ -8,6 +8,7 @@ export type VocabularyMeaning = {
   definition: string;
   simple?: string;
   contextMeaning?: string;
+  chinese?: string;
 };
 
 export type VocabularyExample = {

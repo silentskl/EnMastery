@@ -1,0 +1,30 @@
+English Mastery V1.0.2 Hotfix 12.4.2 — Final Validation Report
+Date: 2026-09-19
+
+SCOPE
+1. Fix TS2322 in app/api/student/vocabulary-specialist/route.ts.
+2. Keep StoredClozeItem.kind narrowed to the literal union "synonym_choice" | "fill".
+3. Preserve all Hotfix 12.4.1 MCQ randomisation and 5+5 mixed-cloze behavior.
+4. No database migration or runtime behavior change.
+
+FIX
+PASS — clozeItems() now uses raw.map<StoredClozeItem>(...).
+PASS — local kind is explicitly typed as StoredClozeItem["kind"].
+PASS — isolated strict TypeScript semantic reproduction compiles with tsc --noEmit.
+PASS — scripts/test_hotfix1242.py guards against the original widening regression.
+
+REGRESSION
+PASS — all 38 scripts/test_*.py tests.
+PASS — scripts/test_hotfix124.py.
+PASS — scripts/test_hotfix1241.py.
+PASS — scripts/test_hotfix1242.py.
+PASS — D1 migration regression remains at 60 migrations / 113 tables.
+PASS — scripts/validate_release.py.
+PASS — scripts/audit_styles.py.
+PASS — bash syntax validation for scripts/deploy.sh and scripts/install-deps-resilient.sh.
+
+ENVIRONMENT-LIMITED CHECK
+The packaging environment does not contain the project node_modules. A direct project `tsc --noEmit` stops before application source checking because @cloudflare/workers-types and @types/node are unavailable. Dependency installation was attempted but timed out. The exact failing StoredClozeItem inference was reproduced in an isolated strict TypeScript harness and passes after this fix. The normal deployment-machine release gate still runs the full project typecheck before build/deploy.
+
+STATUS
+PASS — Hotfix 12.4.2 corrects the reported TS2322 and is ready for deployment-machine `npm run typecheck` / `npm run verify:release`.

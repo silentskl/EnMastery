@@ -10,6 +10,8 @@ export type SpeakingPrompt = {
   prompt: string;
   referenceText?: string;
   stimulusAlt?: string;
+  stimulusImageUrl?: string;
+  stimulusImageAlt?: string;
 };
 
 export type ConversationFeedback = {

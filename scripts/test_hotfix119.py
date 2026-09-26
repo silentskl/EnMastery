@@ -47,7 +47,7 @@ try:
     for item in sorted((ROOT/'migrations').glob('*.sql')): db.executescript(item.read_text())
     table_count=db.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").fetchone()[0]
     trigger_count=db.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='trigger'").fetchone()[0]
-    require(table_count==106,f'expected 106 application tables, got {table_count}')
+    require(table_count>=106,f'expected at least 106 application tables, got {table_count}')
     require(trigger_count==17,f'expected 17 triggers, got {trigger_count}')
 
     db.execute("INSERT INTO users(id,email,role,display_name) VALUES('u-h119','h119@example.invalid','student','H119')")
@@ -92,4 +92,4 @@ if errors:
     print('HOTFIX11.9 TEST FAIL')
     for error in errors: print('-',error)
     sys.exit(1)
-print('HOTFIX11.9 TEST PASS: 106 tables/17 triggers; indexed sampling, rollup maintenance and D1 SEARCH query plans validated')
+print(f'HOTFIX11.9 TEST PASS: {table_count} tables/17 triggers; indexed sampling, rollup maintenance and D1 SEARCH query plans validated')

@@ -2,6 +2,7 @@ import { getEnv } from "@/lib/cloudflare";
 import { hashSecret, isLocked, lockUntilAfterFailure, parseCookie, verifySecret } from "@/lib/auth/user";
 import { LEARNING_STAGES } from "@/lib/language/stages";
 import { ensureTenantPracticeDefaults } from "@/lib/settings/practice-policy";
+import { ensureVocabularySpecialistDefaults } from "@/lib/vocabulary-specialist/policy";
 
 export const TENANT_COOKIE = "em_tenant_session";
 
@@ -48,13 +49,19 @@ export async function createTenantAdminSession(db:D1Database,args:{userId:string
 export async function getTenantSessionFromRaw(db:D1Database,raw:string|null|undefined){
   if(!raw)return null;
   const tokenHash=await sha256(raw);
-  const row=await db.prepare(`SELECT s.id,s.user_id,s.tenant_id,s.role,s.expires_at,u.display_name,u.email,t.name tenant_name,t.slug tenant_slug
+  const row=await db.prepare(`SELECT s.id,s.user_id,s.tenant_id,s.role,s.expires_at,s.last_seen_at,u.display_name,u.email,t.name tenant_name,t.slug tenant_slug
     FROM staff_sessions s JOIN users u ON u.id=s.user_id JOIN tenants t ON t.id=s.tenant_id
     JOIN tenant_members tm ON tm.tenant_id=s.tenant_id AND tm.user_id=s.user_id AND tm.status='active' AND tm.role='admin'
     WHERE s.token_hash=? AND s.expires_at>CURRENT_TIMESTAMP AND t.status='active'`)
-    .bind(tokenHash).first<TenantAdminSessionRow>();
+    .bind(tokenHash).first<TenantAdminSessionRow & {last_seen_at:string}>();
   if(!row)return null;
-  await db.prepare("UPDATE staff_sessions SET last_seen_at=CURRENT_TIMESTAMP WHERE id=?").bind(row.id).run().catch(()=>null);
+  // Do not write D1 on every Admin page/API request. A ten-minute heartbeat keeps
+  // activity timestamps useful while avoiding a write-amplification burst when a
+  // page loads several authenticated resources in parallel.
+  const lastSeen=Date.parse(row.last_seen_at||"");
+  if(!Number.isFinite(lastSeen)||Date.now()-lastSeen>=10*60*1000){
+    await db.prepare("UPDATE staff_sessions SET last_seen_at=CURRENT_TIMESTAMP WHERE id=? AND last_seen_at<datetime('now','-10 minutes')").bind(row.id).run().catch(()=>null);
+  }
   return row;
 }
 
@@ -109,6 +116,7 @@ export async function registerPublicTenant(db:D1Database,args:{name:string;slug:
     ...LEARNING_STAGES.map(level=>db.prepare("INSERT INTO tenant_daily_task_policy(tenant_id,school_level,listen_video_max_seconds,read_max_words) VALUES(?,?,0,0)").bind(tenantId,level))
   ]);
   await ensureTenantPracticeDefaults(db,tenantId);
+  await ensureVocabularySpecialistDefaults(db,tenantId);
   return {tenantId,slug,userId,email,name};
 }
 
