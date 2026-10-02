@@ -8,7 +8,8 @@ type DbTask={id:string;task_date:string;activity_type:string;activity_id:string|
 function decode(rows:DbTask[]){return rows.map(r=>{let metadata:Record<string,unknown>={};try{metadata=r.metadata_json?JSON.parse(r.metadata_json) as Record<string,unknown>:{};}catch{}return{...r,metadata};});}
 async function queryTasks(db:D1Database,childId:string,start:string,end:string){return (await db.prepare("SELECT id,task_date,activity_type,activity_id,title,target_minutes,xp_reward,status,metadata_json FROM learning_tasks WHERE child_id=? AND task_date BETWEEN ? AND ? AND cadence='daily' ORDER BY task_date,CASE activity_type WHEN 'listening' THEN 1 WHEN 'speaking' THEN 2 WHEN 'reading' THEN 3 WHEN 'writing' THEN 4 WHEN 'vocabulary' THEN 5 ELSE 9 END,created_at").bind(childId,start,end).all<DbTask>()).results;}
 function message(error:unknown){return error instanceof Error?error.message:String(error)}
-function todayNeedsMaterialization(rows:DbTask[],today:string){const current=rows.filter(r=>r.task_date===today);const have=new Set(current.map(r=>r.activity_type));return !["listening","speaking","reading","vocabulary"].every(type=>have.has(type));}
+function taskIsUnavailable(row:DbTask){try{const meta=row.metadata_json?JSON.parse(row.metadata_json) as Record<string,unknown>:{};return meta.unavailable===true;}catch{return false;}}
+function todayNeedsMaterialization(rows:DbTask[],today:string){const current=rows.filter(r=>r.task_date===today);return !["listening","speaking","reading","vocabulary"].every(type=>current.some(row=>row.activity_type===type&&!taskIsUnavailable(row)));}
 async function ensureEmergencyTodayPlan(db:D1Database,childId:string,today:string){
  const resources=[
   ["listening","Listening · Temporarily unavailable",10],
