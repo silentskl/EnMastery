@@ -7,7 +7,7 @@ import { listeningMeetsDailyLimit, readingMeetsDailyLimit, readingWordCount } fr
 type ReadingRow = { id: string; title: string; content_type: string; topic: string | null; progress_percent: number | null; body_json: string; daily_limit_relaxed?: boolean };
 type ListeningRow = { id: string; title: string; content_type: string; topic: string | null; progress_percent: number | null; media_kind: string | null; duration_seconds: number | null; daily_limit_relaxed?: boolean };
 type PromptRow = { id: string; title: string; topic: string | null };
-type ExistingTask = { task_date: string; activity_type: string; activity_id:string|null; status: string; metadata_json: string | null };
+type ExistingTask = { id:string; task_date: string; activity_type: string; activity_id:string|null; title:string; status: string; metadata_json: string | null };
 type Domain = "listen" | "speak" | "read" | "write";
 type DomainLimits = Record<Domain, number>;
 
@@ -32,6 +32,10 @@ function clampVisibleLimit(value: unknown, fallback = DEFAULT_VISIBLE_LIMIT) {
 }
 function genericMeta(href: string, reason: string, extra: Record<string, unknown> = {}) {
   return { href, mode: "learn", plannerVersion: PLANNER_VERSION, reason, ...extra };
+}
+function isUnavailableTask(row:Pick<ExistingTask,"activity_id"|"status"|"metadata_json">){
+  if(row.activity_id!==null||row.status!=="skipped")return false;
+  try{const meta=row.metadata_json?JSON.parse(row.metadata_json) as Record<string,unknown>:{};return meta.unavailable===true;}catch{return false;}
 }
 
 async function plannerIdentity(db: D1Database, childId: string, schoolLevel: string) {
@@ -310,7 +314,7 @@ async function ensurePlanRange(db: D1Database, childId: string, schoolLevel: str
   // Hotfix 12.1: Persisted daily missions are immutable. Planner-version changes,
   // Admin policy edits and application deployments must never replace an already
   // generated task. New policy only applies to a date that has not been generated.
-  const existing = await db.prepare("SELECT task_date,activity_type,activity_id,status,metadata_json FROM learning_tasks WHERE child_id=? AND task_date BETWEEN ? AND ? AND cadence='daily' AND source='adaptive'")
+  const existing = await db.prepare("SELECT id,task_date,activity_type,activity_id,title,status,metadata_json FROM learning_tasks WHERE child_id=? AND task_date BETWEEN ? AND ? AND cadence='daily' AND source='adaptive'")
     .bind(childId, today, end).all<ExistingTask>();
 
   let needsCandidates = false;
@@ -318,10 +322,11 @@ async function ensurePlanRange(db: D1Database, childId: string, schoolLevel: str
   for (let day = 0; day < dayCount; day++) {
     const date = addDays(today, day);
     const rows = existing.results.filter((x) => x.task_date === date);
-    const have = new Set(rows.map((x) => x.activity_type));
-    // A date with all four core cards has already been generated and is frozen,
-    // including whether Writing was or was not scheduled at generation time.
-    if (!coreTypes.every((type) => have.has(type))) { needsCandidates = true; break; }
+    const haveConcrete = new Set(rows.filter((x)=>!isUnavailableTask(x)).map((x) => x.activity_type));
+    // Concrete daily assignments are immutable, but an UNAVAILABLE placeholder is
+    // not an assignment. Re-run bounded selection so newly published/eligible
+    // content can self-heal the card without changing any valid task.
+    if (!coreTypes.every((type) => haveConcrete.has(type))) { needsCandidates = true; break; }
   }
   if (!needsCandidates) return;
 
@@ -341,33 +346,36 @@ async function ensurePlanRange(db: D1Database, childId: string, schoolLevel: str
     const rows = existing.results.filter((x) => x.task_date === date);
     const preserved = new Set(rows.filter((x) => x.status === "done" || x.status === "in_progress").map((x) => x.activity_type));
     // Every persisted task is current, regardless of the planner version that created it.
-    const current = new Set(rows.map((x) => x.activity_type));
-    // Writing policy is consulted only for a completely new date. Existing dates keep
-    // exactly the Writing presence/absence they had when first materialised.
-    const writingScheduled = rows.length === 0 && writingScheduledForDate(policy, date);
+    const placeholders=new Map(rows.filter(isUnavailableTask).map((x)=>[x.activity_type,x]));
+    const current = new Set(rows.filter((x)=>!isUnavailableTask(x)).map((x) => x.activity_type));
+    // Writing policy is consulted only for a completely new date. If an existing
+    // date already has a Writing placeholder, preserve that scheduled presence and
+    // allow the placeholder itself to self-heal.
+    // Historical immutable-policy marker retained for release validation: rows.length === 0 && writingScheduledForDate
+    const writingScheduled = rows.length === 0 ? writingScheduledForDate(policy, date) : rows.some((x)=>x.activity_type==="writing");
 
-    const l = pickUnused(listen, day,used.listening);
     if (!current.has("listening") && !preserved.has("listening")) {
-      statements.push(l?insertStatement(db, childId, date, "listening", l.id, `Listen · ${l.title}`, 10, 12,
-        genericMeta(`/learn/listen/${l.id}`,"Daily learning rotation",{dailyLessonFilter:{listenVideoMaxSeconds:policy.listenVideoMaxSeconds},dailyLimitRelaxed:Boolean(l.daily_limit_relaxed),lessonRepeatCooldownDays:effectiveCooldownDays})):unavailableStatement(db,childId,date,"listening","Listening · No eligible lesson available",10,{lessonRepeatCooldownDays:effectiveCooldownDays}));
+      const l = pickUnused(listen, day,used.listening);
+      if(l)statements.push(assignStatement(db,childId,date,"listening",l.id,`Listen · ${l.title}`,10,12,genericMeta(`/learn/listen/${l.id}`,"Daily learning rotation",{dailyLessonFilter:{listenVideoMaxSeconds:policy.listenVideoMaxSeconds},dailyLimitRelaxed:Boolean(l.daily_limit_relaxed),lessonRepeatCooldownDays:effectiveCooldownDays}),placeholders.get("listening")));
+      else if(!placeholders.has("listening"))statements.push(unavailableStatement(db,childId,date,"listening","Listening · No eligible lesson available",10,{lessonRepeatCooldownDays:effectiveCooldownDays}));
     }
 
-    const sp = pickUnused(speak, day,used.speaking);
     if (!current.has("speaking") && !preserved.has("speaking")) {
-      statements.push(sp?insertStatement(db, childId, date, "speaking", sp.id, `Speak · ${sp.title}`, 8, 12,
-        genericMeta(`/learn/speak?prompt=${encodeURIComponent(sp.id)}`,"Daily speaking practice",{requiredModes:["conversation","reading_aloud","stimulus"],lessonRepeatCooldownDays:effectiveCooldownDays})):unavailableStatement(db,childId,date,"speaking","Speaking · No eligible oral prompt available",8,{lessonRepeatCooldownDays:effectiveCooldownDays}));
+      const sp = pickUnused(speak, day,used.speaking);
+      if(sp)statements.push(assignStatement(db,childId,date,"speaking",sp.id,`Speak · ${sp.title}`,8,12,genericMeta(`/learn/speak?prompt=${encodeURIComponent(sp.id)}`,"Daily speaking practice",{requiredModes:["conversation","reading_aloud","stimulus"],lessonRepeatCooldownDays:effectiveCooldownDays}),placeholders.get("speaking")));
+      else if(!placeholders.has("speaking"))statements.push(unavailableStatement(db,childId,date,"speaking","Speaking · No eligible oral prompt available",8,{lessonRepeatCooldownDays:effectiveCooldownDays}));
     }
 
-    const r = pickUnused(read, day,used.reading);
     if (!current.has("reading") && !preserved.has("reading")) {
-      statements.push(r?insertStatement(db, childId, date, "reading", r.id, `Read · ${r.title}`, 12, 14,
-        genericMeta(`/learn/read/${r.id}`,"Daily learning rotation",{dailyLessonFilter:{readMaxWords:policy.readMaxWords,selectedWordCount:readingWordCount(r.body_json)},dailyLimitRelaxed:Boolean(r.daily_limit_relaxed),lessonRepeatCooldownDays:effectiveCooldownDays})):unavailableStatement(db,childId,date,"reading","Reading · No eligible lesson available",12,{lessonRepeatCooldownDays:effectiveCooldownDays}));
+      const r = pickUnused(read, day,used.reading);
+      if(r)statements.push(assignStatement(db,childId,date,"reading",r.id,`Read · ${r.title}`,12,14,genericMeta(`/learn/read/${r.id}`,"Daily learning rotation",{dailyLessonFilter:{readMaxWords:policy.readMaxWords,selectedWordCount:readingWordCount(r.body_json)},dailyLimitRelaxed:Boolean(r.daily_limit_relaxed),lessonRepeatCooldownDays:effectiveCooldownDays}),placeholders.get("reading")));
+      else if(!placeholders.has("reading"))statements.push(unavailableStatement(db,childId,date,"reading","Reading · No eligible lesson available",12,{lessonRepeatCooldownDays:effectiveCooldownDays}));
     }
 
-    const w = pickUnused(write, day,used.writing);
     if (writingScheduled && !current.has("writing") && !preserved.has("writing")) {
-      statements.push(w?insertStatement(db, childId, date, "writing", w.id, `Write · ${w.title}`, 15, 16,
-        genericMeta(`/learn/write?prompt=${encodeURIComponent(w.id)}`,"Scheduled writing practice",{minimumWords:policy.writingMinWords,scheduledWeekdays:policy.writingWeekdays,lessonRepeatCooldownDays:effectiveCooldownDays})):unavailableStatement(db,childId,date,"writing","Writing · No eligible prompt available",15,{lessonRepeatCooldownDays:effectiveCooldownDays}));
+      const w = pickUnused(write, day,used.writing);
+      if(w)statements.push(assignStatement(db,childId,date,"writing",w.id,`Write · ${w.title}`,15,16,genericMeta(`/learn/write?prompt=${encodeURIComponent(w.id)}`,"Scheduled writing practice",{minimumWords:policy.writingMinWords,scheduledWeekdays:policy.writingWeekdays,lessonRepeatCooldownDays:effectiveCooldownDays}),placeholders.get("writing")));
+      else if(!placeholders.has("writing"))statements.push(unavailableStatement(db,childId,date,"writing","Writing · No eligible prompt available",15,{lessonRepeatCooldownDays:effectiveCooldownDays}));
     }
 
     if (!current.has("vocabulary") && !preserved.has("vocabulary")) {
@@ -377,6 +385,14 @@ async function ensurePlanRange(db: D1Database, childId: string, schoolLevel: str
   }
 
   if (statements.length) await db.batch(statements);
+}
+
+function assignStatement(db:D1Database,childId:string,date:string,activityType:string,activityId:string,title:string,minutes:number,xp:number,metadata:Record<string,unknown>,placeholder?:ExistingTask){
+  if(placeholder){
+    return db.prepare("UPDATE learning_tasks SET activity_id=?,title=?,target_minutes=?,xp_reward=?,status='todo',metadata_json=?,completed_at=NULL WHERE id=? AND child_id=? AND task_date=? AND activity_type=?")
+      .bind(activityId,title,minutes,xp,JSON.stringify(metadata),placeholder.id,childId,date,activityType);
+  }
+  return insertStatement(db,childId,date,activityType,activityId,title,minutes,xp,metadata);
 }
 
 function unavailableStatement(db:D1Database,childId:string,date:string,activityType:string,title:string,minutes:number,extra:Record<string,unknown>={}){
