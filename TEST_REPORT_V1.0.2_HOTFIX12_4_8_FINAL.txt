@@ -1,0 +1,10 @@
+English Mastery V1.0.2 Hotfix 12.4.8 — FINAL TEST REPORT
+
+Scope
+- Daily Mission UNAVAILABLE self-heal.
+- Preserve concrete assignments while allowing placeholder recovery.
+- Prevent candidate-pool waste during weekly repair.
+
+Validation
+- PASS scripts/test_hotfix1248.py
+- No schema migration.
