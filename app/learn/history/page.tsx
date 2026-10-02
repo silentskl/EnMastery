@@ -1,0 +1,2 @@
+import{PageIntro}from"@/components/ui";import{LearningHistoryDay}from"@/components/learning-history-day";import{sgDate}from"@/lib/student/tasks";
+export default async function Page({searchParams}:{searchParams:Promise<{date?:string}>}){const q=await searchParams,date=(q.date||sgDate()).slice(0,10);return <><PageIntro eyebrow="Learning history" title="Completed learning records" description="Open any completed task to review what you submitted, feedback, scores and saved revisions."/><LearningHistoryDay date={date}/></>}
