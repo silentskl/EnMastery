@@ -1,0 +1,18 @@
+English Mastery V1.0.2 Hotfix 12.4.9 — FINAL TEST REPORT
+
+Scope
+- Restore click-through from completed Daily Mission cards.
+- Restore historical-day navigation from Daily Progress calendar.
+- Add unified task-history detail for Reading, Listening, Writing, Speaking and Vocabulary.
+- Persist future Speaking Reading Aloud transcript/assessment evidence.
+
+Validation
+- PASS scripts/test_hotfix1249.py
+- PASS scripts/test_d1_migrations.py through migration 0062
+- PASS full fresh migration execution in Hotfix 12.4.9 regression test
+- PASS schema target: 62 migrations / 115 application tables
+
+Historical-data behavior
+- Existing saved evidence is displayed from its authoritative tables.
+- No historical submission or feedback row is overwritten.
+- Older Reading Aloud attempts may only contain the daily score because earlier versions never persisted transcript/assessment details; no synthetic history is generated.
