@@ -14,6 +14,8 @@ export async function POST(request:Request){
   else{if(!browserTranscript)return Response.json({error:"No pronunciation provider is configured and browser transcript is unavailable"},{status:503});assessment=heuristicPronunciation(ref,browserTranscript,durationMs);}
   await updateSkillEvidence(env.DB,session.childId,"S-PRON",assessment.pronunciation);await updateSkillEvidence(env.DB,session.childId,"S-FLUENCY",assessment.fluency);if(assessment.prosody!==null)await updateSkillEvidence(env.DB,session.childId,"S-PROSODY",assessment.prosody);await env.DB.prepare("INSERT INTO xp_ledger (id,child_id,event_type,points,reference_id) VALUES (?,?, 'reading_aloud', ?, ?)").bind(`xp-${crypto.randomUUID()}`,session.childId,assessment.pronunciation>=70?12:8,`oral-${crypto.randomUUID()}`).run();
   const dailySpeaking=await recordDailySpeakingModeScore(env.DB,{childId:session.childId,mode:"reading_aloud",promptId,score:assessment.pronunciation});
+  await env.DB.prepare("INSERT INTO speaking_reading_aloud_history (id,child_id,task_date,prompt_id,reference_text,transcript,duration_ms,assessment_json,score) VALUES (?,?,?,?,?,?,?,?,?)")
+    .bind(`sra-${crypto.randomUUID()}`,session.childId,dailySpeaking.taskDate,promptId||null,ref,browserTranscript||null,durationMs,JSON.stringify(assessment),assessment.pronunciation).run();
   const response=Response.json({assessment,dailySpeaking});if(session.isNew)response.headers.set("Set-Cookie",learnerCookie(session.sessionId));return response;
  }catch(e){return Response.json({error:e instanceof Error?e.message:"Pronunciation assessment failed"},{status:502});}
 }
