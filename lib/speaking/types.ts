@@ -1,4 +1,5 @@
 export type SpeakingMode = "conversation" | "reading_aloud" | "stimulus";
+export type SpeakingTrack = "daily" | "pet";
 
 export type SpeakingPrompt = {
   id: string;
@@ -12,6 +13,10 @@ export type SpeakingPrompt = {
   stimulusAlt?: string;
   stimulusImageUrl?: string;
   stimulusImageAlt?: string;
+  examTrack?: "PET";
+  targetSeconds?: number;
+  sceneFocus?: string[];
+  examinerPrompts?: string[];
 };
 
 export type ConversationFeedback = {
