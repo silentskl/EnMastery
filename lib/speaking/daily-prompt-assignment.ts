@@ -98,6 +98,7 @@ async function candidateForMode(
     JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version
     WHERE c.status='published' AND c.school_level=? AND c.content_type='oral_prompt'
       AND (c.scope='global' OR (c.scope='tenant' AND c.tenant_id=?))
+      AND COALESCE(json_extract(v.body_json,'$.examTrack'),'') <> 'PET'
       AND (CASE
         WHEN json_extract(v.body_json,'$.mode')='reading_aloud' THEN 'reading_aloud'
         WHEN json_extract(v.body_json,'$.mode')='stimulus' THEN 'stimulus'
