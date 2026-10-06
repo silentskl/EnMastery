@@ -452,13 +452,3 @@ INSERT OR IGNORE INTO content_skills (content_id,skill_id,coverage) VALUES ('spe
 INSERT OR IGNORE INTO content_skills (content_id,skill_id,coverage) VALUES ('speak-read-extra-50','S-FLUENCY',1);
 INSERT OR IGNORE INTO content_skills (content_id,skill_id,coverage) VALUES ('speak-read-extra-50','S-PROSODY',1);
 INSERT OR IGNORE INTO content_skills (content_id,skill_id,coverage) VALUES ('speak-read-extra-50','S-PURPOSE',1);
-
-INSERT OR IGNORE INTO content_items (id,content_type,title,school_level,topic,source_url,licence,status,active_version,description,source_attribution,published_at,scope)
-VALUES ('speak-read-extra-51','oral_prompt','The Promise of a Tree','P6','Nature',NULL,'owned','published',1,'Original P6 Reading Aloud passage.','English Mastery original',CURRENT_TIMESTAMP,'global');
-INSERT OR IGNORE INTO content_versions (id,content_id,version,body_json,generation_model,curriculum_version_id,review_status)
-VALUES ('speak-read-extra-51-v1','speak-read-extra-51',1,'{"mode":"reading_aloud","prompt":"Read the passage aloud with clear pronunciation, natural pauses and expression.","referenceText":"When the school announced plans to plant new shade trees, students were invited to help care for the seedlings. Each class adopted one tree and recorded its growth throughout the year. Our group chose a spot near the basketball court, where the ground became hot in the afternoon. We watered the young tree and protected its roots from damage. Months later, its leaves had become noticeably fuller. The tree was still too small to provide much shade, but we imagined future pupils resting beneath its branches. Caring for it taught us to think beyond immediate rewards."}','seed','SG-PRIMARY-ENGLISH-2020-PSLE-2026','approved');
-INSERT OR IGNORE INTO content_skills (content_id,skill_id,coverage) VALUES ('speak-read-extra-51','S-PRON',1);
-INSERT OR IGNORE INTO content_skills (content_id,skill_id,coverage) VALUES ('speak-read-extra-51','S-FLUENCY',1);
-INSERT OR IGNORE INTO content_skills (content_id,skill_id,coverage) VALUES ('speak-read-extra-51','S-PROSODY',1);
-INSERT OR IGNORE INTO content_skills (content_id,skill_id,coverage) VALUES ('speak-read-extra-51','S-PURPOSE',1);
-
