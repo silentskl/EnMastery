@@ -150,6 +150,25 @@ try:
  if len(migrations)<56: errors.append(f'expected at least 56 migrations, found {len(migrations)}')
  if not migrations or migrations[-1].name!='0064_v102_pet_pictured_events_questions.sql': errors.append('latest migration must be 0064_v102_pet_pictured_events_questions.sql')
  for m in migrations: db.executescript(m.read_text())
+ # PET picture-description content is a separate, continuously available
+ # specialist track; each published exercise must have a person/action photo
+ # and at least three scene-specific, non-placeholder questions.
+ pet_rows=db.execute("""SELECT c.id,v.body_json FROM content_items c
+   JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version
+   WHERE c.content_type='oral_prompt'
+     AND json_extract(v.body_json,'$.examTrack')='PET'""").fetchall()
+ if len(pet_rows)<10: errors.append(f'PET specialist bank expected 10 photographs, got {len(pet_rows)}')
+ for pet_id,raw in pet_rows:
+  body=json.loads(raw)
+  qs=body.get('examinerPrompts',[])
+  if not isinstance(qs,list) or not 3<=len(qs)<=5 or not all(isinstance(q,str) and q.strip().endswith('?') for q in qs):
+   errors.append(f'{pet_id}: PET requires 3-5 specific questions')
+  if not str(body.get('stimulusImageUrl','')).startswith('https://'):
+   errors.append(f'{pet_id}: picture URL missing')
+  if not body.get('stimulusAlt') or not body.get('stimulusImageAlt'):
+   errors.append(f'{pet_id}: person/action scene details missing')
+  if body.get('targetSeconds')!=60:
+   errors.append(f'{pet_id}: picture practice duration must be 60s')
  counts['tables']=db.execute("select count(*) from sqlite_master where type='table' and name not like 'sqlite_%'").fetchone()[0]
  counts['skills']=db.execute('select count(*) from skills').fetchone()[0]
  counts['questions']=db.execute("select count(*) from questions where status='published'").fetchone()[0]
