@@ -8,7 +8,7 @@ function str(body:Record<string,unknown>,key:string){const v=body[key];return ty
 function arr(body:Record<string,unknown>,key:string){const v=body[key];return Array.isArray(v)?v.filter((x):x is string=>typeof x==="string"&&Boolean(x.trim())).map(x=>x.trim()):undefined}
 function toPrompt(row:Row):SpeakingPrompt{
  let body:Record<string,unknown>={};try{body=JSON.parse(row.body_json)as Record<string,unknown>}catch{}
- return {id:row.id,title:row.title,schoolLevel:row.school_level,topic:row.topic,description:row.description,mode:"stimulus",prompt:str(body,"prompt")||"Please tell us what you can see in the photograph.",stimulusAlt:str(body,"stimulusAlt"),stimulusImageUrl:str(body,"stimulusImageUrl"),stimulusImageAlt:str(body,"stimulusImageAlt"),examTrack:"PET",targetSeconds:typeof body.targetSeconds==="number"?body.targetSeconds:60,sceneFocus:arr(body,"sceneFocus"),examinerPrompts:arr(body,"examinerPrompts")};
+ return {id:row.id,title:row.title,schoolLevel:row.school_level,topic:row.topic,description:row.description,mode:"stimulus",prompt:str(body,"prompt")||"Please tell us what you can see in the photograph.",stimulusAlt:str(body,"stimulusAlt"),stimulusImageUrl:str(body,"stimulusImageUrl"),stimulusImageFallbackUrl:str(body,"stimulusImageFallbackUrl"),stimulusImageAlt:str(body,"stimulusImageAlt"),examTrack:"PET",targetSeconds:typeof body.targetSeconds==="number"?body.targetSeconds:60,sceneFocus:arr(body,"sceneFocus"),examinerPrompts:arr(body,"examinerPrompts")};
 }
 export async function GET(request:Request){
  const env=getEnv(),session=await ensureLearnerSession(request,env.DB),{tenantId}=await learnerTenantContext(env.DB,session.childId);
