@@ -11,7 +11,7 @@ def need(path,*markers):
  return text
 
 required=[
- 'V1_0_2_HOTFIX12_4_5_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_5_FINAL.txt','scripts/test_hotfix1245.py','migrations/0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql','lib/speaking/daily-prompt-assignment.ts',
+ 'V1_0_2_HOTFIX12_4_5_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_5_FINAL.txt','scripts/test_hotfix1245.py','migrations/0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql','migrations/0062_v102_hotfix1249_learning_history_restore.sql','migrations/0063_v102_pet_speaking_picture_description.sql','lib/speaking/daily-prompt-assignment.ts',
  'V1_0_2_HOTFIX12_4_4_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_4_FINAL.txt','scripts/test_hotfix1244.py',
  'V1_0_2_HOTFIX12_4_1_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_1_FINAL.txt','scripts/test_hotfix1241.py',
  'V1_0_2_HOTFIX12_4_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_FINAL.txt','scripts/test_hotfix124.py','migrations/0060_v102_hotfix124_vocabulary_specialist.sql','lib/vocabulary-specialist/policy.ts','lib/vocabulary-specialist/generate.ts','app/api/student/vocabulary-specialist/route.ts','app/api/admin/vocabulary-specialist/route.ts','components/vocabulary-specialist/vocabulary-specialist-workspace.tsx','components/vocabulary-specialist/tenant-vocabulary-specialist-admin.tsx','app/practice/vocabulary-specialist/page.tsx','app/admin/(protected)/vocabulary-specialist/page.tsx',
@@ -148,7 +148,7 @@ except Exception as e: errors.append(f'R3 style validation: {e}')
 try:
  db=sqlite3.connect(':memory:');migrations=sorted((root/'migrations').glob('*.sql'))
  if len(migrations)<56: errors.append(f'expected at least 56 migrations, found {len(migrations)}')
- if not migrations or migrations[-1].name!='0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql': errors.append('latest migration must be 0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql')
+ if not migrations or migrations[-1].name!='0063_v102_pet_speaking_picture_description.sql': errors.append('latest migration must be 0063_v102_pet_speaking_picture_description.sql')
  for m in migrations: db.executescript(m.read_text())
  counts['tables']=db.execute("select count(*) from sqlite_master where type='table' and name not like 'sqlite_%'").fetchone()[0]
  counts['skills']=db.execute('select count(*) from skills').fetchone()[0]
