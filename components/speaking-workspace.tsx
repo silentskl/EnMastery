@@ -58,6 +58,22 @@ export function SpeakingWorkspace({ initialTrack = "daily" }: { initialTrack?: S
   async function assess() { if (!active?.referenceText || !wavRef.current) return; setBusy(true); setError(""); try { const form = new FormData(); form.append("audio", wavRef.current, "reading.wav"); form.append("promptId", active.id); form.append("referenceText", active.referenceText); form.append("browserTranscript", transcript); form.append("durationMs", String(Math.max(1000, Date.now() - startRef.current))); const r = await fetch("/api/student/speaking/assess", { method: "POST", body: form }); const body = await r.json() as { assessment?: PronunciationAssessment; dailySpeaking?: DailySpeakingProgress; error?: string }; if (!r.ok || !body.assessment) throw new Error(body.error || "Assessment failed"); setAssessment(body.assessment); if (body.dailySpeaking) setDailyProgress(body.dailySpeaking); } catch (e) { setError(e instanceof Error ? e.message : "Assessment failed"); } finally { setBusy(false); } }
   function switchMode(next: SpeakingMode) { if (recording || track === "pet") return; setMode(next); setPromptId(prompts.find(p => p.mode === next)?.id || ""); }
   function switchTrack(next: SpeakingTrack) { if (recording || next === track) return; setTrack(next); setMode(next === "pet" ? "stimulus" : "conversation"); setPromptId(""); setTranscript(""); setInterim(""); setFeedback(null); setAssessment(null); setHistory([]); setSessionId(""); }
+  function nextPetPrompt() {
+    if (recording || busy || track !== "pet" || available.length === 0) return;
+    const current = Math.max(0, available.findIndex(p => p.id === active?.id));
+    const next = available[(current + 1) % available.length];
+    if (!next) return;
+    setPromptId(next.id);
+    setSeconds(0);
+    setTranscript("");
+    setInterim("");
+    setFeedback(null);
+    setAssessment(null);
+    setHistory([]);
+    setSessionId("");
+    wavRef.current = null;
+    setError("");
+  }
   const showStimulusImage = Boolean(active?.stimulusImageUrl && active?.id && !brokenImages[active.id]);
   return <div className="speakingWorkspace">
     <div className="tabs"><button className={track === "daily" ? "active" : ""} onClick={() => switchTrack("daily")}>Daily Speaking</button><button className={track === "pet" ? "active" : ""} onClick={() => switchTrack("pet")}>PET · Picture Description</button></div>
@@ -69,6 +85,7 @@ export function SpeakingWorkspace({ initialTrack = "daily" }: { initialTrack?: S
       <div className="recordControls"><button className={`recordBig ${recording ? "recording" : ""}`} disabled={busy || Boolean(config && !config.authenticated)} onClick={recording ? stop : start}>{recording ? "■ Stop" : "● Speak"}</button><span>{recording ? (track === "pet" ? `${seconds}s / ${active?.targetSeconds || 60}s · recording` : `${seconds}s · recording`) : busy ? "Working…" : track === "pet" ? `Aim for about ${active?.targetSeconds || 60} seconds` : "Record your answer when ready"}</span></div>
       {history.length > 0 && <div className="conversationHistory">{history.slice(-6).map((h, i) => <div className={h.role === "user" ? "historyBubble learner" : "historyBubble tutor"} key={`${h.role}-${i}`}><span>{h.role === "user" ? "You" : "Tutor"}</span><p>{h.content}</p></div>)}</div>}{(transcript || interim) && <div className="transcriptBox"><div className="eyebrow">What we heard</div><textarea value={transcript} onChange={e => setTranscript(e.target.value)} placeholder="Your recognised speech appears here. You can correct obvious recognition mistakes before sending." /><p className="muted">{interim}</p>{transcript && <VocabularyAddButton term={transcript.split(/\s+/).slice(0, 8).join(" ")} context={transcript} schoolLevel={active?.schoolLevel || "P6"} />}</div>}
       {!recording && transcript && mode !== "reading_aloud" && <button className="button primary" disabled={busy} onClick={sendConversation}>{track === "pet" ? "Get PET feedback" : history.length ? "Continue conversation" : "Get response"}</button>}
+      {track === "pet" && feedback && available.length > 1 && <button className="button primary" disabled={busy} onClick={nextPetPrompt}>Next picture →</button>}
       {!recording && active?.referenceText && wavRef.current && <button className="button primary" disabled={busy} onClick={assess}>Assess reading aloud</button>}
       {error && <div className="notice errorNotice">{error}</div>}
     </section>
