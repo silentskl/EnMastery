@@ -12,6 +12,7 @@ export type SpeakingPrompt = {
   referenceText?: string;
   stimulusAlt?: string;
   stimulusImageUrl?: string;
+  stimulusImageFallbackUrl?: string;
   stimulusImageAlt?: string;
   examTrack?: "PET";
   targetSeconds?: number;
