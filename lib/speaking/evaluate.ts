@@ -6,13 +6,17 @@ function score(v: unknown) { const n = typeof v === "number" ? v : Number(v); re
 function strings(v: unknown) { return Array.isArray(v) ? v.map(x => cleanString(x, 240)).filter(Boolean).slice(0, 5) : []; }
 function extractJson(text: string) { const fenced=text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1]; const candidate=(fenced||text).trim(); const a=candidate.indexOf("{"); const b=candidate.lastIndexOf("}"); if(a<0||b<=a) throw new Error("Model did not return speaking JSON"); return JSON.parse(candidate.slice(a,b+1)) as unknown; }
 
-export async function evaluateConversation(args:{baseUrl:string;apiKey:string;model:string;prompt:string;transcript:string;mode:"conversation"|"stimulus";history?:Array<{role:"user"|"assistant";content:string}>;track?:"daily"|"pet";targetSeconds?:number}) {
+export async function evaluateConversation(args:{baseUrl:string;apiKey:string;model:string;prompt:string;transcript:string;mode:"conversation"|"stimulus";history?:Array<{role:"user"|"assistant";content:string}>;track?:"daily"|"pet";targetSeconds?:number;examinerPrompts?:string[];sceneDescription?:string}) {
   const history = (args.history || []).slice(-6).map(x => `${x.role === "user" ? "Learner" : "Tutor"}: ${x.content}`).join("\n");
   const pet=args.track==="pet";
   const prompt = pet
     ? `You are evaluating Cambridge B1 Preliminary (PET) Speaking Part 2 picture-description practice from a transcript. The learner should describe what is visibly present in the photograph for about ${args.targetSeconds||60} seconds. Reward clear organisation, useful B1 vocabulary, accurate grammar, detail, paraphrasing and simple linking words. Do NOT require opinions, wider social issues or invented backstory. Because you only have a transcript, do not claim to judge pronunciation acoustically. Keep feedback concise and suitable for a teenage B1 learner. Do not ask a follow-up question; this is an individual extended turn.
 
 Original examiner prompt: ${args.prompt}
+Image reference (for task coverage only; do not claim visual access): ${args.sceneDescription || "(not provided)"}
+Guiding questions about the photograph (check coverage and relevance, allow answers as one connected description):
+${(args.examinerPrompts || []).slice(0,5).map((q,i)=>`${i+1}. ${q}`).join("\n") || "(none)"}
+Score task achievement against the visible-activity reference and coverage of the guiding questions; do not require separate answers or insist on speculative answers to inference questions. Mention 1-2 uncovered question topics in improvements when relevant.
 Learner transcript: ${args.transcript}
 
 Return strict JSON only:
