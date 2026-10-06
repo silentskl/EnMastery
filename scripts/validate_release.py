@@ -11,7 +11,7 @@ def need(path,*markers):
  return text
 
 required=[
- 'V1_0_2_HOTFIX12_4_5_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_5_FINAL.txt','scripts/test_hotfix1245.py','migrations/0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql','migrations/0062_v102_hotfix1249_learning_history_restore.sql','migrations/0063_v102_pet_speaking_picture_description.sql','migrations/0064_v102_pet_pictured_events_questions.sql','migrations/0065_v102_pet_picture_image_reliability.sql','lib/speaking/daily-prompt-assignment.ts',
+ 'V1_0_2_HOTFIX12_4_5_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_5_FINAL.txt','scripts/test_hotfix1245.py','migrations/0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql','migrations/0062_v102_hotfix1249_learning_history_restore.sql','migrations/0063_v102_pet_speaking_picture_description.sql','migrations/0064_v102_pet_pictured_events_questions.sql','migrations/0065_v102_pet_picture_image_reliability.sql','migrations/0066_v102_reading_aloud_50_original_passages.sql','lib/speaking/daily-prompt-assignment.ts',
  'V1_0_2_HOTFIX12_4_4_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_4_FINAL.txt','scripts/test_hotfix1244.py',
  'V1_0_2_HOTFIX12_4_1_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_1_FINAL.txt','scripts/test_hotfix1241.py',
  'V1_0_2_HOTFIX12_4_RELEASE.md','TEST_REPORT_V1.0.2_HOTFIX12_4_FINAL.txt','scripts/test_hotfix124.py','migrations/0060_v102_hotfix124_vocabulary_specialist.sql','lib/vocabulary-specialist/policy.ts','lib/vocabulary-specialist/generate.ts','app/api/student/vocabulary-specialist/route.ts','app/api/admin/vocabulary-specialist/route.ts','components/vocabulary-specialist/vocabulary-specialist-workspace.tsx','components/vocabulary-specialist/tenant-vocabulary-specialist-admin.tsx','app/practice/vocabulary-specialist/page.tsx','app/admin/(protected)/vocabulary-specialist/page.tsx',
@@ -148,7 +148,7 @@ except Exception as e: errors.append(f'R3 style validation: {e}')
 try:
  db=sqlite3.connect(':memory:');migrations=sorted((root/'migrations').glob('*.sql'))
  if len(migrations)<56: errors.append(f'expected at least 56 migrations, found {len(migrations)}')
- if not migrations or migrations[-1].name!='0065_v102_pet_picture_image_reliability.sql': errors.append('latest migration must be 0065_v102_pet_picture_image_reliability.sql')
+ if not migrations or migrations[-1].name!='0066_v102_reading_aloud_50_original_passages.sql': errors.append('latest migration must be 0066_v102_reading_aloud_50_original_passages.sql')
  for m in migrations: db.executescript(m.read_text())
  # PET picture-description content is a separate, continuously available
  # specialist track; each published exercise must have a person/action photo
@@ -169,6 +169,25 @@ try:
    errors.append(f'{pet_id}: person/action scene details missing')
   if body.get('targetSeconds')!=60:
    errors.append(f'{pet_id}: picture practice duration must be 60s')
+ # Ensure new Reading Aloud content is present, stage-balanced and linked to
+ # the same speech assessment skills as existing Daily Speaking lessons.
+ extra=db.execute("""SELECT c.id,c.school_level,v.body_json
+ FROM content_items c JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version
+ WHERE c.id LIKE 'speak-read-extra-%' AND c.content_type='oral_prompt' AND c.status='published'
+ ORDER BY c.id""").fetchall()
+ if len(extra)!=50: errors.append(f'Reading Aloud expansion requires exactly 50 published passages, found {len(extra)}')
+ for stage in ('P5','P6'):
+  n=sum(1 for row in extra if row[1]==stage)
+  if n!=25: errors.append(f'Reading Aloud {stage} requires 25 new passages, found {n}')
+ for prompt_id,stage,body_json in extra:
+  body=json.loads(body_json)
+  passage=body.get('referenceText','')
+  wc=len(passage.split()) if isinstance(passage,str) else 0
+  if body.get('mode')!='reading_aloud' or not 85<=wc<=180:
+   errors.append(f'{prompt_id}: invalid Reading Aloud mode or word count ({wc})')
+  skills={r[0] for r in db.execute("SELECT skill_id FROM content_skills WHERE content_id=?",(prompt_id,))}
+  if not {'S-PRON','S-FLUENCY','S-PROSODY','S-PURPOSE'}.issubset(skills):
+   errors.append(f'{prompt_id}: missing pronunciation/fluency/prosody/purpose skills')
  counts['tables']=db.execute("select count(*) from sqlite_master where type='table' and name not like 'sqlite_%'").fetchone()[0]
  counts['skills']=db.execute('select count(*) from skills').fetchone()[0]
  counts['questions']=db.execute("select count(*) from questions where status='published'").fetchone()[0]
