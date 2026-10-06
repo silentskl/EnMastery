@@ -31,6 +31,30 @@ export async function POST(request: Request) {
 
   if (!transcript || !prompt) return Response.json({ error: "prompt and transcript are required" }, { status: 400 });
 
+  // Use the published PET content as the source of truth for assessment.
+  // A client-supplied question list must never override the selected photograph.
+  let petQuestions: string[] = [];
+  let petScene = "";
+  let assessmentPrompt = prompt;
+  if (track === "pet") {
+    if (!promptId) return Response.json({ error: "PET promptId is required" }, { status: 400 });
+    const selected = await env.DB.prepare(`SELECT v.body_json FROM content_items c
+      JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version
+      WHERE c.id=? AND c.status='published' AND c.content_type='oral_prompt'
+        AND (c.scope='global' OR (c.scope='tenant' AND c.tenant_id=?))
+        AND json_extract(v.body_json,'$.examTrack')='PET' LIMIT 1`)
+      .bind(promptId, tenantId).first<{ body_json: string }>();
+    if (!selected) return Response.json({ error: "Published PET picture prompt not found" }, { status: 404 });
+    let data: Record<string, unknown>;
+    try { data = JSON.parse(selected.body_json) as Record<string, unknown>; }
+    catch { return Response.json({ error: "PET prompt data is invalid" }, { status: 500 }); }
+    if (!Array.isArray(data.examinerPrompts)) return Response.json({ error: "PET questions are missing" }, { status: 500 });
+    petQuestions = data.examinerPrompts.filter((q): q is string => typeof q === "string" && q.trim().length > 0).slice(0, 5);
+    if (petQuestions.length < 3) return Response.json({ error: "PET requires 3-5 picture questions" }, { status: 500 });
+    petScene = typeof data.stimulusAlt === "string" ? data.stimulusAlt.slice(0, 1000) : "";
+    assessmentPrompt = typeof data.prompt === "string" ? data.prompt.slice(0, 1800) : prompt;
+  }
+
   if (!sessionId) {
     sessionId = `speak-${crypto.randomUUID()}`;
     await env.DB.prepare("INSERT INTO speaking_sessions (id,child_id,mode,prompt_text,status) VALUES (?,?,?,?,'active')")
@@ -44,8 +68,10 @@ export async function POST(request: Request) {
       baseUrl: env.MODELBRIDGE_BASE_URL,
       apiKey: env.MODELBRIDGE_API_KEY,
       model: env.MODELBRIDGE_CHAT_MODEL,
-      prompt,
+      prompt: assessmentPrompt,
       transcript,
+      examinerPrompts: petQuestions,
+      sceneDescription: petScene,
       mode,
       history,
       track,
