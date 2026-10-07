@@ -119,19 +119,13 @@ async function candidateForMode(
         WHERE recent_task.child_id=? AND recent_task.activity_type='speaking' AND recent_task.activity_id=c.id
           AND recent_task.task_date>=? AND recent_task.task_date<?
       )
-    -- Prefer lessons this learner has never been assigned. Otherwise choose
-    -- the least recently assigned lesson, respecting the hard 7-day cooldown.
-    ORDER BY (SELECT MAX(used.task_date)
-              FROM speaking_daily_prompt_assignments used
-              WHERE used.child_id=? AND used.mode=? AND used.prompt_id=c.id) ASC,
-             COALESCE(c.published_at,c.created_at) ASC,c.created_at ASC,c.id ASC
+    ORDER BY COALESCE(c.published_at,c.created_at) ASC,c.created_at ASC,c.id ASC
     LIMIT ?`)
     .bind(
       args.stage,args.tenantId,args.mode,
       args.childId,args.mode,args.cooldownStart,args.taskDate,
       args.childId,args.mode,args.cooldownStart,args.taskDate,
       args.childId,args.cooldownStart,args.taskDate,
-      args.childId,args.mode,
       Math.max(1,Math.min(200,args.visibleLimit)),
     ).first<PromptRow>();
   return row ? toPrompt(row) : null;
