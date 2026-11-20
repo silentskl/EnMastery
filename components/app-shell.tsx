@@ -10,7 +10,7 @@ import { CurrentUserBadge } from "@/components/current-user-badge";
 
 const studentNav = [
   ["Home", "/"], ["Conversation", "/oral/conversation"],
-  ["Reading Aloud", "/oral/reading-aloud"], ["Listening", "/learn/listen"],
+  ["Role Play", "/oral/roleplay"], ["Reading Aloud", "/oral/reading-aloud"], ["Listening", "/learn/listen"],
 ] as const;
 const platformNav = [
   ["Overview", "/platform"], ["Organisations", "/platform/tenants"],
@@ -43,7 +43,7 @@ function ShellInner({ children }: { children: ReactNode }) {
       <div className="sidebarFoot">
         {platformMode ? <><strong>PSLE content administration</strong><Link href="/">Student view</Link><AdminSignOut/></>
         : tenantMode ? <><strong>Oral and listening only</strong><Link href="/">Student view</Link><TenantSignOut/></>
-        : <><strong>Singapore Primary 5–6</strong><span>Conversation · Reading Aloud · Listening</span><Link href="/account">Student account</Link></>}
+        : <><strong>Singapore Primary 5–6</strong><span>Picture Talk · Role Play · Reading Aloud · Listening</span><Link href="/account">Student account</Link></>}
       </div>
     </aside>
     <div className="mainColumn">

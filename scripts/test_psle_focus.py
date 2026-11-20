@@ -34,3 +34,17 @@ assert "speaking_turns" in conversation and "turn_count" in conversation
 assert 'setPhase(body.completed?"completed":"questions")' in workspace
 assert "examinerQuestion" in workspace
 print("PASS: staged picture description plus four examiner questions")
+
+# Everyday scenario role-play is separate from the PSLE photograph assessment.
+assert (root/"app/oral/roleplay/page.tsx").is_file()
+assert (root/"app/api/student/roleplay/route.ts").is_file()
+assert (root/"components/roleplay-workspace.tsx").is_file()
+catalogue=(root/"lib/roleplay/scenarios.ts").read_text()
+assert catalogue.count('{"id":')>=90, "Role-play must include a broad situation library"
+for topic in ["hawker-order","restaurant-order","hotel-checkin","hotel-checkout","mrt-directions","clinic-registration","lost-in-mall"]:
+ assert topic in catalogue, f"Missing core role-play situation: {topic}"
+roleplay_api=(root/"app/api/student/roleplay/route.ts").read_text()
+for action in ['action==="start"','action==="finish"','nextRoleplayReply','speaking_turns','assessRoleplay']:
+ assert action in roleplay_api, f"Missing open-ended role-play implementation: {action}"
+assert "/oral/roleplay" in shell
+print("PASS: broad open-ended real-life AI role-play and independent completion")
