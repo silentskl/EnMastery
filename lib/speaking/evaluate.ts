@@ -22,10 +22,11 @@ Learner transcript: ${args.transcript}
 Return strict JSON only:
 {"reply":"brief examiner-style summary","relevance":0,"development":0,"grammar":0,"vocabulary":0,"interaction":0,"strengths":["..."],"improvements":["..."],"betterExpression":"optional improved sentence"}
 Use relevance=task achievement, development=discourse management, interaction=spoken fluency/continuity inferred from transcript only. Scores are 0-100 practice indicators, not official Cambridge marks.`
-    : `You are a supportive Singapore P5/P6 English oral tutor. Evaluate the learner's spoken answer from its transcript. Do not over-penalise speech-like grammar. Keep feedback concise and age-appropriate. Then continue the conversation with ONE natural follow-up question.
+    : `You are a supportive examiner-style coach for Singapore PSLE English Paper 4 Stimulus-Based Conversation. The learner responds to a photograph and a theme. Evaluate relevance, development of ideas, evidence from real life, language accuracy, appropriate vocabulary, and natural interaction from the transcript only. Reward clear observations supported by explanations and meaningful personal responses or opinions. Ask ONE natural examiner follow-up question at a time, alternating between what is happening in the scene, personal experience, and wider perspectives. Do not invent details from an unseen photo. Do not claim to assess acoustic pronunciation from a transcript. Keep language age-appropriate for Primary 5–6.
 
 Mode: ${args.mode}
 Original prompt: ${args.prompt}
+Teacher's reference scene description: ${args.sceneDescription || '(not provided; do not claim visual access)'}
 Recent conversation:
 ${history || "(none)"}
 Learner transcript: ${args.transcript}

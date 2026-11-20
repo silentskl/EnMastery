@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   // Never trust the client to replace a published PSLE task or inject a custom system prompt.
   const assigned=await env.DB.prepare(`SELECT v.body_json FROM speaking_daily_prompt_assignments a JOIN content_items c ON c.id=a.prompt_id JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version WHERE a.child_id=? AND a.task_date=? AND a.mode='stimulus' AND a.prompt_id=? AND c.status='published' AND c.content_type='oral_prompt' AND (c.scope='global' OR (c.scope='tenant' AND c.tenant_id=?)) AND json_extract(v.body_json,'$.mode')='stimulus' LIMIT 1`).bind(session.childId,sgDate(),promptId,tenantId).first<{body_json:string}>();
   if(!assigned)return Response.json({error:"This PSLE conversation prompt is not assigned to your account today"},{status:403});
-  let prompt="";try{const selected=JSON.parse(assigned.body_json) as {prompt?:unknown};prompt=typeof selected.prompt==="string"?selected.prompt.trim().slice(0,1800):""}catch{}
+  let prompt="",sceneDescription="";try{const selected=JSON.parse(assigned.body_json) as {prompt?:unknown;stimulusAlt?:unknown};prompt=typeof selected.prompt==="string"?selected.prompt.trim().slice(0,1800):"";sceneDescription=typeof selected.stimulusAlt==="string"?selected.stimulusAlt.trim().slice(0,1000):""}catch{}
   const mode = body.mode === "stimulus" ? "stimulus" : "conversation";
   const track = body.track === "pet" ? "pet" : "daily";
   if(mode!=="stimulus"||track!=="daily")return Response.json({error:"Only PSLE stimulus-based conversation is supported"},{status:400});
@@ -81,6 +81,7 @@ export async function POST(request: Request) {
       history,
       track,
       targetSeconds,
+      sceneDescription,
     });
     const learnerTurn = `turn-${crypto.randomUUID()}`;
     const assistantTurn = `turn-${crypto.randomUUID()}`;
