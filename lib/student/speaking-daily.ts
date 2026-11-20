@@ -2,7 +2,7 @@ import type { SpeakingMode } from "@/lib/speaking/types";
 import { getLearnerPassScore } from "@/lib/settings/learning-policy";
 import { completeMatchingTasks, sgDate } from "@/lib/student/tasks";
 
-const REQUIRED_MODES:SpeakingMode[]=["conversation","reading_aloud","stimulus"];
+const REQUIRED_MODES:SpeakingMode[]=["reading_aloud","stimulus"];
 export type DailySpeakingProgress={
   taskDate:string;
   passMark:number;

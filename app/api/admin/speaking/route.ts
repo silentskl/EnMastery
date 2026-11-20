@@ -15,7 +15,7 @@ function pickString(body: Body, keys: string[]) {
 function normalise(body: Body) {
   const title = String(body.title || "").trim();
   const schoolLevel = body.schoolLevel === "P5" ? "P5" : "P6";
-  const mode = body.mode === "reading_aloud" ? "reading_aloud" : body.mode === "stimulus" ? "stimulus" : "conversation";
+  const mode = body.mode === "reading_aloud" ? "reading_aloud" : "stimulus";
   const topic = String(body.topic || "Oral Communication").trim() || "Oral Communication";
   const prompt = String(body.prompt || "").trim();
   const referenceText = String(body.referenceText || "").trim();
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
   const a = await requireTenantSession(request);
   if (a.response) return a.response;
   const s = a.session!;
-  const rows = await getEnv().DB.prepare(`SELECT c.id,c.title,c.school_level,c.topic,c.status,c.scope,c.description,v.body_json FROM content_items c JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version WHERE c.content_type='oral_prompt' AND ((c.scope='global' AND c.status='published') OR (c.scope='tenant' AND c.tenant_id=?)) ORDER BY c.created_at DESC`).bind(s.tenant_id).all();
+  const rows = await getEnv().DB.prepare(`SELECT c.id,c.title,c.school_level,c.topic,c.status,c.scope,c.description,v.body_json FROM content_items c JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version WHERE c.content_type='oral_prompt' AND json_extract(v.body_json,'$.mode') IN ('reading_aloud','stimulus') AND ((c.scope='global' AND c.status='published') OR (c.scope='tenant' AND c.tenant_id=?)) ORDER BY c.created_at DESC`).bind(s.tenant_id).all();
   return Response.json({
     prompts: rows.results.map((r: any) => {
       let b: any = {};
@@ -66,7 +66,8 @@ export async function POST(request: Request) {
   const b = normalise(await request.json().catch(() => ({})) as Body);
   if (!b.title || b.prompt.length < 20) return Response.json({ error: "Title and speaking prompt are required" }, { status: 400 });
   if (b.mode === "reading_aloud" && b.referenceText.length < 80) return Response.json({ error: "Reading Aloud needs a reference passage of at least 80 characters" }, { status: 400 });
-  if (b.mode === "stimulus" && !b.stimulusAlt && !b.stimulusImageUrl) return Response.json({ error: "Stimulus Conversation needs a scene description or a stimulus image" }, { status: 400 });
+  if (b.mode === "stimulus" && (!b.stimulusAlt || !b.stimulusImageUrl)) return Response.json({ error: "PSLE picture dialogue requires BOTH a visible image URL and a teacher scene description" }, { status: 400 });
+  if (b.mode === "stimulus" && !(/^https:\/\/\S+$/i.test(b.stimulusImageUrl) || /^\/(?!\/)\S+$/.test(b.stimulusImageUrl))) return Response.json({ error: "Image URL must be https:// or a safe same-origin path" }, { status: 400 });
   const dup = await duplicateSkip(db, { contentType: "oral_prompt", schoolLevel: b.schoolLevel, scope: "tenant", tenantId: s.tenant_id, title: b.title });
   if (dup.skipped) return Response.json({ ok: true, status: "skipped", existingId: dup.existingId, existingStatus: dup.existingStatus });
   const id = `speak-${crypto.randomUUID()}`;

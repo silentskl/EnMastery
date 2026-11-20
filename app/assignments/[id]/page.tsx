@@ -1,1 +1,0 @@
-import{StudentAssignmentDetail}from"@/components/student-assignment-detail";export default async function Page({params}:{params:Promise<{id:string}>}){const{id}=await params;return <StudentAssignmentDetail id={id}/>}

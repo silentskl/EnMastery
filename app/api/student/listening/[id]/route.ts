@@ -41,7 +41,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   }
   const summary=await env.DB.prepare("SELECT passed,score,status FROM learning_summary_attempts WHERE child_id=? AND content_id=? ORDER BY created_at DESC LIMIT 1").bind(session.childId,id).first<{passed:number;score:number|null;status:string}>();
   const totalQuestions=selectedQuestions.length,questionsPassed=totalQuestions===0||correctIds.size>=totalQuestions,summaryPassed=Boolean(summary?.passed);
-  const publicContent = { ...content, questions: selectedQuestions.map((q) => questionForStudent(q as unknown as Record<string, unknown>)), learningRecord:{correctQuestions:correctIds.size,totalQuestions,attemptCount:Number(attempts?.attempt_count||0),questionsPassed,summaryPassed,pass:questionsPassed&&summaryPassed} };
+  const publicContent = { ...content, questions: selectedQuestions.map((q) => questionForStudent(q as unknown as Record<string, unknown>)), learningRecord:{correctQuestions:correctIds.size,totalQuestions,attemptCount:Number(attempts?.attempt_count||0),questionsPassed,summaryPassed,pass:questionsPassed} };
   const response = Response.json({ content: publicContent, practicePolicy: policy });
   if (session.isNew) response.headers.set("Set-Cookie", learnerCookie(session.sessionId));
   return response;
