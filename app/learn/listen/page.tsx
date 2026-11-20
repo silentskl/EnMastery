@@ -1,3 +1,5 @@
 import { PageIntro } from "@/components/ui";
 import { StudentListeningLibrary } from "@/components/student-listening-library";
-export default async function ListenPage({searchParams}:{searchParams:Promise<{practice?:string}>}){const q=await searchParams,practiceMode=q.practice==="1";return <><PageIntro eyebrow={practiceMode?"Practice · Listening":"Listen · Live library"} title={practiceMode?"Focused Listening practice.":"Listen once for meaning. Then listen with purpose."} description={practiceMode?"Your Tenant practice policy chooses the content stage, target question count and difficulty.":"Published video and audio lessons are loaded from D1. Guided lessons use a reliable question basis; authentic lessons build listening habits without invented quiz answers."}/><StudentListeningLibrary practiceMode={practiceMode}/></>}
+export default function ListenPage() {
+  return <><PageIntro eyebrow="PSLE Paper 3 · Listening" title="Listening Comprehension" description="Practise listening twice for purpose, key details and inference, then answer comprehension questions. A full PSLE paper contains 20 multiple-choice questions; shorter lessons are skill practice."/><StudentListeningLibrary/></>;
+}

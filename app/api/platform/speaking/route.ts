@@ -15,7 +15,7 @@ function pickString(body: Body, keys: string[]) {
 function normalise(body: Body) {
   const title = String(body.title || "").trim();
   const schoolLevel = body.schoolLevel === "P5" ? "P5" : "P6";
-  const mode = body.mode === "reading_aloud" ? "reading_aloud" : body.mode === "stimulus" ? "stimulus" : "conversation";
+  const mode = body.mode === "reading_aloud" ? "reading_aloud" : "stimulus";
   const topic = String(body.topic || "Oral Communication").trim() || "Oral Communication";
   const prompt = String(body.prompt || "").trim();
   const referenceText = String(body.referenceText || "").trim();
@@ -41,7 +41,7 @@ function normalise(body: Body) {
 export async function GET(request: Request) {
   const denied = await requireAdmin(request);
   if (denied) return denied;
-  const rows = await getEnv().DB.prepare("SELECT c.id,c.title,c.school_level,c.topic,c.status,c.scope,c.description,v.body_json FROM content_items c JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version WHERE c.content_type='oral_prompt' ORDER BY c.created_at DESC").all();
+  const rows = await getEnv().DB.prepare("SELECT c.id,c.title,c.school_level,c.topic,c.status,c.scope,c.description,v.body_json FROM content_items c JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version WHERE c.content_type='oral_prompt' AND json_extract(v.body_json,'$.mode') IN ('reading_aloud','stimulus') ORDER BY c.created_at DESC").all();
   return Response.json({
     prompts: rows.results.map((r: any) => {
       let b: any = {};

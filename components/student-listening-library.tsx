@@ -1,15 +1,30 @@
 "use client";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import type { LearningStage } from "@/lib/language/stages";
-
-type Row={id:string;title:string;school_level:string;topic?:string;description?:string;media_kind:string;provider:string;thumbnail_url?:string|null;duration_seconds?:number|null;made_for_kids?:number|null;question_basis:string;progress_percent:number;progress_status:string;question_count:number};
-type Policy={contentStage:LearningStage;questionCount:number;difficulty:string};
-const levels:LearningStage[]=["P1-P4","P5","P6","S1","S2","S3","S4"];
-const label=(x:string)=>x==="P1-P4"?"P1–P4":x;
-
-export function StudentListeningLibrary({practiceMode=false}:{practiceMode?:boolean}={}){
-  const[level,setLevel]=useState<LearningStage>("P6"),[rows,setRows]=useState<Row[]>([]),[policy,setPolicy]=useState<Policy|null>(null),[error,setError]=useState("");
-  useEffect(()=>{setError("");const suffix=practiceMode?"?practice=1":`?level=${encodeURIComponent(level)}`;fetch(`/api/student/listening${suffix}`,{cache:"no-store"}).then(async r=>{const b=await r.json() as {contents?:Row[];level?:LearningStage;practicePolicy?:Policy|null;error?:string};if(!r.ok)throw new Error(b.error||"Could not load listening library");if(b.level)setLevel(b.level);setPolicy(b.practicePolicy||null);setRows(b.contents||[])}).catch(e=>setError(e instanceof Error?e.message:"Could not load listening library"))},[level,practiceMode]);
-  return <>{practiceMode?<div className="libraryToolbar"><div><strong>Tenant-guided Listening</strong><div className="sourceHint">{policy?`${label(policy.contentStage)} · ${policy.questionCount} questions · ${policy.difficulty}`:"Loading practice policy…"}</div></div><span>{rows.length} matching lessons</span></div>:<div className="libraryToolbar"><div className="tabs">{levels.map(x=><button key={x} className={level===x?"active":""} onClick={()=>setLevel(x)}>{label(x)}</button>)}</div><span>{rows.length} published listening lessons</span></div>}{error&&<div className="notice warnNotice">{error}</div>}{!rows.length&&!error?<div className="emptyState"><strong>No {label(level)} listening lessons match this view yet.</strong><p>An administrator can publish Listening lessons for this stage, or adjust the Tenant practice policy.</p></div>:<div className="listeningLibraryGrid">{rows.map(r=>{const passed=r.progress_status==="completed"&&Number(r.progress_percent)>=100,shownQuestions=practiceMode&&policy?Math.min(Number(r.question_count||0),policy.questionCount):Number(r.question_count||0);const card=<><div className="listenThumb">{r.thumbnail_url?<img src={r.thumbnail_url} alt=""/>:<span>{r.media_kind==="youtube"?"▶":"♫"}</span>}<b>{r.media_kind==="youtube"?"Video":r.media_kind==="owned_audio"?"Intensive":"Audio"}</b></div><div className="listenCardBody"><div className="activityKicker">{r.provider} · {r.school_level}{r.made_for_kids===1?" · Made for Kids":""}</div><h3>{r.title}</h3><p>{r.description}</p><div className="listenMeta"><span>{r.question_basis==="metadata_only"?"Authentic listening":`${shownQuestions} guided questions`}</span>{r.duration_seconds?<span>{Math.ceil(r.duration_seconds/60)} min</span>:null}<span>{r.progress_percent||0}% complete</span></div><div className="bar"><span style={{width:`${r.progress_percent||0}%`}}/></div>{passed&&<div className="learningStatus pass" style={{marginTop:10}}>PASS · completed</div>}</div></>;const href=`/learn/listen/${r.id}${practiceMode?"?practice=1":""}`;return practiceMode||!passed?<Link className="listeningLessonCard" href={href} key={r.id}>{card}</Link>:<div className="listeningLessonCard completedLessonCard" key={r.id} aria-label={`${r.title} completed`}>{card}</div>})}</div>}</>;
+type Row={id:string;title:string;school_level:string;topic?:string;description?:string;media_kind:string;provider:string;thumbnail_url?:string|null;duration_seconds?:number|null;progress_percent:number;progress_status:string;question_count:number};
+const levels=["P5","P6"] as const;
+export function StudentListeningLibrary(){
+  const [level,setLevel]=useState<"P5"|"P6">("P6");
+  const [rows,setRows]=useState<Row[]>([]),[error,setError]=useState(""),[loading,setLoading]=useState(true);
+  useEffect(()=>{
+    let live=true;setError("");setLoading(true);
+    void fetch("/api/student/listening?level="+level,{cache:"no-store"}).then(async r=>{
+      const body=await r.json() as {contents?:Row[];error?:string};
+      if(!r.ok)throw new Error(body.error||"Listening lessons could not be loaded");
+      if(live)setRows((body.contents||[]).filter(row=>row.question_count>0));
+    }).catch(e=>{if(live)setError(e instanceof Error?e.message:"Listening lessons could not be loaded")}).finally(()=>{if(live)setLoading(false)});
+    return()=>{live=false};
+  },[level]);
+  return <><div className="libraryToolbar"><div className="tabs">{levels.map(stage=><button key={stage} className={level===stage?"active":""} onClick={()=>setLevel(stage)}>{stage}</button>)}</div><span>{rows.length} PSLE listening activities</span></div>
+    {error&&<div className="notice warnNotice">{error}</div>}
+    {loading?<div className="emptyState">Loading listening activities…</div>:!rows.length?<div className="emptyState"><strong>No published {level} listening comprehension activities yet.</strong><p>Your administrator can publish audio lessons with well-grounded multiple-choice questions.</p></div>
+    :<div className="listeningLibraryGrid">{rows.map(row=><Link className="listeningLessonCard" href={"/learn/listen/"+encodeURIComponent(row.id)} key={row.id}>
+      <div className="listenThumb">{row.thumbnail_url?<img src={row.thumbnail_url} alt=""/>:<span>♫</span>}<b>{row.media_kind==="owned_audio"?"Audio":"Listening media"}</b></div>
+      <div className="listenCardBody"><div className="activityKicker">{row.school_level} · {row.provider}</div><h3>{row.title}</h3><p>{row.description||"Practise listening for meaning and detail."}</p>
+        <div className="listenMeta"><span>{row.question_count} questions</span>{row.duration_seconds&&<span>{Math.ceil(row.duration_seconds/60)} min</span>}<span>{row.progress_percent||0}% complete</span></div>
+        <div className="bar"><span style={{width:String(row.progress_percent||0)+"%"}}/></div>
+        {row.progress_status==="completed"&&<div className="learningStatus pass" style={{marginTop:10}}>Completed · practise again</div>}
+      </div>
+    </Link>)}</div>}
+  </>;
 }

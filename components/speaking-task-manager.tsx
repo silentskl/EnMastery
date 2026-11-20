@@ -13,7 +13,7 @@ type Row = {
   stimulusImageUrl?: string | null;
 };
 
-const learningStages = ["P1-P4", "P5", "P6", "S1", "S2", "S3", "S4"] as const;
+const learningStages = ["P5", "P6"] as const;
 
 export function SpeakingTaskManager({ endpoint, tenant = false }: { endpoint: string; tenant?: boolean }) {
   const [rows, setRows] = useState<Row[]>([]);
@@ -73,7 +73,7 @@ export function SpeakingTaskManager({ endpoint, tenant = false }: { endpoint: st
     if (r.ok) await load();
   }
 
-  const modeName = (m: Mode) => m === "reading_aloud" ? "Reading Aloud" : m === "stimulus" ? "Stimulus Conversation" : "AI Conversation";
+  const modeName = (m: Mode) => m === "reading_aloud" ? "Reading Aloud" : m === "stimulus" ? "Stimulus-Based Conversation" : "PSLE Conversation";
 
   return <>
     <div className="adminSplit speakingAdminSplit">
@@ -86,7 +86,7 @@ export function SpeakingTaskManager({ endpoint, tenant = false }: { endpoint: st
           <label>Title<input required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} /></label>
           <div className="formGrid">
             <label>Level<select value={form.schoolLevel} onChange={e => setForm({ ...form, schoolLevel: e.target.value })}><option>P5</option><option>P6</option></select></label>
-            <label>Type<select value={form.mode} onChange={e => setForm({ ...form, mode: e.target.value as Mode })}><option value="reading_aloud">Reading Aloud</option><option value="stimulus">Stimulus Conversation</option><option value="conversation">AI Conversation</option></select></label>
+            <label>Type<select value={form.mode} onChange={e => setForm({ ...form, mode: e.target.value as Mode })}><option value="reading_aloud">Reading Aloud</option><option value="stimulus">Stimulus Conversation</option></select></label>
           </div>
           <label>Topic<input value={form.topic} onChange={e => setForm({ ...form, topic: e.target.value })} /></label>
           <label>Task instruction<textarea required value={form.prompt} onChange={e => setForm({ ...form, prompt: e.target.value })} placeholder="What should the student do or discuss?" /></label>

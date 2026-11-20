@@ -36,9 +36,11 @@ export async function POST(request: Request) {
   const total = await env.DB.prepare("SELECT COUNT(*) AS total FROM questions WHERE source_content_id=? AND status='published' AND (scope='global' OR (scope='tenant' AND tenant_id=?))").bind(contentId,tenantId).first<{ total:number }>();
   const done = await env.DB.prepare("SELECT COUNT(DISTINCT question_id) AS done FROM question_attempts WHERE child_id=? AND content_id=? AND is_correct=1").bind(session.childId, contentId).first<{ done:number }>();
   const summary = await env.DB.prepare("SELECT passed FROM learning_summary_attempts WHERE child_id=? AND content_id=? AND status='reviewed' ORDER BY created_at DESC LIMIT 1").bind(session.childId,contentId).first<{passed:number}>();
-  const questionsPassed=Number(done?.done||0)>=Number(total?.total||0),summaryPassed=Boolean(summary?.passed);
-  const questionProgress=Math.min(80,Math.round(((done?.done||0)/Math.max(total?.total||1,1))*80));
-  const progress=questionsPassed&&summaryPassed?100:Math.min(99,questionProgress+(summaryPassed?20:0));
+  const listening = content.content_type === "audio" || content.content_type === "video_ref";
+  const questionsPassed=Number(total?.total||0)>0&&Number(done?.done||0)>=Number(total?.total||0);
+  const summaryPassed=Boolean(summary?.passed);
+  const questionProgress=Math.min(listening?99:80,Math.round(((done?.done||0)/Math.max(total?.total||1,1))*(listening?100:80)));
+  const progress=questionsPassed&&(listening||summaryPassed)?100:Math.min(99,questionProgress+(listening?0:summaryPassed?20:0));
   await env.DB.prepare("INSERT INTO learner_content_progress (child_id,content_id,status,progress_percent,completed_at) VALUES (?,?,?,?,?) ON CONFLICT(child_id,content_id) DO UPDATE SET status=excluded.status,progress_percent=excluded.progress_percent,completed_at=excluded.completed_at,updated_at=CURRENT_TIMESTAMP")
     .bind(session.childId, contentId, progress >= 100 ? "completed" : "started", progress, progress >= 100 ? new Date().toISOString() : null).run();
   if (progress >= 100) await completeMatchingTasks(env.DB, session.childId, content.content_type === "article" || content.content_type === "lesson" ? "reading" : "listening", contentId);

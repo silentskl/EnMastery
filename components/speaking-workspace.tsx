@@ -1,97 +1,183 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { ConversationFeedback, PronunciationAssessment, SpeakingMode, SpeakingPrompt, SpeakingTrack } from "@/lib/speaking/types";
-import { VocabularyAddButton } from "@/components/vocabulary/vocabulary-add-button";
-import { SelectionVocabulary } from "@/components/vocabulary/selection-vocabulary";
+import { useEffect, useRef, useState } from "react";
+import type { ConversationFeedback, PronunciationAssessment, SpeakingMode, SpeakingPrompt } from "@/lib/speaking/types";
 import { getSpeechRecognitionCtor, type SpeechRecognitionLike } from "@/lib/browser/speech-recognition";
 
-type Config = { authenticated: boolean; serverStt: boolean; serverTts: boolean; azurePronunciation: boolean; browserFallback: boolean; ttsVoice: string };
-type HistoryItem = { role: "user" | "assistant"; content: string };
-type DailySpeakingProgress = { taskDate: string; passMark: number; passedModes: SpeakingMode[]; scores: Partial<Record<SpeakingMode, number>>; completed: boolean };
+type Focus = "stimulus" | "reading_aloud";
+type Config = {authenticated:boolean;serverStt:boolean;serverTts:boolean;azurePronunciation:boolean};
+type HistoryItem = {role:"user"|"assistant";content:string};
+type Progress = {passMark:number;passedModes:SpeakingMode[];scores:Partial<Record<SpeakingMode,number>>};
 
-function encodeWav(samples: Float32Array, sampleRate: number) { const buffer = new ArrayBuffer(44 + samples.length * 2), view = new DataView(buffer); const write = (o: number, s: string) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); }; write(0, "RIFF"); view.setUint32(4, 36 + samples.length * 2, true); write(8, "WAVE"); write(12, "fmt "); view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true); view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true); write(36, "data"); view.setUint32(40, samples.length * 2, true); for (let i = 0; i < samples.length; i++) { const s = Math.max(-1, Math.min(1, samples[i])); view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true); } return new Blob([buffer], { type: "audio/wav" }); }
-function downsample(chunks: Float32Array[], sourceRate: number, targetRate = 16000) { const total = chunks.reduce((n, x) => n + x.length, 0), input = new Float32Array(total); let off = 0; for (const c of chunks) { input.set(c, off); off += c.length; } if (sourceRate === targetRate) return input; const ratio = sourceRate / targetRate, len = Math.max(1, Math.round(input.length / ratio)), out = new Float32Array(len); for (let i = 0; i < len; i++) { const start = Math.floor(i * ratio), end = Math.min(input.length, Math.floor((i + 1) * ratio)); let sum = 0, count = 0; for (let j = start; j < end; j++) { sum += input[j]; count++; } out[i] = count ? sum / count : 0; } return out; }
-function browserSpeak(text: string) { if (typeof window === "undefined" || !("speechSynthesis" in window)) return; window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = "en-SG"; u.rate = .93; const voices = window.speechSynthesis.getVoices(); u.voice = voices.find(v => v.lang.toLowerCase() === "en-sg") || voices.find(v => v.lang.toLowerCase() === "en-gb") || voices.find(v => v.lang.toLowerCase().startsWith("en")) || null; window.speechSynthesis.speak(u); }
+function encodeWav(parts:Float32Array[],sourceRate:number):Blob {
+  const total=parts.reduce((n,p)=>n+p.length,0);
+  const source=new Float32Array(total);
+  let offset=0;for(const part of parts){source.set(part,offset);offset+=part.length}
+  const targetRate=16000, ratio=sourceRate/targetRate, length=Math.ceil(source.length/ratio);
+  const buffer=new ArrayBuffer(44+length*2),view=new DataView(buffer);
+  const label=(at:number,s:string)=>{for(let i=0;i<s.length;i++)view.setUint8(at+i,s.charCodeAt(i))};
+  label(0,"RIFF");view.setUint32(4,36+length*2,true);label(8,"WAVE");label(12,"fmt ");
+  view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);
+  view.setUint32(24,targetRate,true);view.setUint32(28,targetRate*2,true);view.setUint16(32,2,true);view.setUint16(34,16,true);
+  label(36,"data");view.setUint32(40,length*2,true);
+  for(let i=0;i<length;i++){const from=Math.floor(i*ratio),to=Math.min(source.length,Math.floor((i+1)*ratio));let sum=0;for(let j=from;j<to;j++)sum+=source[j];const sample=Math.max(-1,Math.min(1,sum/Math.max(1,to-from)));view.setInt16(44+i*2,sample<0?sample*32768:sample*32767,true)}
+  return new Blob([buffer],{type:"audio/wav"});
+}
+function browserSpeak(text:string){
+  if(typeof window==="undefined"||!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(text);
+  utterance.lang="en-SG";utterance.rate=.93;
+  utterance.voice=window.speechSynthesis.getVoices().find(v=>v.lang.toLowerCase()==="en-sg")||window.speechSynthesis.getVoices().find(v=>v.lang.startsWith("en"))||null;
+  window.speechSynthesis.speak(utterance);
+}
+function Score({label,value}:{label:string;value:number|null|undefined}) {
+  return <div className="speechScore"><span>{label}</span><strong>{typeof value==="number"?Math.round(value):"—"}</strong></div>;
+}
+export function SpeakingWorkspace({focus}:{focus:Focus}) {
+  const [prompts,setPrompts]=useState<SpeakingPrompt[]>([]);
+  const [config,setConfig]=useState<Config|null>(null);
+  const [promptId,setPromptId]=useState("");
+  const [progress,setProgress]=useState<Progress|null>(null);
+  const [transcript,setTranscript]=useState("");
+  const [interim,setInterim]=useState("");
+  const [history,setHistory]=useState<HistoryItem[]>([]);
+  const [sessionId,setSessionId]=useState("");
+  const [feedback,setFeedback]=useState<ConversationFeedback|null>(null);
+  const [assessment,setAssessment]=useState<PronunciationAssessment|null>(null);
+  const [recording,setRecording]=useState(false);
+  const [busy,setBusy]=useState(false);
+  const [seconds,setSeconds]=useState(0);
+  const [error,setError]=useState("");
+  const [loading,setLoading]=useState(true);
+  const streamRef=useRef<MediaStream|null>(null);
+  const audioRef=useRef<AudioContext|null>(null);
+  const processorRef=useRef<ScriptProcessorNode|null>(null);
+  const sourceRef=useRef<MediaStreamAudioSourceNode|null>(null);
+  const recRef=useRef<SpeechRecognitionLike|null>(null);
+  const chunksRef=useRef<Float32Array[]>([]);
+  const wavRef=useRef<Blob|null>(null);
+  const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
+  const startedRef=useRef(0);
+  const sampleRateRef=useRef(48000);
+  const startingRef=useRef(false);
+  const committedRef=useRef<Set<number>>(new Set());
 
-function Score({ label, value }: { label: string; value: number | null }) { return <div className="speechScore"><span>{label}</span><strong>{value === null ? "—" : Math.round(value)}</strong></div>; }
-
-export function SpeakingWorkspace({ initialTrack = "daily" }: { initialTrack?: SpeakingTrack } = {}) {
-  const [prompts, setPrompts] = useState<SpeakingPrompt[]>([]), [config, setConfig] = useState<Config | null>(null), [track, setTrack] = useState<SpeakingTrack>(initialTrack), [mode, setMode] = useState<SpeakingMode>("conversation"), [promptId, setPromptId] = useState(""), [recording, setRecording] = useState(false), [seconds, setSeconds] = useState(0), [transcript, setTranscript] = useState(""), [interim, setInterim] = useState(""), [feedback, setFeedback] = useState<ConversationFeedback | null>(null), [assessment, setAssessment] = useState<PronunciationAssessment | null>(null), [history, setHistory] = useState<HistoryItem[]>([]), [sessionId, setSessionId] = useState(""), [busy, setBusy] = useState(false), [error, setError] = useState(""), [dailyProgress, setDailyProgress] = useState<DailySpeakingProgress | null>(null), [brokenImages, setBrokenImages] = useState<Record<string, number>>({});
-  const streamRef = useRef<MediaStream | null>(null), ctxRef = useRef<AudioContext | null>(null), processorRef = useRef<ScriptProcessorNode | null>(null), sourceRef = useRef<MediaStreamAudioSourceNode | null>(null), chunksRef = useRef<Float32Array[]>([]), recRef = useRef<SpeechRecognitionLike | null>(null), timerRef = useRef<ReturnType<typeof setInterval> | null>(null), startRef = useRef(0), rateRef = useRef(48000), wavRef = useRef<Blob | null>(null), committedSpeechResultsRef=useRef<Set<number>>(new Set()), startingRef=useRef(false);
-  useEffect(() => { void fetch("/api/student/speaking/config").then(async r => r.ok ? (await r.json() as Config) : null).then(setConfig); }, []);
-  useEffect(() => {
-    setBusy(true); setError(""); setPrompts([]); setDailyProgress(null);
-    const endpoint = track === "pet" ? "/api/student/speaking/pet-prompts" : "/api/student/speaking/prompts";
-    void fetch(endpoint, { cache: "no-store" }).then(async r => {
-      const body = await r.json().catch(() => ({})) as { prompts?: SpeakingPrompt[]; dailyProgress?: DailySpeakingProgress; error?: string };
-      const next = Array.isArray(body.prompts) ? body.prompts : [];
-      setPrompts(next); setDailyProgress(track === "daily" ? body.dailyProgress || null : null);
-      if (!r.ok) setError(body.error || (track === "pet" ? "PET picture-description prompts could not be loaded." : "Daily Speaking prompts could not be loaded."));
-      else if (track === "daily" && next.length < 3) setError("A non-repeating prompt is not available for every Speaking tab today. Repeated content was not reused; ask your administrator to add more Speaking content.");
-      else if (track === "pet" && next.length === 0) setError("No PET picture-description practice is published yet.");
-      const requested = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("prompt") : null;
-      const first = (requested ? next.find(x => x.id === requested) : undefined) || (track === "daily" ? next.find(x => x.mode === "conversation") : next[0]) || next[0];
-      if (first) { setMode(track === "pet" ? "stimulus" : first.mode); setPromptId(first.id); }
-    }).catch(() => setError("Speaking prompts could not be loaded.")).finally(() => setBusy(false));
-  }, [track]);
-  const available = useMemo(() => prompts.filter(p => p.mode === mode), [prompts, mode]); const active = available.find(p => p.id === promptId) || available[0] || null;
-  useEffect(() => { if (active && active.id !== promptId) setPromptId(active.id); setTranscript(""); setInterim(""); setFeedback(null); setAssessment(null); setHistory([]); setSessionId(""); }, [mode, active?.id]);
-  async function start() {
-    if (config && !config.authenticated) { setError("Please sign in as a student to use speaking practice and AI assessment."); return; }
-    if(recording||startingRef.current)return;
-    startingRef.current = true;
-    try {
-      setError(""); setFeedback(null); setAssessment(null); setTranscript(""); setInterim(""); wavRef.current = null;
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } }); streamRef.current = stream;
-      const ctx = new AudioContext(); ctxRef.current = ctx; rateRef.current = ctx.sampleRate; const source = ctx.createMediaStreamSource(stream), processor = ctx.createScriptProcessor(4096, 1, 1); sourceRef.current = source; processorRef.current = processor; chunksRef.current = []; processor.onaudioprocess = e => chunksRef.current.push(new Float32Array(e.inputBuffer.getChannelData(0))); source.connect(processor); processor.connect(ctx.destination);
-      const Ctor = getSpeechRecognitionCtor();
-      if (Ctor) { const rec = new Ctor(); committedSpeechResultsRef.current=new Set(); rec.lang = "en-SG"; rec.interimResults = true; rec.continuous = true; rec.onresult = e => { let finalAdd = "", temp = ""; for (let i = 0; i < e.results.length; i++) { const t = (e.results[i][0]?.transcript || "").trim(); if (!t) continue; if (e.results[i].isFinal) { if (!committedSpeechResultsRef.current.has(i)) { committedSpeechResultsRef.current.add(i); finalAdd += `${t} `; } } else temp += `${t} `; } if(finalAdd)setTranscript(v => `${v} ${finalAdd}`.trim()); setInterim(temp.trim()); }; rec.onerror = () => { }; try { rec.start(); recRef.current = rec; } catch { } }
-      startRef.current = Date.now(); setSeconds(0); timerRef.current = setInterval(() => setSeconds(Math.round((Date.now() - startRef.current) / 1000)), 500); setRecording(true);
-    } catch (e) { streamRef.current?.getTracks().forEach(t => t.stop()); streamRef.current = null; setError(e instanceof Error ? e.message : "Could not start microphone recording."); }
-    finally { startingRef.current = false; }
+  useEffect(()=>{void fetch("/api/student/speaking/config",{cache:"no-store"}).then(r=>r.json()).then(x=>setConfig(x as Config)).catch(()=>setError("Could not load speech settings."))},[]);
+  useEffect(()=>{
+    let live=true;setLoading(true);setError("");setTranscript("");setFeedback(null);setAssessment(null);setHistory([]);setSessionId("");
+    void fetch("/api/student/speaking/prompts",{cache:"no-store"}).then(async r=>{
+      const body=await r.json() as {prompts?:SpeakingPrompt[];dailyProgress?:Progress;error?:string};
+      if(!r.ok)throw new Error(body.error||"Could not load oral tasks");
+      if(!live)return;
+      const matching=(body.prompts||[]).filter(p=>p.mode===focus);
+      setPrompts(matching);setPromptId(matching[0]?.id||"");setProgress(body.dailyProgress||null);
+      if(matching.length===0)setError("No "+(focus==="stimulus"?"conversation":"Reading Aloud")+" task is published for this learner today. Ask your teacher to publish more P5/P6 material.");
+    }).catch(e=>{if(live)setError(e instanceof Error?e.message:"Could not load oral tasks")}).finally(()=>{if(live)setLoading(false)});
+    return()=>{live=false};
+  },[focus]);
+  useEffect(()=>()=>{if(timerRef.current)clearInterval(timerRef.current);try{recRef.current?.stop()}catch{}streamRef.current?.getTracks().forEach(t=>t.stop());processorRef.current?.disconnect();sourceRef.current?.disconnect();void audioRef.current?.close().catch(()=>{})},[]);
+  const active=prompts.find(p=>p.id===promptId)||prompts[0]||null;
+  function selectPrompt(id:string){if(recording)return;setPromptId(id);setTranscript("");setFeedback(null);setAssessment(null);setSessionId("");setHistory([]);wavRef.current=null;}
+  async function start(){
+    if(recording||busy||startingRef.current)return;
+    if(config&&!config.authenticated){setError("Sign in with a student account to record and receive feedback.");return}
+    startingRef.current=true;
+    try{
+      setError("");setFeedback(null);setAssessment(null);setTranscript("");setInterim("");setSeconds(0);
+      wavRef.current=null;chunksRef.current=[];
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true}});
+      streamRef.current=stream;
+      const ctx=new AudioContext();audioRef.current=ctx;sampleRateRef.current=ctx.sampleRate;
+      const src=ctx.createMediaStreamSource(stream),proc=ctx.createScriptProcessor(4096,1,1);
+      sourceRef.current=src;processorRef.current=proc;
+      proc.onaudioprocess=e=>chunksRef.current.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+      src.connect(proc);proc.connect(ctx.destination);
+      const Ctor=getSpeechRecognitionCtor();
+      if(Ctor){
+        try{
+          const recognition=new Ctor();committedRef.current=new Set();recognition.lang="en-SG";recognition.continuous=true;recognition.interimResults=true;
+          recognition.onresult=e=>{let added="",draft="";for(let i=0;i<e.results.length;i++){const line=(e.results[i][0]?.transcript||"").trim();if(!line)continue;if(e.results[i].isFinal){if(!committedRef.current.has(i)){committedRef.current.add(i);added+=" "+line}}else draft+=" "+line}if(added)setTranscript(v=>(v+added).trim());setInterim(draft.trim())};
+          recognition.onerror=()=>{};recognition.start();recRef.current=recognition;
+        }catch{}
+      }
+      startedRef.current=Date.now();timerRef.current=setInterval(()=>setSeconds(Math.round((Date.now()-startedRef.current)/1000)),500);setRecording(true);
+    }catch(e){streamRef.current?.getTracks().forEach(t=>t.stop());streamRef.current=null;setError(e instanceof Error?e.message:"Microphone permission is required.")}
+    finally{startingRef.current=false}
   }
-  async function stop() { if (!recording) return; setRecording(false); if (timerRef.current) clearInterval(timerRef.current); try { recRef.current?.stop(); } catch { } recRef.current = null; processorRef.current?.disconnect(); sourceRef.current?.disconnect(); const ctx = ctxRef.current; const samples = downsample(chunksRef.current, rateRef.current, 16000); wavRef.current = encodeWav(samples, 16000); streamRef.current?.getTracks().forEach(t => t.stop()); streamRef.current = null; if (ctx) await ctx.close().catch(() => { }); ctxRef.current = null; processorRef.current = null; sourceRef.current = null;
-    if (!transcript.trim() && config?.serverStt && wavRef.current) { setBusy(true); try { const form = new FormData(); form.append("audio", wavRef.current, "speech.wav"); const r = await fetch("/api/student/speaking/transcribe", { method: "POST", body: form }); const body = await r.json() as { text?: string; error?: string }; if (r.ok && body.text) setTranscript(body.text); else if (body.error) setError(body.error); } finally { setBusy(false); } }
+  async function stop(){
+    if(!recording)return;setRecording(false);if(timerRef.current)clearInterval(timerRef.current);
+    try{recRef.current?.stop()}catch{}recRef.current=null;
+    processorRef.current?.disconnect();sourceRef.current?.disconnect();
+    wavRef.current=encodeWav(chunksRef.current,sampleRateRef.current);
+    streamRef.current?.getTracks().forEach(t=>t.stop());streamRef.current=null;
+    await audioRef.current?.close().catch(()=>{});audioRef.current=null;processorRef.current=null;sourceRef.current=null;
+    if(!transcript.trim()&&config?.serverStt&&wavRef.current){
+      setBusy(true);
+      try{const form=new FormData();form.append("audio",wavRef.current,"psle-speech.wav");const response=await fetch("/api/student/speaking/transcribe",{method:"POST",body:form});const body=await response.json() as {text?:string;error?:string};if(!response.ok)throw new Error(body.error||"Speech recognition failed");if(body.text)setTranscript(body.text)}
+      catch(e){setError(e instanceof Error?e.message:"Speech recognition failed")}
+      finally{setBusy(false)}
+    }
   }
-  async function serverTts(text: string) { if (config?.serverTts) { try { const r = await fetch("/api/student/speaking/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) }); if (r.ok) { const blob = await r.blob(); const url = URL.createObjectURL(blob); const a = new Audio(url); a.onended = () => URL.revokeObjectURL(url); await a.play(); return; } } catch { } } browserSpeak(text); }
-  async function sendConversation() { if (!active || !transcript.trim()) return; setBusy(true); setError(""); try { const r = await fetch("/api/student/speaking/respond", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId: sessionId || undefined, mode, promptId: active.id, prompt: active.prompt, transcript, history, track, targetSeconds: active.targetSeconds }) }); const body = await r.json() as { sessionId?: string; feedback?: ConversationFeedback; dailySpeaking?: DailySpeakingProgress; error?: string }; if (!r.ok || !body.feedback) throw new Error(body.error || "Conversation failed"); setSessionId(body.sessionId || sessionId); setFeedback(body.feedback); if (body.dailySpeaking) setDailyProgress(body.dailySpeaking); const next = [...history, { role: "user" as const, content: transcript }, { role: "assistant" as const, content: body.feedback.reply }].slice(-8); setHistory(next); void serverTts(body.feedback.reply); } catch (e) { setError(e instanceof Error ? e.message : "Conversation failed"); } finally { setBusy(false); } }
-  async function assess() { if (!active?.referenceText || !wavRef.current) return; setBusy(true); setError(""); try { const form = new FormData(); form.append("audio", wavRef.current, "reading.wav"); form.append("promptId", active.id); form.append("referenceText", active.referenceText); form.append("browserTranscript", transcript); form.append("durationMs", String(Math.max(1000, Date.now() - startRef.current))); const r = await fetch("/api/student/speaking/assess", { method: "POST", body: form }); const body = await r.json() as { assessment?: PronunciationAssessment; dailySpeaking?: DailySpeakingProgress; error?: string }; if (!r.ok || !body.assessment) throw new Error(body.error || "Assessment failed"); setAssessment(body.assessment); if (body.dailySpeaking) setDailyProgress(body.dailySpeaking); } catch (e) { setError(e instanceof Error ? e.message : "Assessment failed"); } finally { setBusy(false); } }
-  function switchMode(next: SpeakingMode) { if (recording || track === "pet") return; setMode(next); setPromptId(prompts.find(p => p.mode === next)?.id || ""); }
-  function switchTrack(next: SpeakingTrack) { if (recording || next === track) return; setTrack(next); setMode(next === "pet" ? "stimulus" : "conversation"); setPromptId(""); setTranscript(""); setInterim(""); setFeedback(null); setAssessment(null); setHistory([]); setSessionId(""); }
-  function nextPetPrompt() {
-    if (recording || busy || track !== "pet" || available.length === 0) return;
-    const current = Math.max(0, available.findIndex(p => p.id === active?.id));
-    const next = available[(current + 1) % available.length];
-    if (!next) return;
-    setPromptId(next.id);
-    setSeconds(0);
-    setTranscript("");
-    setInterim("");
-    setFeedback(null);
-    setAssessment(null);
-    setHistory([]);
-    setSessionId("");
-    wavRef.current = null;
-    setError("");
+  async function speak(text:string){
+    if(config?.serverTts){try{const r=await fetch("/api/student/speaking/tts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})});if(r.ok){const url=URL.createObjectURL(await r.blob());const audio=new Audio(url);audio.onended=()=>URL.revokeObjectURL(url);await audio.play();return}}catch{}}
+    browserSpeak(text);
   }
-  const imageAttempt = active?.id ? (brokenImages[active.id] || 0) : 0;
-  const imageUrl = imageAttempt === 1 ? (active?.stimulusImageFallbackUrl || "") : (active?.stimulusImageUrl || "");
-  const showStimulusImage = Boolean(active?.stimulusImageUrl && active?.id && imageAttempt < (active.stimulusImageFallbackUrl ? 2 : 1));
+  async function submitConversation(){
+    if(!active||!transcript.trim())return;
+    setBusy(true);setError("");
+    try{
+      const response=await fetch("/api/student/speaking/respond",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({promptId:active.id,mode:"stimulus",transcript,history,sessionId:sessionId||undefined})});
+      const body=await response.json() as {sessionId?:string;feedback?:ConversationFeedback;dailySpeaking?:Progress;error?:string};
+      if(!response.ok||!body.feedback)throw new Error(body.error||"Conversation could not be assessed");
+      setSessionId(body.sessionId||"");setFeedback(body.feedback);if(body.dailySpeaking)setProgress(body.dailySpeaking);
+      setHistory(v=>[...v,{role:"user",content:transcript},{role:"assistant",content:body.feedback!.reply}].slice(-8));setTranscript("");
+      void speak(body.feedback.reply);
+    }catch(e){setError(e instanceof Error?e.message:"Conversation failed")}finally{setBusy(false)}
+  }
+  async function assessReading(){
+    if(!active?.referenceText||!wavRef.current)return;
+    setBusy(true);setError("");
+    try{
+      const form=new FormData();form.append("audio",wavRef.current,"reading.wav");
+      form.append("promptId",active.id);form.append("referenceText",active.referenceText);
+      form.append("browserTranscript",transcript);form.append("durationMs",String(Math.max(1000,Date.now()-startedRef.current)));
+      const response=await fetch("/api/student/speaking/assess",{method:"POST",body:form});
+      const body=await response.json() as {assessment?:PronunciationAssessment;dailySpeaking?:Progress;error?:string};
+      if(!response.ok||!body.assessment)throw new Error(body.error||"Reading assessment failed");
+      setAssessment(body.assessment);if(body.dailySpeaking)setProgress(body.dailySpeaking);
+    }catch(e){setError(e instanceof Error?e.message:"Reading assessment failed")}finally{setBusy(false)}
+  }
+  const passed=Boolean(progress?.passedModes?.includes(focus));
   return <div className="speakingWorkspace">
-    <div className="tabs"><button className={track === "daily" ? "active" : ""} onClick={() => switchTrack("daily")}>Daily Speaking</button><button className={track === "pet" ? "active" : ""} onClick={() => switchTrack("pet")}>PET · Picture Description</button></div>
-    {track === "daily" ? <>
-      <div className="speakingDailyGate"><strong>Daily Speaking · {dailyProgress?.passedModes.length || 0}/3 parts passed</strong><span>{dailyProgress?.completed ? "PASS" : `Each tab must score ${dailyProgress?.passMark || 60}% or above.`}</span></div>
-      <div className="tabs"><button className={mode === "conversation" ? "active" : ""} onClick={() => switchMode("conversation")}>{dailyProgress?.passedModes.includes("conversation") ? "✓ " : ""}AI conversation</button><button className={mode === "reading_aloud" ? "active" : ""} onClick={() => switchMode("reading_aloud")}>{dailyProgress?.passedModes.includes("reading_aloud") ? "✓ " : ""}Reading aloud</button><button className={mode === "stimulus" ? "active" : ""} onClick={() => switchMode("stimulus")}>{dailyProgress?.passedModes.includes("stimulus") ? "✓ " : ""}Stimulus conversation</button></div>
-    </> : <div className="speakingDailyGate"><strong>B1 Preliminary (PET) · Speaking Part 2</strong><span>Describe one colour photograph for about {active?.targetSeconds || 60} seconds. Focus on what you can see.</span></div>}
-    <div className="speakingGrid"><section className="card">{config && !config.authenticated && <div className="notice warnNotice" style={{ marginBottom: 16 }}>You can preview platform speaking content as a guest. Sign in to record, receive AI feedback, or use pronunciation assessment.</div>}<div className="cardHeader"><h2>{active?.title || "Speaking practice"}</h2><span>{active?.topic || "PSLE Oral"}</span></div>{available.length > 1 && <select className="selectInput" value={active?.id || ""} onChange={e => setPromptId(e.target.value)}>{available.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}</select>}<div className="oralPrompt"><div className="eyebrow">Your task</div><p>{active?.prompt || "Choose a speaking activity."}</p>{active?.referenceText && <div className="readingAloudText">{active.referenceText}</div>}{(showStimulusImage || active?.stimulusAlt) && <div className="stimulusCard">{showStimulusImage && <div className="stimulusImageWrap"><img className="stimulusImage" key={`${active?.id}-${imageAttempt}`} src={imageUrl} alt={active?.stimulusImageAlt || active?.stimulusAlt || active?.title || "Stimulus image"} onError={() => active?.id && setBrokenImages(v => ({ ...v, [active.id]: Math.min(2, (v[active.id] || 0) + 1) }))} /></div>}<strong>{showStimulusImage ? (track === "pet" ? "Look at the photograph" : "Look at the picture") : "Imagine the scene"}</strong>{active?.stimulusAlt && (track !== "pet" || !showStimulusImage) && <p>{active.stimulusAlt}</p>}{active?.stimulusImageUrl && active?.id && !showStimulusImage && <div className="stimulusImageHint">The picture could not be loaded from either image source. The written scene description is shown instead.</div>}</div>}{track === "pet" && active?.examinerPrompts && active.examinerPrompts.length >= 3 && <div className="practiceBox"><strong>Questions about the photograph</strong><p className="muted">Use these questions to organise one continuous spoken answer. You do not need to stop between questions.</p><ol>{active.examinerPrompts.slice(0,5).map((question,i) => <li key={`pet-question-${i}`}>{question}</li>)}</ol></div>}</div>
-      <div className="recordControls"><button className={`recordBig ${recording ? "recording" : ""}`} disabled={busy || Boolean(config && !config.authenticated)} onClick={recording ? stop : start}>{recording ? "■ Stop" : "● Speak"}</button><span>{recording ? (track === "pet" ? `${seconds}s / ${active?.targetSeconds || 60}s · recording` : `${seconds}s · recording`) : busy ? "Working…" : track === "pet" ? `Aim for about ${active?.targetSeconds || 60} seconds` : "Record your answer when ready"}</span></div>
-      {history.length > 0 && <div className="conversationHistory">{history.slice(-6).map((h, i) => <div className={h.role === "user" ? "historyBubble learner" : "historyBubble tutor"} key={`${h.role}-${i}`}><span>{h.role === "user" ? "You" : "Tutor"}</span><p>{h.content}</p></div>)}</div>}{(transcript || interim) && <div className="transcriptBox"><div className="eyebrow">What we heard</div><textarea value={transcript} onChange={e => setTranscript(e.target.value)} placeholder="Your recognised speech appears here. You can correct obvious recognition mistakes before sending." /><p className="muted">{interim}</p>{transcript && <VocabularyAddButton term={transcript.split(/\s+/).slice(0, 8).join(" ")} context={transcript} schoolLevel={active?.schoolLevel || "P6"} />}</div>}
-      {!recording && transcript && mode !== "reading_aloud" && <button className="button primary" disabled={busy} onClick={sendConversation}>{track === "pet" ? "Get PET feedback" : history.length ? "Continue conversation" : "Get response"}</button>}
-      {track === "pet" && feedback && available.length > 1 && <button className="button primary" disabled={busy} onClick={nextPetPrompt}>Next picture →</button>}
-      {!recording && active?.referenceText && wavRef.current && <button className="button primary" disabled={busy} onClick={assess}>Assess reading aloud</button>}
-      {error && <div className="notice errorNotice">{error}</div>}
+    <div className="speakingDailyGate"><strong>{focus==="reading_aloud"?"Reading Aloud":"Stimulus-Based Conversation"} · {passed?"Practised successfully":"Ready to practise"}</strong><span>{progress?"Today's practice target: "+progress.passMark+"%":"Scores are for practice, not official PSLE marks"}</span></div>
+    <div className="speakingGrid"><section className="card">
+      <div className="cardHeader"><h2>{active?.title||"PSLE oral practice"}</h2><span>{active?.topic||"Primary 5–6"}</span></div>
+      {loading&&<div className="emptyState">Preparing your oral task…</div>}
+      {prompts.length>1&&<select className="selectInput" value={active?.id||""} onChange={e=>selectPrompt(e.target.value)} disabled={recording}>{prompts.map(p=><option key={p.id} value={p.id}>{p.title}</option>)}</select>}
+      {active&&<div className="oralPrompt"><div className="eyebrow">{focus==="reading_aloud"?"Read for the audience and purpose":"Look, think, respond"}</div><p>{active.prompt}</p>
+        {focus==="reading_aloud"&&active.referenceText&&<div className="readingAloudText">{active.referenceText}</div>}
+        {focus==="stimulus"&&<div className="stimulusCard">{active.stimulusImageUrl&&<div className="stimulusImageWrap"><img className="stimulusImage" src={active.stimulusImageUrl} alt={active.stimulusImageAlt||"PSLE conversation photograph"} /></div>}{!active.stimulusImageUrl&&active.stimulusAlt&&<p>{active.stimulusAlt}</p>}</div>}
+      </div>}
+      {config&&!config.authenticated&&<div className="notice warnNotice">A student login is required to record and receive AI feedback.</div>}
+      <div className="recordControls"><button className={"recordBig"+(recording?" recording":"")} disabled={!active||busy||Boolean(config&&!config.authenticated)} onClick={()=>void(recording?stop():start())}>{recording?"■ Stop":"● Record answer"}</button><span>{recording?seconds+" seconds · recording":busy?"Evaluating…":"Use your microphone to practise"}</span></div>
+      {(transcript||interim)&&<div className="transcriptBox"><div className="eyebrow">Recognised speech · edit only obvious transcription errors</div><textarea aria-label="Recognised speech" value={transcript} onChange={e=>setTranscript(e.target.value)} /><p className="muted">{interim}</p></div>}
+      {!recording&&focus==="stimulus"&&transcript.trim()&&<button className="button primary" disabled={busy} onClick={()=>void submitConversation()}>{history.length?"Continue examiner conversation":"Get conversation feedback"}</button>}
+      {!recording&&focus==="reading_aloud"&&wavRef.current&&<button className="button primary" disabled={busy} onClick={()=>void assessReading()}>Assess reading aloud</button>}
+      {history.length>0&&<div className="conversationHistory">{history.map((item,i)=><div className={"historyBubble "+(item.role==="user"?"learner":"tutor")} key={i}><span>{item.role==="user"?"You":"Examiner"}</span><p>{item.content}</p></div>)}</div>}
+      {error&&<div className="notice warnNotice" role="alert">{error}</div>}
     </section>
-      <aside className="card speakingCoach"><div className="cardHeader"><h2>{track === "pet" ? "PET speaking coach" : "Speaking coach"}</h2><span>{track === "pet" ? "Part 2 · 1 minute" : config?.azurePronunciation ? "Acoustic scoring ready" : "Free practice mode"}</span></div>{track === "pet" && !feedback && <div className="practiceBox"><strong>Picture-description checklist</strong><p>Start with the main scene, then describe the people, place, actions and useful details. Use simple linking words such as <em>and</em>, <em>but</em>, <em>while</em> and <em>because</em>. If you forget a word, paraphrase it and keep speaking.</p></div>}{feedback ? <><div className="speechScores"><Score label={track === "pet" ? "Task" : "Relevance"} value={feedback.relevance} /><Score label={track === "pet" ? "Discourse" : "Ideas"} value={feedback.development} /><Score label="Grammar" value={feedback.grammar} /><Score label="Vocabulary" value={feedback.vocabulary} /><Score label={track === "pet" ? "Fluency" : "Interaction"} value={feedback.interaction} /></div><div className="reviewSelectionHint">Select any word or phrase in AI feedback to add it to Vocabulary.</div><SelectionVocabulary schoolLevel={active?.schoolLevel || "P6"} className="selectableReview"><div className="feedbackSection"><strong>Tutor</strong><p>{feedback.reply}</p></div>{feedback.strengths.length > 0 && <div className="feedbackSection"><strong>What worked</strong><ul>{feedback.strengths.map(x => <li key={x}>{x}</li>)}</ul></div>}{feedback.improvements.length > 0 && <div className="feedbackSection"><strong>Improve next</strong><ul>{feedback.improvements.map(x => <li key={x}>{x}</li>)}</ul></div>}{feedback.betterExpression && <div className="practiceBox"><strong>Try this expression</strong><p>{feedback.betterExpression}</p><VocabularyAddButton term={feedback.betterExpression} context={transcript} schoolLevel={active?.schoolLevel || "P6"} /></div>}</SelectionVocabulary><button className="button ghost" onClick={() => serverTts(feedback.reply)}>🔊 Hear reply</button></> : assessment ? <><div className="speechScores"><Score label="Pronunciation" value={assessment.pronunciation} /><Score label="Accuracy" value={assessment.accuracy} /><Score label="Fluency" value={assessment.fluency} /><Score label="Completeness" value={assessment.completeness} /><Score label="Prosody" value={assessment.prosody} /></div>{assessment.wordsPerMinute && <p className="muted">Speaking pace: {assessment.wordsPerMinute} words/min</p>}<SelectionVocabulary schoolLevel={active?.schoolLevel || "P6"} className="selectableReview">{assessment.note && <div className="notice">{assessment.note}</div>}{assessment.words && assessment.words.length > 0 && <div className="wordAccuracyList">{assessment.words.filter(w => w.errorType && w.errorType !== "None" || typeof w.accuracy === "number" && w.accuracy < 75).slice(0, 12).map((w, i) => <span key={`${w.word}-${i}`}>{w.word}{typeof w.accuracy === "number" ? ` · ${Math.round(w.accuracy)}` : ""}</span>)}</div>}</SelectionVocabulary></> : <div className="emptyState">Record an answer. Conversation feedback is separate from pronunciation scoring, so the student sees both communication quality and speech quality clearly.</div>}</aside>
-    </div>
+    <aside className="card speakingCoach"><div className="cardHeader"><h2>Practice feedback</h2><span>{focus==="reading_aloud"?(config?.azurePronunciation?"Acoustic assessment":"Approximate assessment"):"Ideas and interaction"}</span></div>
+      {feedback?<><div className="speechScores"><Score label="Relevance" value={feedback.relevance}/><Score label="Ideas" value={feedback.development}/><Score label="Grammar" value={feedback.grammar}/><Score label="Vocabulary" value={feedback.vocabulary}/><Score label="Interaction" value={feedback.interaction}/></div>
+        <div className="feedbackSection"><strong>Examiner's follow-up</strong><p>{feedback.reply}</p></div>
+        <div className="feedbackSection"><strong>What you did well</strong><ul>{feedback.strengths.map((v,i)=><li key={i}>{v}</li>)}</ul></div>
+        <div className="feedbackSection"><strong>Improve next time</strong><ul>{feedback.improvements.map((v,i)=><li key={i}>{v}</li>)}</ul></div>
+        {feedback.betterExpression&&<div className="practiceBox"><strong>A clearer way to say it</strong><p>{feedback.betterExpression}</p></div>}
+        <button className="button ghost" onClick={()=>void speak(feedback.reply)}>🔊 Hear examiner</button>
+      </>:assessment?<><div className="speechScores"><Score label="Pronunciation" value={assessment.pronunciation}/><Score label="Accuracy" value={assessment.accuracy}/><Score label="Fluency" value={assessment.fluency}/><Score label="Completeness" value={assessment.completeness}/><Score label="Expression" value={assessment.prosody}/></div>
+        {assessment.note&&<div className="notice">{assessment.note}</div>}
+        {assessment.wordsPerMinute&&<p>Speaking pace: {assessment.wordsPerMinute} words/minute</p>}
+        {assessment.words?.length&&<div className="wordAccuracyList">{assessment.words.filter(w=>(typeof w.accuracy==="number"&&w.accuracy<75)||(w.errorType&&w.errorType!=="None")).slice(0,12).map((w,i)=><span key={i}>{w.word}{typeof w.accuracy==="number"?" · "+Math.round(w.accuracy):""}</span>)}</div>}
+      </>:<div className="emptyState">{focus==="stimulus"?"Explain what you see, give reasons and personal examples. The examiner will ask a follow-up.":"Make sense of the passage, pause naturally and read with expression."}</div>}
+      <small className="sourceHint">AI practice scores are not official SEAB assessment results.</small>
+    </aside></div>
   </div>;
 }

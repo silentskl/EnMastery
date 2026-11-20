@@ -4,7 +4,7 @@ import { getTenantLessonRepeatCooldownDays } from "@/lib/settings/learning-polic
 import { effectiveLessonLimit } from "@/lib/tenant/lesson-availability";
 import { addDays, sgDate } from "@/lib/student/tasks";
 
-const MODES: SpeakingMode[] = ["conversation", "reading_aloud", "stimulus"];
+const MODES: SpeakingMode[] = ["reading_aloud", "stimulus"];
 
 type AssignmentRow = { mode: SpeakingMode; prompt_id: string };
 type PromptRow = {
@@ -155,7 +155,7 @@ export async function ensureDailySpeakingPromptAssignments(
 
   let existing = await db.prepare(`SELECT mode,prompt_id
     FROM speaking_daily_prompt_assignments
-    WHERE child_id=? AND task_date=? AND mode IN ('conversation','reading_aloud','stimulus')`)
+    WHERE child_id=? AND task_date=? AND mode IN ('reading_aloud','stimulus')`)
     .bind(childId,taskDate).all<AssignmentRow>();
 
   // A legacy cache-only id (for example cached-P5-conversation) has no
@@ -169,7 +169,7 @@ export async function ensureDailySpeakingPromptAssignments(
 
   existing = await db.prepare(`SELECT mode,prompt_id
     FROM speaking_daily_prompt_assignments
-    WHERE child_id=? AND task_date=? AND mode IN ('conversation','reading_aloud','stimulus')`)
+    WHERE child_id=? AND task_date=? AND mode IN ('reading_aloud','stimulus')`)
     .bind(childId,taskDate).all<AssignmentRow>();
   const have = new Set(existing.results.map((row) => row.mode));
   const visibleLimit = await effectiveLessonLimit(db, tenantId, stage, "speak", 200);
@@ -205,7 +205,7 @@ export async function ensureDailySpeakingPromptAssignments(
   // persisted assignments rather than whichever candidate each request saw.
   const finalRows = await db.prepare(`SELECT mode,prompt_id
     FROM speaking_daily_prompt_assignments
-    WHERE child_id=? AND task_date=? AND mode IN ('conversation','reading_aloud','stimulus')`)
+    WHERE child_id=? AND task_date=? AND mode IN ('reading_aloud','stimulus')`)
     .bind(childId,taskDate).all<AssignmentRow>();
   const byMode = new Map(finalRows.results.map((row) => [row.mode,row.prompt_id] as const));
   const prompts: SpeakingPrompt[] = [];

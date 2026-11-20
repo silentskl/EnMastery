@@ -1,2 +1,2 @@
 import { StudentListeningPlayer } from "@/components/student-listening-player";
-export default async function ListeningLessonPage({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<{practice?:string}>}){const{id}=await params,q=await searchParams;return <StudentListeningPlayer id={id} practiceMode={q.practice==="1"}/>}
+export default async function Page({params}:{params:Promise<{id:string}>}){const {id}=await params;return <StudentListeningPlayer id={id}/>}
