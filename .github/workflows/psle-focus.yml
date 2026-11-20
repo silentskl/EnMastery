@@ -18,6 +18,17 @@ jobs:
       - run: npm run selfcheck
       - run: npm run test:psle-focus
       - run: npm run test:d1-migrations
+      # Regression: a developer can have a stale .next validator left by removed pages.
+      # The typecheck preflight must regenerate it from the current app/ source.
+      - name: Simulate stale Next.js route type cache
+        run: |
+          mkdir -p .next/types .next/dev/types
+          printf "import '../../app/__removed_psle_route__/page.js';\\n" > .next/types/validator.ts
+          printf "import '../../../app/__removed_psle_route__/page.js';\\n" > .next/dev/types/legacy.ts
       - run: npm run typecheck
+      - name: Confirm obsolete route references are gone
+        run: |
+          test -f .next/types/validator.ts
+          ! grep -R "__removed_psle_route__" .next/types .next/dev/types 2>/dev/null
       - run: npm run typecheck:workers
       - run: npm run build

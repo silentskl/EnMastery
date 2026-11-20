@@ -19,7 +19,7 @@
     "cf:deploy": "bash scripts/deploy.sh deploy",
     "cf:update": "bash scripts/deploy.sh update",
     "cf:status": "bash scripts/deploy.sh status",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node scripts/refresh-next-types.mjs && tsc --noEmit",
     "stylecheck": "python3 scripts/audit_styles.py",
     "typecheck:workers": "tsc --noEmit -p tsconfig.workers.json",
     "build:cloudflare": "opennextjs-cloudflare build",

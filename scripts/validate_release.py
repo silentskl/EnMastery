@@ -203,6 +203,12 @@ def check_package() -> None:
         for name, command in commands.items():
             if scripts.get(name) != command:
                 fail("package.json script " + name + " must run " + command)
+        if scripts.get("typecheck") != "node scripts/refresh-next-types.mjs && tsc --noEmit":
+            fail("typecheck must refresh generated Next.js routes before running tsc")
+        require("scripts/refresh-next-types.mjs",
+                'join(root, ".next", "types")',
+                'join(root, ".next", "dev", "types")',
+                '"typegen"', '"validator.ts"')
         release = scripts.get("check:release", "")
         for command in ["npm run selfcheck", "npm run test:psle-focus",
                         "npm run test:d1-migrations", "npm run typecheck",
