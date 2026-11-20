@@ -78,6 +78,22 @@ export async function evaluatePsleConversationTurn(args:{
   };
 }
 
+/**
+ * Compatibility for pre-refactor queued specialised oral jobs only.
+ * New PSLE student conversations use evaluatePsleConversationTurn and a persisted session.
+ */
+export async function evaluateConversation(args:{
+  baseUrl:string;apiKey:string;model:string;prompt:string;transcript:string;mode:"conversation"|"stimulus";
+  history?:Array<{role:"user"|"assistant";content:string}>;track?:"daily"|"pet";
+  targetSeconds?:number;examinerPrompts?:string[];sceneDescription?:string;
+}):Promise<ConversationFeedback>{
+  return evaluatePsleConversationTurn({
+    baseUrl:args.baseUrl,apiKey:args.apiKey,model:args.model,
+    prompt:args.prompt,sceneDescription:args.sceneDescription||"",
+    transcript:args.transcript,turnIndex:0,history:args.history||[],
+  });
+}
+
 function words(text:string){return text.toLowerCase().replace(/[^a-z0-9'\s]/g," ").split(/\s+/).filter(Boolean);}
 function lcs(a:string[],b:string[]){const dp=Array.from({length:a.length+1},()=>new Uint16Array(b.length+1));for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);return dp[a.length][b.length];}
 export function heuristicPronunciation(reference:string, transcript:string, durationMs:number){
