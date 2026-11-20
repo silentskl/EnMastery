@@ -1,126 +1,139 @@
 import { resolveLearnerAiIntegrations, requireAuthenticatedLearner } from "@/lib/settings/learner-runtime";
 import { learnerCookie } from "@/lib/student/session";
-import { evaluateConversation } from "@/lib/speaking/evaluate";
+import { evaluatePsleConversationTurn, PSLE_CONVERSATION_QUESTION_COUNT } from "@/lib/speaking/evaluate";
 import { updateSkillEvidence } from "@/lib/student/mastery";
 import { conversationOverallScore, recordDailySpeakingModeScore } from "@/lib/student/speaking-daily";
 import { recordTenantAiUsage } from "@/lib/tenant/usage";
 import { sgDate } from "@/lib/student/tasks";
+import type { ConversationFeedback } from "@/lib/speaking/types";
 
-export async function POST(request: Request) {
-  const { env, session, tenantId, quota } = await resolveLearnerAiIntegrations(request);
-  const denied = requireAuthenticatedLearner(session);
-  if (denied) return denied;
-  if (!quota.allowed) return Response.json({ error: "This organisation has reached its monthly AI request quota" }, { status: 429 });
-  if (!env.MODELBRIDGE_API_KEY || !env.MODELBRIDGE_CHAT_MODEL) return Response.json({ error: "Your organisation has not configured ModelBridge chat" }, { status: 503 });
+type Session={id:string;mode:string;prompt_title:string|null;prompt_text:string;status:string;turn_count:number};
+type TurnRow={speaker:"learner"|"assistant";transcript:string|null;reply_text:string|null;evaluation_json:string|null};
+const feedbackKeys=["relevance","development","grammar","vocabulary","interaction"] as const;
 
-  const body = await request.json().catch(() => ({})) as Record<string, unknown>;
-  const promptId = typeof body.promptId === "string" ? body.promptId : "";
-  const transcript = typeof body.transcript === "string" ? body.transcript.trim().slice(0, 3000) : "";
-  // Never trust the client to replace a published PSLE task or inject a custom system prompt.
-  const assigned=await env.DB.prepare(`SELECT v.body_json FROM speaking_daily_prompt_assignments a JOIN content_items c ON c.id=a.prompt_id JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version WHERE a.child_id=? AND a.task_date=? AND a.mode='stimulus' AND a.prompt_id=? AND c.status='published' AND c.content_type='oral_prompt' AND (c.scope='global' OR (c.scope='tenant' AND c.tenant_id=?)) AND json_extract(v.body_json,'$.mode')='stimulus' LIMIT 1`).bind(session.childId,sgDate(),promptId,tenantId).first<{body_json:string}>();
-  if(!assigned)return Response.json({error:"This PSLE conversation prompt is not assigned to your account today"},{status:403});
-  let prompt="",sceneDescription="";try{const selected=JSON.parse(assigned.body_json) as {prompt?:unknown;stimulusAlt?:unknown};prompt=typeof selected.prompt==="string"?selected.prompt.trim().slice(0,1800):"";sceneDescription=typeof selected.stimulusAlt==="string"?selected.stimulusAlt.trim().slice(0,1000):""}catch{}
-  const mode = body.mode === "stimulus" ? "stimulus" : "conversation";
-  const track = body.track === "pet" ? "pet" : "daily";
-  if(mode!=="stimulus"||track!=="daily")return Response.json({error:"Only PSLE stimulus-based conversation is supported"},{status:400});
-  const targetSeconds = typeof body.targetSeconds === "number" ? Math.max(30, Math.min(120, Math.round(body.targetSeconds))) : undefined;
-  let sessionId = typeof body.sessionId === "string" ? body.sessionId : "";
+/** Five learner turns: description, then four distinct answers to AI questions. */
+export async function POST(request:Request){
+  const {env,session,tenantId,quota}=await resolveLearnerAiIntegrations(request);
+  const denied=requireAuthenticatedLearner(session);
+  if(denied)return denied;
+  if(!quota.allowed)return Response.json({error:"Monthly AI request quota reached"},{status:429});
+  if(!env.MODELBRIDGE_API_KEY||!env.MODELBRIDGE_CHAT_MODEL)return Response.json({error:"AI conversation is not configured for this organisation"},{status:503});
 
-  const history = Array.isArray(body.history)
-    ? body.history.filter((x): x is { role: "user" | "assistant"; content: string } =>
-        Boolean(x) && typeof x === "object"
-        && (((x as Record<string, unknown>).role) === "user" || ((x as Record<string, unknown>).role) === "assistant")
-        && typeof (x as Record<string, unknown>).content === "string")
-      .map(x => ({ role: x.role, content: x.content.slice(0, 900) })).slice(-6)
-    : [];
+  const body=await request.json().catch(()=>({})) as Record<string,unknown>;
+  const promptId=typeof body.promptId==="string"?body.promptId.trim().slice(0,200):"";
+  const transcript=typeof body.transcript==="string"?body.transcript.trim().slice(0,3000):"";
+  const previousId=typeof body.sessionId==="string"?body.sessionId.trim().slice(0,150):"";
+  if(!promptId||!transcript)return Response.json({error:"Oral task and spoken answer are required"},{status:400});
+  if(body.mode!=="stimulus"||body.track==="pet")return Response.json({error:"Only PSLE picture conversation is supported"},{status:400});
 
-  if (!transcript || !prompt) return Response.json({ error: "prompt and transcript are required" }, { status: 400 });
+  // Authoritative task: the student cannot supply a substitute image, prompt or history.
+  const assignment=await env.DB.prepare(
+    "SELECT v.body_json FROM speaking_daily_prompt_assignments a "+
+    "JOIN content_items c ON c.id=a.prompt_id "+
+    "JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version "+
+    "WHERE a.child_id=? AND a.task_date=? AND a.mode='stimulus' AND a.prompt_id=? "+
+    "AND c.status='published' AND c.content_type='oral_prompt' "+
+    "AND (c.scope='global' OR (c.scope='tenant' AND c.tenant_id=?)) "+
+    "AND json_extract(v.body_json,'$.mode')='stimulus' "+
+    "AND COALESCE(json_extract(v.body_json,'$.examTrack'),'')<>'PET' LIMIT 1"
+  ).bind(session.childId,sgDate(),promptId,tenantId).first<{body_json:string}>();
+  if(!assignment)return Response.json({error:"This picture conversation is not assigned to your account today"},{status:403});
+  let prompt="",sceneDescription="",pictureUrl="";
+  try{
+    const data=JSON.parse(assignment.body_json) as {prompt?:unknown;stimulusAlt?:unknown;stimulusImageUrl?:unknown};
+    prompt=typeof data.prompt==="string"?data.prompt.trim().slice(0,1800):"";
+    sceneDescription=typeof data.stimulusAlt==="string"?data.stimulusAlt.trim().slice(0,1200):"";
+    pictureUrl=typeof data.stimulusImageUrl==="string"?data.stimulusImageUrl.trim():"";
+  }catch{}
+  if(!prompt||!pictureUrl)return Response.json({error:"This oral task has no picture. Ask your teacher to publish a photograph-backed prompt."},{status:422});
 
-  // Use the published PET content as the source of truth for assessment.
-  // A client-supplied question list must never override the selected photograph.
-  let petQuestions: string[] = [];
-  let petScene = "";
-  let assessmentPrompt = prompt;
-  if (track === "pet") {
-    if (!promptId) return Response.json({ error: "PET promptId is required" }, { status: 400 });
-    const selected = await env.DB.prepare(`SELECT v.body_json FROM content_items c
-      JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version
-      WHERE c.id=? AND c.status='published' AND c.content_type='oral_prompt'
-        AND (c.scope='global' OR (c.scope='tenant' AND c.tenant_id=?))
-        AND json_extract(v.body_json,'$.examTrack')='PET' LIMIT 1`)
-      .bind(promptId, tenantId).first<{ body_json: string }>();
-    if (!selected) return Response.json({ error: "Published PET picture prompt not found" }, { status: 404 });
-    let data: Record<string, unknown>;
-    try { data = JSON.parse(selected.body_json) as Record<string, unknown>; }
-    catch { return Response.json({ error: "PET prompt data is invalid" }, { status: 500 }); }
-    if (!Array.isArray(data.examinerPrompts)) return Response.json({ error: "PET questions are missing" }, { status: 500 });
-    petQuestions = data.examinerPrompts.filter((q): q is string => typeof q === "string" && q.trim().length > 0).slice(0, 5);
-    if (petQuestions.length < 3) return Response.json({ error: "PET requires 3-5 picture questions" }, { status: 500 });
-    petScene = typeof data.stimulusAlt === "string" ? data.stimulusAlt.slice(0, 1000) : "";
-    assessmentPrompt = typeof data.prompt === "string" ? data.prompt.slice(0, 1800) : prompt;
+  let sessionId=previousId;
+  if(!sessionId){
+    sessionId="speak-"+crypto.randomUUID();
+    await env.DB.prepare(
+      "INSERT INTO speaking_sessions (id,child_id,mode,prompt_title,prompt_text,status) VALUES (?,?, 'stimulus',?,?,'active')"
+    ).bind(sessionId,session.childId,promptId,prompt).run();
   }
+  const active=await env.DB.prepare(
+    "SELECT id,mode,prompt_title,prompt_text,status,turn_count FROM speaking_sessions WHERE id=? AND child_id=?"
+  ).bind(sessionId,session.childId).first<Session>();
+  if(!active||active.mode!=="stimulus"||active.prompt_title!==promptId||active.prompt_text!==prompt)return Response.json({error:"Conversation session does not match this picture"},{status:403});
+  if(active.status==="completed")return Response.json({error:"This conversation is complete. Start a new practice session."},{status:409});
+  const index=Number(active.turn_count);
+  if(index<0||index>PSLE_CONVERSATION_QUESTION_COUNT)return Response.json({error:"Conversation has already reached the maximum rounds"},{status:409});
 
-  if (!sessionId) {
-    sessionId = `speak-${crypto.randomUUID()}`;
-    await env.DB.prepare("INSERT INTO speaking_sessions (id,child_id,mode,prompt_text,status) VALUES (?,?,?,?,'active')")
-      .bind(sessionId, session.childId, mode, prompt).run();
-  } else if (!await env.DB.prepare("SELECT id FROM speaking_sessions WHERE id=? AND child_id=?").bind(sessionId, session.childId).first()) {
-    return Response.json({ error: "Speaking session not found" }, { status: 404 });
-  }
+  // Atomic optimistic claim: next turn cannot start while the previous AI answer is still being generated.
+  const claim=await env.DB.prepare(
+    "UPDATE speaking_sessions SET turn_count=turn_count+1,updated_at=CURRENT_TIMESTAMP "+
+    "WHERE id=? AND child_id=? AND status='active' AND turn_count=? "+
+    "AND (SELECT COUNT(*) FROM speaking_turns WHERE session_id=? AND speaker='learner')=?"
+  ).bind(sessionId,session.childId,index,sessionId,index).run();
+  if(Number(claim.meta?.changes||0)!==1)return Response.json({error:"Previous turn is still processing; please retry"},{status:409});
 
-  try {
-    const feedback = await evaluateConversation({
-      baseUrl: env.MODELBRIDGE_BASE_URL,
-      apiKey: env.MODELBRIDGE_API_KEY,
-      model: env.MODELBRIDGE_CHAT_MODEL,
-      prompt: assessmentPrompt,
-      transcript,
-      examinerPrompts: petQuestions,
-      sceneDescription: petScene,
-      mode,
-      history,
-      track,
-      targetSeconds,
-      sceneDescription,
+  let stored=false;
+  try{
+    const rows=await env.DB.prepare(
+      "SELECT speaker,transcript,reply_text,evaluation_json FROM speaking_turns WHERE session_id=? ORDER BY rowid ASC"
+    ).bind(sessionId).all<TurnRow>();
+    const prior=rows.results;
+    if(prior.filter(r=>r.speaker==="learner").length!==index)throw new Error("Conversation turns are out of sync");
+    const history=prior.map(row=>({
+      role:row.speaker==="learner"?"user" as const:"assistant" as const,
+      content:(row.speaker==="learner"?row.transcript:row.reply_text)||"",
+    }));
+    const evaluation=await evaluatePsleConversationTurn({
+      baseUrl:env.MODELBRIDGE_BASE_URL,apiKey:env.MODELBRIDGE_API_KEY,model:env.MODELBRIDGE_CHAT_MODEL,
+      prompt,sceneDescription,transcript,turnIndex:index,history,
     });
-    const learnerTurn = `turn-${crypto.randomUUID()}`;
-    const assistantTurn = `turn-${crypto.randomUUID()}`;
+    const completed=evaluation.completed;
+    let feedback:ConversationFeedback=evaluation;
+    let overallScore:number|undefined;
+    if(completed){
+      const all=[...prior.filter(row=>row.speaker==="learner").flatMap(row=>{
+        try{return row.evaluation_json?[JSON.parse(row.evaluation_json) as ConversationFeedback]:[]}catch{return[]}
+      }),evaluation];
+      const averages=Object.fromEntries(feedbackKeys.map(k=>[k,Math.round(all.reduce((n,item)=>n+Number(item[k]||0),0)/all.length)])) as Record<typeof feedbackKeys[number],number>;
+      feedback={...evaluation,...averages};
+      overallScore=conversationOverallScore(feedback);
+    }
 
+    const learnerTurn="turn-"+crypto.randomUUID(),examinerTurn="turn-"+crypto.randomUUID();
     await env.DB.batch([
       env.DB.prepare("INSERT INTO speaking_turns (id,session_id,child_id,speaker,transcript,evaluation_json) VALUES (?,?,?,'learner',?,?)")
-        .bind(learnerTurn, sessionId, session.childId, transcript, JSON.stringify(feedback)),
+        .bind(learnerTurn,sessionId,session.childId,transcript,JSON.stringify(evaluation)),
       env.DB.prepare("INSERT INTO speaking_turns (id,session_id,child_id,speaker,reply_text) VALUES (?,?,?,'assistant',?)")
-        .bind(assistantTurn, sessionId, session.childId, feedback.reply),
-      env.DB.prepare("UPDATE speaking_sessions SET turn_count=turn_count+1,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(sessionId),
+        .bind(examinerTurn,sessionId,session.childId,evaluation.reply),
+      env.DB.prepare(
+        "UPDATE speaking_sessions SET status=?,overall_score=?,feedback_json=?,completed_at=CASE WHEN ?=1 THEN CURRENT_TIMESTAMP ELSE NULL END,updated_at=CURRENT_TIMESTAMP WHERE id=?"
+      ).bind(completed?"completed":"active",overallScore??null,completed?JSON.stringify(feedback):null,completed?1:0,sessionId),
     ]);
+    stored=true;
 
-    await updateSkillEvidence(env.DB, session.childId, "S-SBC-IDEA", Math.round((feedback.relevance + feedback.development) / 2));
-    await updateSkillEvidence(env.DB, session.childId, "S-INTERACT", feedback.interaction);
-    await env.DB.prepare("INSERT INTO xp_ledger (id,child_id,event_type,points,reference_id) VALUES (?,?,'speaking_turn',?,?)")
-      .bind(`xp-${crypto.randomUUID()}`, session.childId, feedback.interaction >= 60 ? 8 : 5, learnerTurn).run();
-
-    const dailySpeaking = track === "daily"
-      ? await recordDailySpeakingModeScore(env.DB, { childId: session.childId, mode, promptId, score: conversationOverallScore(feedback) })
-      : undefined;
-
-    await recordTenantAiUsage(env.DB, {
-      tenantId,
-      childId: session.childId,
-      purpose: track === "pet" ? "speaking_pet_picture_description" : "speaking_conversation",
-      model: env.MODELBRIDGE_CHAT_MODEL,
+    let dailySpeaking;
+    if(completed){
+      try{
+        await updateSkillEvidence(env.DB,session.childId,"S-SBC-IDEA",Math.round((feedback.relevance+feedback.development)/2));
+        await updateSkillEvidence(env.DB,session.childId,"S-INTERACT",feedback.interaction);
+        dailySpeaking=await recordDailySpeakingModeScore(env.DB,{childId:session.childId,mode:"stimulus",promptId,score:overallScore??0});
+      }catch(err){console.error("[psle-conversation] completion metrics update failed",err)}
+    }
+    await recordTenantAiUsage(env.DB,{tenantId,childId:session.childId,purpose:"psle_stimulus_conversation",model:env.MODELBRIDGE_CHAT_MODEL}).catch(()=>undefined);
+    const response=Response.json({
+      sessionId,feedback,phase:completed?"completed":"questions",
+      questionNumber:Math.min(index+1,PSLE_CONVERSATION_QUESTION_COUNT),
+      questionTotal:PSLE_CONVERSATION_QUESTION_COUNT,
+      completed,overallScore,dailySpeaking,
     });
-
-    const response = Response.json({ sessionId, feedback, dailySpeaking, track });
-    if (session.isNew) response.headers.set("Set-Cookie", learnerCookie(session.sessionId));
+    response.headers.set("Cache-Control","private, no-store");
+    if(session.isNew)response.headers.set("Set-Cookie",learnerCookie(session.sessionId));
     return response;
-  } catch (e) {
-    await recordTenantAiUsage(env.DB, {
-      tenantId,
-      childId: session.childId,
-      purpose: track === "pet" ? "speaking_pet_picture_description" : "speaking_conversation",
-      model: env.MODELBRIDGE_CHAT_MODEL,
-      status: "failed",
-    }).catch(() => undefined);
-    return Response.json({ error: e instanceof Error ? e.message : "Speaking response failed" }, { status: 502 });
+  }catch(err){
+    if(!stored){
+      await env.DB.prepare(
+        "UPDATE speaking_sessions SET turn_count=? WHERE id=? AND child_id=? AND status='active' AND turn_count=?"
+      ).bind(index,sessionId,session.childId,index+1).run().catch(()=>undefined);
+    }
+    await recordTenantAiUsage(env.DB,{tenantId,childId:session.childId,purpose:"psle_stimulus_conversation",model:env.MODELBRIDGE_CHAT_MODEL,status:"failed"}).catch(()=>undefined);
+    return Response.json({error:err instanceof Error?err.message:"AI examiner is temporarily unavailable"},{status:502});
   }
 }
