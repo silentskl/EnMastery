@@ -15,7 +15,9 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - run: npm run selfcheck
       - run: npm run test:psle-focus
+      - run: npm run test:d1-migrations
       - run: npm run typecheck
       - run: npm run typecheck:workers
       - run: npm run build
