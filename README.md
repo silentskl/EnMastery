@@ -38,3 +38,7 @@ npm run cf:deploy
 ```
 
 This refactor deletes legacy user-facing pages and APIs (Science, Grammar, Vocabulary, Writing, PET, Paper 2, assignments, exams, rewards, generic courses and practice). Older D1 tables, migrations, and historical data were intentionally not dropped; retained shared helpers do not constitute active product features. Before production rollout, run the release checks against configured Cloudflare and ModelBridge dependencies. Learner AI APIs require authentication; do not publish API keys.
+
+## Interactive PSLE picture-conversation protocol
+
+A learner first observes and describes a real picture. The AI examiner then asks **four adaptive questions**, one at a time. The learner must respond to each before the examiner proceeds; the entire transcript and examiner's replies are persisted to the learner's conversation session. Per-turn feedback is private until the final round. The daily conversation achievement updates **only after all four questions have been answered**. Incomplete picture tasks are not assigned, and the administration studio requires a working image URL plus an accurate teacher-side scene description. Sixteen sample P5/P6 photo-backed prompts are seeded in migration 0067; photo delivery is from third-party image hosts and may require replacing URLs if a provider removes an image.

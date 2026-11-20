@@ -92,7 +92,7 @@ export async function POST(request:Request){
       const all=[...prior.filter(row=>row.speaker==="learner").flatMap(row=>{
         try{return row.evaluation_json?[JSON.parse(row.evaluation_json) as ConversationFeedback]:[]}catch{return[]}
       }),evaluation];
-      const averages=Object.fromEntries(feedbackKeys.map(k=>[k,Math.round(all.reduce((n,item)=>n+Number(item[k]||0),0)/all.length)])) as Record<typeof feedbackKeys[number],number>;
+      const averages=Object.fromEntries(feedbackKeys.map(k=>[k,Math.round(all.reduce((n,item)=>n+Number(item[k]||0),0)/all.length)])) as Record<(typeof feedbackKeys)[number],number>;
       feedback={...evaluation,...averages};
       overallScore=conversationOverallScore(feedback);
     }

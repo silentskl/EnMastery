@@ -5,7 +5,7 @@ function cleanString(value:unknown,max=500):string{return typeof value==="string
 function score(value:unknown):number{const n=typeof value==="number"?value:Number(value);return Number.isFinite(n)?Math.min(100,Math.max(0,Math.round(n))):0;}
 function strings(value:unknown):string[]{return Array.isArray(value)?value.map(v=>cleanString(v,240)).filter(Boolean).slice(0,5):[];}
 function extractJson(value:string):Record<string,unknown>{
-  const fence=value.match(/\`\`\`(?:json)?\s*([\s\S]*?)\`\`\`/i)?.[1];
+  const fence=value.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
   const raw=(fence||value).trim(),start=raw.indexOf("{"),end=raw.lastIndexOf("}");
   if(start<0||end<=start)throw new Error("AI examiner returned invalid structured feedback");
   const parsed=JSON.parse(raw.slice(start,end+1)) as unknown;

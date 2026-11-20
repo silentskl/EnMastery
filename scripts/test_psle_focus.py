@@ -22,3 +22,15 @@ for title in ["Conversation","Reading Aloud","Listening"]:
 assert "PET · Picture" not in (root/"components/speaking-workspace.tsx").read_text()
 assert "SummaryGate" not in (root/"components/student-listening-player.tsx").read_text()
 print("PASS: PSLE Oral and Listening routes, UI, and API surface")
+
+# Oral route must not mark a one-way description as the completed conversation.
+examiner=(root/"lib/speaking/evaluate.ts").read_text()
+conversation=(root/"app/api/student/speaking/respond/route.ts").read_text()
+workspace=(root/"components/speaking-workspace.tsx").read_text()
+assert "PSLE_CONVERSATION_QUESTION_COUNT=4" in examiner
+assert "turnIndex===0" in examiner and "nextQuestion" in examiner
+assert "completed?" in conversation and "recordDailySpeakingModeScore" in conversation
+assert "speaking_turns" in conversation and "turn_count" in conversation
+assert 'setPhase(body.completed?"completed":"questions")' in workspace
+assert "examinerQuestion" in workspace
+print("PASS: staged picture description plus four examiner questions")

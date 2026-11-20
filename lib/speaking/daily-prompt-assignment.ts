@@ -53,7 +53,9 @@ async function loadPrompt(db: D1Database, promptId: string): Promise<SpeakingPro
     JOIN content_versions v ON v.content_id=c.id AND v.version=c.active_version
     WHERE c.id=? AND c.content_type='oral_prompt'
     LIMIT 1`).bind(promptId).first<PromptRow>();
-  return row ? toPrompt(row) : null;
+  if(!row)return null;
+  const prompt=toPrompt(row);
+  return prompt.mode==="stimulus"&&!prompt.stimulusImageUrl?null:prompt;
 }
 
 
@@ -99,6 +101,7 @@ async function candidateForMode(
     WHERE c.status='published' AND c.school_level=? AND c.content_type='oral_prompt'
       AND (c.scope='global' OR (c.scope='tenant' AND c.tenant_id=?))
       AND COALESCE(json_extract(v.body_json,'$.examTrack'),'') <> 'PET'
+      AND (json_extract(v.body_json,'$.mode') <> 'stimulus' OR LENGTH(TRIM(COALESCE(json_extract(v.body_json,'$.stimulusImageUrl'),''))) > 0)
       AND (CASE
         WHEN json_extract(v.body_json,'$.mode')='reading_aloud' THEN 'reading_aloud'
         WHEN json_extract(v.body_json,'$.mode')='stimulus' THEN 'stimulus'
@@ -134,7 +137,7 @@ async function candidateForMode(
 /**
  * Materialise exactly one prompt for each Daily Speaking mode.
  *
- * The three mode assignments are persisted independently from the outer
+ * The two oral mode assignments are persisted independently from the outer
  * learning_tasks Speaking card.  This fixes the old behaviour where the page
  * returned the entire cached prompt catalogue and the client simply chose the
  * first conversation/reading/stimulus item every day.
@@ -174,7 +177,7 @@ export async function ensureDailySpeakingPromptAssignments(
   const have = new Set(existing.results.map((row) => row.mode));
   const visibleLimit = await effectiveLessonLimit(db, tenantId, stage, "speak", 200);
 
-  // Keep the outer Daily Mission card and the three-part Speaking bundle aligned
+  // Keep an existing Daily Mission assignment compatible when it has a usable picture
   // whenever the card's concrete prompt is itself eligible.  This preserves the
   // Start-link `?prompt=` target without weakening the hard repeat window.
   if (visibleLimit > 0) {

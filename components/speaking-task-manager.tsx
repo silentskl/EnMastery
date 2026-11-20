@@ -92,9 +92,9 @@ export function SpeakingTaskManager({ endpoint, tenant = false }: { endpoint: st
           <label>Task instruction<textarea required value={form.prompt} onChange={e => setForm({ ...form, prompt: e.target.value })} placeholder="What should the student do or discuss?" /></label>
           {form.mode === "reading_aloud" && <label>Reference passage<textarea required value={form.referenceText} onChange={e => setForm({ ...form, referenceText: e.target.value })} placeholder="Original passage for Reading Aloud assessment." /></label>}
           {form.mode === "stimulus" && <>
-            <label>Stimulus image URL (optional)<input value={form.stimulusImageUrl} onChange={e => setForm({ ...form, stimulusImageUrl: e.target.value })} placeholder="https://.../oral-scene.jpg" /></label>
-            <label>Image alt / short caption (optional)<input value={form.stimulusImageAlt} onChange={e => setForm({ ...form, stimulusImageAlt: e.target.value })} placeholder="Short label for the picture, if needed." /></label>
-            <label>Visual / scene description<textarea value={form.stimulusAlt} onChange={e => setForm({ ...form, stimulusAlt: e.target.value })} placeholder="Describe the photo-like scene the student should respond to. Keep this even when an image URL is provided so there is a fallback if the image cannot load." /></label>
+            <label>Stimulus image URL (required)<input required value={form.stimulusImageUrl} onChange={e => setForm({ ...form, stimulusImageUrl: e.target.value })} placeholder="https://.../oral-scene.jpg" /></label>
+            <label>Image alt / short caption (recommended)<input value={form.stimulusImageAlt} onChange={e => setForm({ ...form, stimulusImageAlt: e.target.value })} placeholder="Short label for the picture, if needed." /></label>
+            <label>Visual / scene description (required for accurate AI prompts)<textarea required value={form.stimulusAlt} onChange={e => setForm({ ...form, stimulusAlt: e.target.value })} placeholder="Describe the photo-like scene the student should respond to. Keep this even when an image URL is provided so there is a fallback if the image cannot load." /></label>
           </>}
           {form.mode !== "reading_aloud" && <label>Follow-up goals<textarea value={form.followUpGoals} onChange={e => setForm({ ...form, followUpGoals: e.target.value })} placeholder="One goal per line" /></label>}
           <button className="button primary" disabled={busy}>{busy ? "Publishing…" : "Create speaking task"}</button>

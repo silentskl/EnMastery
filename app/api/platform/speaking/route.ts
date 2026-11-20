@@ -62,7 +62,8 @@ export async function POST(request: Request) {
   const b = normalise(await request.json().catch(() => ({})) as Body);
   if (!b.title || b.prompt.length < 20) return Response.json({ error: "Title and speaking prompt are required" }, { status: 400 });
   if (b.mode === "reading_aloud" && b.referenceText.length < 80) return Response.json({ error: "Reading Aloud needs a reference passage of at least 80 characters" }, { status: 400 });
-  if (b.mode === "stimulus" && !b.stimulusAlt && !b.stimulusImageUrl) return Response.json({ error: "Stimulus Conversation needs a scene description or a stimulus image" }, { status: 400 });
+  if (b.mode === "stimulus" && (!b.stimulusAlt || !b.stimulusImageUrl)) return Response.json({ error: "PSLE picture dialogue requires BOTH a visible image URL and a teacher scene description" }, { status: 400 });
+  if (b.mode === "stimulus" && !(/^https:\/\/\S+$/i.test(b.stimulusImageUrl) || /^\/(?!\/)\S+$/.test(b.stimulusImageUrl))) return Response.json({ error: "Image URL must be https:// or a safe same-origin path" }, { status: 400 });
   const dup = await duplicateSkip(db, { contentType: "oral_prompt", schoolLevel: b.schoolLevel, scope: "global", title: b.title });
   if (dup.skipped) return Response.json({ ok: true, status: "skipped", existingId: dup.existingId, existingStatus: dup.existingStatus });
   const id = `speak-${crypto.randomUUID()}`;
