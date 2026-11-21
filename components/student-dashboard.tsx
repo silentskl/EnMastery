@@ -19,8 +19,8 @@ export function StudentDashboard() {
       </Link>
     )}</div>
     <section className="card" style={{marginTop:24}}>
-      <div className="cardHeader"><h2>How to practise</h2><span>10–15 minutes a day</span></div>
-      <p>Describe a picture, practise a real-life conversation, read a short passage and listen to English regularly. Everyday role-play is a practical speaking activity, not an official PSLE examination component.</p>
+      <div className="cardHeader"><h2>How to practise</h2><span>30 minutes every day</span></div>
+      <p>Complete at least 30 minutes of active study every Singapore day: one picture-based Conversation, one everyday Role Play, two assessed Reading Aloud recordings and one complete Listening lesson. Your daily progress is shown above and persists across refreshes. Time alone is not enough: finish all five activities too. Everyday role-play is not an official PSLE examination component.</p>
       <div className="rowActions"><Link className="button primary" href="/oral/conversation">Start conversation</Link><Link className="button secondary" href="/account">Student account</Link></div>
     </section>
   </>;

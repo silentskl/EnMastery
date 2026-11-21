@@ -5,6 +5,7 @@ import { updateSkillEvidence } from "@/lib/student/mastery";
 import { conversationOverallScore, recordDailySpeakingModeScore } from "@/lib/student/speaking-daily";
 import { recordTenantAiUsage } from "@/lib/tenant/usage";
 import { sgDate } from "@/lib/student/tasks";
+import { recordDailyGoalEvent } from "@/lib/student/daily-goal";
 import type { ConversationFeedback } from "@/lib/speaking/types";
 
 type Session={id:string;mode:string;prompt_title:string|null;prompt_text:string;status:string;turn_count:number};
@@ -111,6 +112,7 @@ export async function POST(request:Request){
 
     let dailySpeaking;
     if(completed){
+      await recordDailyGoalEvent(env.DB,session.childId,"conversation",sessionId);
       try{
         await updateSkillEvidence(env.DB,session.childId,"S-SBC-IDEA",Math.round((feedback.relevance+feedback.development)/2));
         await updateSkillEvidence(env.DB,session.childId,"S-INTERACT",feedback.interaction);

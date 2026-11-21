@@ -17,6 +17,7 @@ jobs:
       - run: npm ci
       - run: npm run selfcheck
       - run: npm run test:psle-focus
+      - run: npm run test:daily-goal
       - run: npm run test:d1-migrations
       # Regression: a developer can have a stale .next validator left by removed pages.
       # The typecheck preflight must regenerate it from the current app/ source.

@@ -80,6 +80,11 @@ def check_files() -> None:
         "migrations/0061_v102_hotfix1245_speaking_daily_prompt_rotation.sql",
         "migrations/0066_v102_reading_aloud_50_original_passages.sql",
         "migrations/0067_psle_picture_dialogue_tasks.sql",
+        "migrations/0068_psle_daily_study_goal.sql",
+        "app/api/student/daily-goal/route.ts",
+        "components/daily-goal-panel.tsx",
+        "lib/student/daily-goal.ts",
+        "scripts/test_daily_goal.py",
     ]
     for path in required:
         require(path)
@@ -199,6 +204,7 @@ def check_package() -> None:
         commands = {
             "selfcheck": "python3 scripts/validate_release.py",
             "test:psle-focus": "python3 scripts/test_psle_focus.py",
+            "test:daily-goal": "python3 scripts/test_daily_goal.py",
             "test:d1-migrations": "python3 scripts/test_d1_migrations.py",
         }
         for name, command in commands.items():
@@ -211,7 +217,7 @@ def check_package() -> None:
                 'join(root, ".next", "dev", "types")',
                 '"typegen"', '"validator.ts"')
         release = scripts.get("check:release", "")
-        for command in ["npm run selfcheck", "npm run test:psle-focus",
+        for command in ["npm run selfcheck", "npm run test:psle-focus", "npm run test:daily-goal",
                         "npm run test:d1-migrations", "npm run typecheck",
                         "npm run typecheck:workers", "npm run build",
                         "npm run build:cloudflare"]:
@@ -267,8 +273,8 @@ def check_cloudflare() -> None:
 def check_migrations() -> None:
     migrations = sorted((ROOT / "migrations").glob("*.sql"))
     numbers = [int(m.name[:4]) for m in migrations]
-    if len(migrations) < 67 or 67 not in numbers:
-        fail("PSLE picture conversation migration 0067 is missing")
+    if len(migrations) < 68 or 67 not in numbers or 68 not in numbers:
+        fail("PSLE picture conversation and daily study goal migrations 0067–0068 are required")
         return
     if numbers != list(range(1, len(numbers) + 1)):
         fail("D1 migration files must remain a contiguous, ordered sequence")

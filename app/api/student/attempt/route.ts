@@ -4,6 +4,8 @@ import { scoreQuestion, safeJson } from "@/lib/content/store";
 import { updateMastery } from "@/lib/student/mastery";
 import { completeMatchingTasks } from "@/lib/student/tasks";
 import { learnerTenantContext } from "@/lib/tenant/learner-context";
+import { recordDailyGoalEvent } from "@/lib/student/daily-goal";
+import { sgDate } from "@/lib/student/tasks";
 
 export async function POST(request: Request) {
   const env = getEnv();
@@ -44,6 +46,21 @@ export async function POST(request: Request) {
   await env.DB.prepare("INSERT INTO learner_content_progress (child_id,content_id,status,progress_percent,completed_at) VALUES (?,?,?,?,?) ON CONFLICT(child_id,content_id) DO UPDATE SET status=excluded.status,progress_percent=excluded.progress_percent,completed_at=excluded.completed_at,updated_at=CURRENT_TIMESTAMP")
     .bind(session.childId, contentId, progress >= 100 ? "completed" : "started", progress, progress >= 100 ? new Date().toISOString() : null).run();
   if (progress >= 100) await completeMatchingTasks(env.DB, session.childId, content.content_type === "article" || content.content_type === "lesson" ? "reading" : "listening", contentId);
+  if (listening && questionsPassed && Number(total?.total||0)>0) {
+    // Count a listening lesson only when ALL published questions were answered
+    // correctly on the same Singapore day. Prior-day work cannot fill today's quota.
+    const today=sgDate();
+    const todayCorrect=await env.DB.prepare(
+      "SELECT COUNT(DISTINCT a.question_id) AS n FROM question_attempts a "+
+      "JOIN questions q ON q.id=a.question_id AND q.source_content_id=a.content_id "+
+      "WHERE a.child_id=? AND a.content_id=? AND a.is_correct=1 "+
+      "AND q.status='published' AND (q.scope='global' OR (q.scope='tenant' AND q.tenant_id=?)) "+
+      "AND date(a.created_at,'+8 hours')=?",
+    ).bind(session.childId,contentId,tenantId,today).first<{n:number}>();
+    if (Number(todayCorrect?.n||0)>=Number(total!.total)) {
+      await recordDailyGoalEvent(env.DB,session.childId,"listening",contentId);
+    }
+  }
   const response = Response.json({ correct: scored.correct, score, maxScore: question.marks, feedback: scored.feedback, explanation: explanation.text || "", progress });
   if (session.isNew) response.headers.set("Set-Cookie", learnerCookie(session.sessionId));
   return response;

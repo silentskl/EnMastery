@@ -3,9 +3,9 @@ import {useEffect,useRef} from "react";
 import {usePathname} from "next/navigation";
 
 const IDLE_MS=60_000;
-const HEARTBEAT_MS=30_000;
+const HEARTBEAT_MS=15_000;
 const TICK_MS=1_000;
-const STUDY_PREFIXES=["/learn","/practice","/exam","/grammar","/science","/vocabulary","/assignments"];
+const STUDY_PREFIXES=["/oral","/learn/listen"];
 
 type StudyWindow=typeof window&{
   __emActiveMicCount?:number;
@@ -18,7 +18,7 @@ function sgDate(){
 function makeSessionId(){return `study-${crypto.randomUUID().replace(/-/g,"")}`}
 function mediaIsPlaying(){return [...document.querySelectorAll<HTMLMediaElement>("audio,video")].some(m=>!m.paused&&!m.ended&&m.readyState>=2)}
 function voiceIsLive(){const w=window as StudyWindow;return Boolean((w.__emActiveMicCount||0)+(w.__emActiveVoiceCount||0))}
-function isStudyPath(path:string){return STUDY_PREFIXES.some(prefix=>path===prefix||path.startsWith(`${prefix}/`))&&!path.startsWith("/rewards/")}
+function isStudyPath(path:string){return STUDY_PREFIXES.some(prefix=>path===prefix||path.startsWith(`${prefix}/`))}
 
 /**
  * Effective study time deliberately does NOT count the first idle minute.
@@ -45,6 +45,12 @@ export function EffectiveStudyTimeTracker(){
   useEffect(()=>{
     const oldPath=pathRef.current;
     pathRef.current=pathname;
+    if(!isStudyPath(oldPath)&&isStudyPath(pathname)){
+      // Establish the server-side wall-clock anchor before crediting time.
+      void fetch("/api/student/daily-goal",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({sessionId:sessionId.current,activeSeconds:activeSeconds.current,path:pathname}),
+        cache:"no-store"}).catch(()=>undefined);
+    }
     if(isStudyPath(oldPath)&&!isStudyPath(pathname)){
       pendingQuietSeconds.current=0;
       lastHumanActivityAt.current=0;
@@ -124,7 +130,13 @@ export function EffectiveStudyTimeTracker(){
               closed=true;
               win.__emActiveMicCount=Math.max(0,(win.__emActiveMicCount||0)-1);
             };
-            for(const track of stream.getAudioTracks())track.addEventListener("ended",close,{once:true});
+            for(const track of stream.getAudioTracks()){
+              track.addEventListener("ended",close,{once:true});
+              // Calling MediaStreamTrack.stop() does not emit an "ended" event.
+              // Without this, a stopped mic would count as active forever.
+              const originalStop=track.stop.bind(track);
+              try{track.stop=()=>{originalStop();close()}}catch{}
+            }
           }
           return stream;
         }) as typeof mediaDevices.getUserMedia;
@@ -132,8 +144,8 @@ export function EffectiveStudyTimeTracker(){
     }
 
     const flush=(keepalive=false)=>{
-      if(!sessionId.current||(activeSeconds.current<=0&&idleCount.current<=0))return;
-      void fetch("/api/student/study-time",{
+      if(!sessionId.current||!isStudyPath(pathRef.current))return;
+      void fetch("/api/student/daily-goal",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
@@ -141,7 +153,6 @@ export function EffectiveStudyTimeTracker(){
           activeSeconds:Math.floor(activeSeconds.current),
           idleCount:idleCount.current,
           path:pathRef.current,
-          studyDate:studyDate.current,
         }),
         keepalive,
         cache:"no-store",
@@ -171,7 +182,7 @@ export function EffectiveStudyTimeTracker(){
       lastTickAt.current=now;
       if(!isStudyPath(pathRef.current))return;
 
-      const mediaActive=mediaIsPlaying()||voiceIsLive()||youtubePlaying.current;
+      const mediaActive=document.visibilityState==="visible"&&(mediaIsPlaying()||voiceIsLive()||youtubePlaying.current);
       if(mediaActive){
         // Explicit learning media/voice activity is valid study even without mouse movement.
         activeSeconds.current+=elapsed;
@@ -198,6 +209,7 @@ export function EffectiveStudyTimeTracker(){
     },TICK_MS);
 
     const heartbeat=setInterval(()=>flush(false),HEARTBEAT_MS);
+    if(isStudyPath(pathRef.current))flush(false);
     const onVisibility=()=>{
       const now=Date.now();
       if(document.visibilityState==="hidden"){
