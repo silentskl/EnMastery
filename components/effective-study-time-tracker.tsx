@@ -46,9 +46,15 @@ export function EffectiveStudyTimeTracker(){
   useEffect(()=>{
     const oldPath=pathRef.current;
     if(isStudyPath(oldPath)&&!isStudyPath(pathname)&&activeSeconds.current>0){
+      const reported=Math.floor(activeSeconds.current);
       void fetch("/api/student/daily-goal",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({sessionId:sessionId.current,activeSeconds:Math.floor(activeSeconds.current),path:oldPath}),
-        keepalive:true,cache:"no-store"}).catch(()=>undefined);
+        body:JSON.stringify({sessionId:sessionId.current,activeSeconds:reported,path:oldPath}),
+        keepalive:true,cache:"no-store"}).then(async response=>{
+          if(response.ok){
+            acknowledgedActiveSeconds.current=Math.max(acknowledgedActiveSeconds.current,reported);
+            window.dispatchEvent(new CustomEvent("em:daily-goal-updated",{detail:await response.json()}));
+          }
+        }).catch(()=>undefined);
     }
     pathRef.current=pathname;
     if(!isStudyPath(oldPath)&&isStudyPath(pathname)){
@@ -223,7 +229,7 @@ export function EffectiveStudyTimeTracker(){
       }
       }finally{
         window.dispatchEvent(new CustomEvent("em:study-tick",{detail:{
-          date:studyDate.current,pendingSeconds:Math.max(0,Math.floor(activeSeconds.current)-acknowledgedActiveSeconds.current)
+          date:studyDate.current,pendingSeconds:isStudyPath(pathRef.current)?Math.max(0,Math.floor(activeSeconds.current)-acknowledgedActiveSeconds.current):0
         }}));
       }
     },TICK_MS);
