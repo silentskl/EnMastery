@@ -23,7 +23,7 @@
     "stylecheck": "python3 scripts/audit_styles.py",
     "typecheck:workers": "tsc --noEmit -p tsconfig.workers.json",
     "build:cloudflare": "opennextjs-cloudflare build",
-    "check:release": "npm run selfcheck && npm run typecheck && npm run typecheck:workers && npm run test:psle-focus && npm run test:d1-migrations && npm run build && npm run build:cloudflare",
+    "check:release": "npm run selfcheck && npm run typecheck && npm run typecheck:workers && npm run test:psle-focus && npm run test:daily-goal && npm run test:d1-migrations && npm run build && npm run build:cloudflare",
     "test:hotfix5": "python3 scripts/test_hotfix5.py",
     "deps:install": "bash scripts/install-deps-resilient.sh",
     "verify:release": "npm run deps:install && npm run check:release",
@@ -60,7 +60,8 @@
     "test:hotfix1244": "python3 scripts/test_hotfix1244.py",
     "test:hotfix1245": "python3 scripts/test_hotfix1245.py",
     "test:hotfix1247": "python3 scripts/test_hotfix1247.py",
-    "test:psle-focus": "python3 scripts/test_psle_focus.py"
+    "test:psle-focus": "python3 scripts/test_psle_focus.py",
+    "test:daily-goal": "python3 scripts/test_daily_goal.py"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "1.20.2",

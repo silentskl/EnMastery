@@ -4,6 +4,7 @@ import { recordTenantAiUsage } from "@/lib/tenant/usage";
 import { nextRoleplayReply, assessRoleplay, type RoleplayLine } from "@/lib/roleplay/engine";
 import { findRoleplayScenario, type RoleplayLevel, type RoleplayScenario } from "@/lib/roleplay/scenarios";
 import { conversationOverallScore } from "@/lib/student/speaking-daily";
+import { recordDailyGoalEvent } from "@/lib/student/daily-goal";
 
 type StoredSession={id:string;mode:string;prompt_title:string|null;prompt_text:string;status:string;turn_count:number};
 type Turn={speaker:"learner"|"assistant";transcript:string|null;reply_text:string|null};
@@ -85,6 +86,7 @@ export async function POST(request:Request){
         "(SELECT COUNT(*) FROM speaking_turns WHERE session_id=? AND speaker='learner')=?"
       ).bind(score,JSON.stringify(feedback),sessionId,session.childId,turnCount,sessionId,turnCount).run();
       if(Number(changed.meta?.changes||0)!==1)return Response.json({error:"The conversation changed while feedback was being generated. Please retry."},{status:409});
+      await recordDailyGoalEvent(env.DB,session.childId,"roleplay",sessionId);
       await recordTenantAiUsage(env.DB,{tenantId,childId:session.childId,purpose:"roleplay_feedback",model:env.MODELBRIDGE_CHAT_MODEL}).catch(()=>undefined);
       return replyJson({sessionId,completed:true,turnCount,feedback,overallScore:score},cookie);
     }catch(err){

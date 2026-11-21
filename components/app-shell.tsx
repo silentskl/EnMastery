@@ -7,6 +7,8 @@ import { TenantSignOut } from "@/components/tenant-signout";
 import { SystemClock } from "@/components/system-clock";
 import { UiLanguageProvider, UiLanguageToggle } from "@/components/ui-language";
 import { CurrentUserBadge } from "@/components/current-user-badge";
+import { DailyGoalPanel } from "@/components/daily-goal-panel";
+import { EffectiveStudyTimeTracker } from "@/components/effective-study-time-tracker";
 
 const studentNav = [
   ["Home", "/"], ["Conversation", "/oral/conversation"],
@@ -51,6 +53,7 @@ function ShellInner({ children }: { children: ReactNode }) {
         <Link className="mobileBrand" href={home}><span className="brandMark">EM</span></Link>
         <div className="topbarRight">{opsMode && <UiLanguageToggle/>}<SystemClock/><span className="xp">PSLE English</span><CurrentUserBadge mode={platformMode ? "platform" : tenantMode ? "tenant" : "student"}/></div>
       </header>
+      {!opsMode&&<><EffectiveStudyTimeTracker/><DailyGoalPanel/></>}
       <main className="content">{children}</main>
       {!opsMode && <nav className="mobileNav" aria-label="Mobile navigation">{studentNav.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>}
     </div>

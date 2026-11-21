@@ -353,6 +353,10 @@ export function useConversationVoice(args: {
     const current = speakGenerationRef.current;
     setError("");
     setState("speaking");
+    // Listening to the AI's spoken turn is active study, not idle time.
+    // The microphone remains stopped until playback has finished.
+    const studyWindow=window as Window & {__emActiveVoiceCount?:number};
+    studyWindow.__emActiveVoiceCount=(studyWindow.__emActiveVoiceCount||0)+1;
     let didPlay = false;
     if (configRef.current?.serverTts) {
       try { await serverSpeech(text); didPlay = true; }
@@ -364,6 +368,7 @@ export function useConversationVoice(args: {
         setError(reason instanceof Error ? reason.message : "Could not play AI speech.");
       }
     }
+    studyWindow.__emActiveVoiceCount=Math.max(0,(studyWindow.__emActiveVoiceCount||0)-1);
     if (current !== speakGenerationRef.current) return;
     setState("idle");
     if (didPlay && listenAfter && handsFreeRef.current) await startRecording();
