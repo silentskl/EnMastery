@@ -30,6 +30,7 @@ export function EffectiveStudyTimeTracker(){
   const pathname=usePathname();
   const pathRef=useRef(pathname);
   const activeSeconds=useRef(0);
+  const acknowledgedActiveSeconds=useRef(0);
   const idleCount=useRef(0);
   const pendingQuietSeconds=useRef(0);
   const lastHumanActivityAt=useRef(0);
@@ -44,6 +45,11 @@ export function EffectiveStudyTimeTracker(){
 
   useEffect(()=>{
     const oldPath=pathRef.current;
+    if(isStudyPath(oldPath)&&!isStudyPath(pathname)&&activeSeconds.current>0){
+      void fetch("/api/student/daily-goal",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({sessionId:sessionId.current,activeSeconds:Math.floor(activeSeconds.current),path:oldPath}),
+        keepalive:true,cache:"no-store"}).catch(()=>undefined);
+    }
     pathRef.current=pathname;
     if(!isStudyPath(oldPath)&&isStudyPath(pathname)){
       // Establish the server-side wall-clock anchor before crediting time.
@@ -145,21 +151,29 @@ export function EffectiveStudyTimeTracker(){
 
     const flush=(keepalive=false)=>{
       if(!sessionId.current||!isStudyPath(pathRef.current))return;
+      const sentSeconds=Math.floor(activeSeconds.current);
       void fetch("/api/student/daily-goal",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
           sessionId:sessionId.current,
-          activeSeconds:Math.floor(activeSeconds.current),
+          activeSeconds:sentSeconds,
           idleCount:idleCount.current,
           path:pathRef.current,
         }),
         keepalive,
         cache:"no-store",
+      }).then(async response=>{
+        if(response.ok){
+          acknowledgedActiveSeconds.current=Math.max(acknowledgedActiveSeconds.current,sentSeconds);
+          const progress=await response.json();
+          window.dispatchEvent(new CustomEvent("em:daily-goal-updated",{detail:progress}));
+        }
       }).catch(()=>undefined);
     };
 
     const tick=setInterval(()=>{
+      try{
       const now=Date.now();
       const today=sgDate();
       if(today!==studyDate.current){
@@ -167,6 +181,7 @@ export function EffectiveStudyTimeTracker(){
         studyDate.current=today;
         sessionId.current=makeSessionId();
         activeSeconds.current=0;
+        acknowledgedActiveSeconds.current=0;
         idleCount.current=0;
         pendingQuietSeconds.current=0;
         lastHumanActivityAt.current=0;
@@ -205,6 +220,11 @@ export function EffectiveStudyTimeTracker(){
         pendingQuietSeconds.current+=elapsed;
       }else{
         registerIdle();
+      }
+      }finally{
+        window.dispatchEvent(new CustomEvent("em:study-tick",{detail:{
+          date:studyDate.current,pendingSeconds:Math.max(0,Math.floor(activeSeconds.current)-acknowledgedActiveSeconds.current)
+        }}));
       }
     },TICK_MS);
 

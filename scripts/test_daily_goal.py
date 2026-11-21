@@ -39,7 +39,7 @@ for marker in ['"30:00"','progress.completed','progress.counts[key]','progress.t
 required=[
     ("app/api/student/roleplay/route.ts",'"roleplay",sessionId'),
     ("app/api/student/speaking/respond/route.ts",'"conversation",sessionId'),
-    ("app/api/student/speaking/assess/route.ts",'"reading_aloud",practiceId'),
+    ("app/api/student/speaking/assess/route.ts",'"reading_aloud",recordingKey'),
     ("app/api/student/attempt/route.ts",'"listening",contentId'),
 ]
 for filename,marker in required:
@@ -48,3 +48,8 @@ attempt=(root/"app/api/student/attempt/route.ts").read_text()
 assert "date(a.created_at,'+8 hours')=?" in attempt
 assert "COUNT(DISTINCT a.question_id)" in attempt
 print("PASS: daily 30-minute effective PSLE learning with 1 conversation, 1 role-play, 2 reading-aloud recordings, and 1 same-day listening completion")
+
+reading=(root/"app/api/student/speaking/assess/route.ts").read_text()
+assert 'digest("SHA-256",await file.arrayBuffer())' in reading
+assert 'file.size<=44' in reading
+print("PASS: a second click cannot count the same recording twice")

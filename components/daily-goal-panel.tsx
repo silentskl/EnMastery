@@ -18,6 +18,7 @@ function clock(seconds:number) {
 export function DailyGoalPanel(){
   const pathname=usePathname();
   const [progress,setProgress]=useState<DailyGoalProgress|null>(null);
+  const [pending,setPending]=useState<{date:string;seconds:number}|null>(null);
   const [signedOut,setSignedOut]=useState(false);
   const [error,setError]=useState("");
   useEffect(()=>{
@@ -35,12 +36,22 @@ export function DailyGoalPanel(){
     void refresh();
     const interval=setInterval(()=>void refresh(),15_000);
     const onVisible=()=>{if(document.visibilityState==="visible")void refresh()};
-    const onUpdated=()=>void refresh();
+    const onUpdated=(event:Event)=>{
+      const updated=(event as CustomEvent<DailyGoalProgress>).detail;
+      if(updated?.date)setProgress(previous=>previous?.date===updated.date&&previous.activeSeconds>updated.activeSeconds?previous:updated);
+      else void refresh();
+    };
+    const onTick=(event:Event)=>{
+      const next=(event as CustomEvent<{date:string;pendingSeconds:number}>).detail;
+      if(next?.date)setPending({date:next.date,seconds:next.pendingSeconds||0});
+    };
     document.addEventListener("visibilitychange",onVisible);
     window.addEventListener("em:daily-goal-updated",onUpdated);
+    window.addEventListener("em:study-tick",onTick);
     return()=>{alive=false;clearInterval(interval);
       document.removeEventListener("visibilitychange",onVisible);
-      window.removeEventListener("em:daily-goal-updated",onUpdated)};
+      window.removeEventListener("em:daily-goal-updated",onUpdated);
+      window.removeEventListener("em:study-tick",onTick)};
   },[pathname]);
   if(signedOut) return <div className="dailyGoalBar" role="status">
     <strong>Daily English goal · 30 minutes</strong>
@@ -48,14 +59,15 @@ export function DailyGoalPanel(){
     <Link href="/account">Student sign-in</Link>
   </div>;
   if(!progress) return error?<div className="dailyGoalBar" role="status">{error}</div>:null;
-  const pct=Math.min(100,Math.round(progress.activeSeconds/progress.targetSeconds*100));
-  const remaining=Math.max(0,progress.targetSeconds-progress.activeSeconds);
+  const visibleSeconds=progress.activeSeconds+(pending?.date===progress.date?pending.seconds:0);
+  const pct=Math.min(100,Math.round(visibleSeconds/progress.targetSeconds*100));
+  const remaining=Math.max(0,progress.targetSeconds-visibleSeconds);
   return <section className={"dailyGoalPanel"+(progress.completed?" achieved":"")} aria-label="Today's learning goal">
     <div className="dailyGoalHeading">
       <div><strong>Today's English goal</strong> <span className="sourceHint">Singapore time · {progress.date}</span></div>
-      <strong className={progress.completed?"dailyGoalDone":""}>{progress.completed?"✓ Daily goal complete":progress.tasksCompleted+"/"+progress.tasksRequired+" activities · "+clock(progress.activeSeconds)+" / 30:00"}</strong>
+      <strong className={progress.completed?"dailyGoalDone":""}>{progress.completed?"✓ Daily goal complete":progress.tasksCompleted+"/"+progress.tasksRequired+" activities · "+clock(visibleSeconds)+" / 30:00"}</strong>
     </div>
-    <div className="dailyGoalTrack" role="progressbar" aria-label="Active study time" aria-valuemin={0} aria-valuemax={1800} aria-valuenow={Math.min(1800,progress.activeSeconds)}>
+    <div className="dailyGoalTrack" role="progressbar" aria-label="Active study time" aria-valuemin={0} aria-valuemax={1800} aria-valuenow={Math.min(1800,visibleSeconds)}>
       <span style={{width:pct+"%"}}/>
     </div>
     <div className="dailyGoalDetails">
