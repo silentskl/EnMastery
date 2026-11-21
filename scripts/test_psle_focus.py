@@ -48,3 +48,28 @@ for action in ['action==="start"','action==="finish"','nextRoleplayReply','speak
  assert action in roleplay_api, f"Missing open-ended role-play implementation: {action}"
 assert "/oral/roleplay" in shell
 print("PASS: broad open-ended real-life AI role-play and independent completion")
+
+
+# Both conversational AI paths use user-role framing: our ModelBridge gateway
+# may map "system" to upstream "developer", which some models reject.
+dialogue=(root/"lib/roleplay/engine.ts").read_text()
+photo_examiner=(root/"lib/speaking/evaluate.ts").read_text()
+assert 'role:"system"' not in dialogue and 'role:"system"' not in photo_examiner
+assert 'role:"user"' in dialogue and 'role:"user"' in photo_examiner
+print("PASS: ModelBridge-compatible conversation message roles")
+
+# Shared hands-free voice loop: no AI audio captured, endpoint-based playback,
+# voice activity plus three-second silence, guarded submissions and fallback STT.
+voice=(root/"lib/browser/use-conversation-voice.ts").read_text()
+picture=(root/"components/speaking-workspace.tsx").read_text()
+roleplay=(root/"components/roleplay-workspace.tsx").read_text()
+for marker in ["SILENCE_MS = 3000","NO_SPEECH_MS = 30000","MAX_TURN_MS = 90000",
+               "recognition.onresult","processingRef.current","lastVoiceRef.current",
+               "await serverSpeech(text)","await browserSpeech(text)","listenAfter",
+               "await submitRef.current(message)","URL.revokeObjectURL"]:
+ assert marker in voice, "Missing hands-free guard: "+marker
+assert "voice.play(body.feedback.reply,!body.completed)" in picture
+assert "voice.play(data.reply,true)" in roleplay
+assert "voice.stopRecording(voice.handsFree)" in picture and "voice.stopRecording(voice.handsFree)" in roleplay
+assert "assessReading()" in picture and "PronunciationAssessment" in picture
+print("PASS: natural hands-free conversation while Reading Aloud is unchanged")

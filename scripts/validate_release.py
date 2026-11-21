@@ -68,6 +68,7 @@ def check_files() -> None:
         "app/platform/(protected)/listening/page.tsx",
         "components/app-shell.tsx", "components/student-dashboard.tsx",
         "components/speaking-workspace.tsx", "components/roleplay-workspace.tsx",
+        "lib/browser/use-conversation-voice.ts",
         "components/student-listening-player.tsx",
         "lib/speaking/daily-prompt-assignment.ts",
         "lib/speaking/evaluate.ts", "lib/student/speaking-daily.ts",
@@ -141,7 +142,7 @@ def check_files() -> None:
             "OPEN-ENDED interactive role-play", "args.history")
     require("components/roleplay-workspace.tsx",
             'action:"start"', 'action:"reply"', 'action:"finish"',
-            "startRecording", "stopRecording", "speak(data.reply)")
+            "startRecording", "stopRecording", "voice.play(data.reply,true)")
     require("app/api/student/speaking/assess/route.ts",
             "requireAuthenticatedLearner")
     require("app/api/student/speaking/transcribe/route.ts",

@@ -49,7 +49,7 @@ export async function evaluatePsleConversationTurn(args:{
   ].join("\n\n");
   const response=await modelBridgeChat(
     {baseUrl:args.baseUrl,apiKey:args.apiKey,model:args.model},
-    [{role:"system",content:"You are a careful PSLE-style oral examiner. Follow the stage rules and return strict JSON only."},{role:"user",content:instructions}],
+    [{role:"user",content:"PSLE oral examiner instructions: Follow the staged practice rules and return strict JSON only.\n\n"+instructions}],
   );
   const text=response?.choices?.[0]?.message?.content;
   if(typeof text!=="string")throw new Error("AI examiner returned no text");
