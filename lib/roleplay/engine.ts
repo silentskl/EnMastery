@@ -22,7 +22,7 @@ export async function nextRoleplayReply(args:{
 }):Promise<RoleplayResult>{
   const {scenario,level}=args;
   const messages:ChatMessage[]=[{
-    role:"system",content:[
+    role:"user",content:[
       "You are acting as a realistic English-speaking "+scenario.aiRole+" in a guided Primary 5/6 everyday conversation practice.",
       "Location: "+scenario.setting+". The learner is "+scenario.studentRole+".",
       "Scenario: "+scenario.title+". Practical learner goals: "+scenario.goals.join("; ")+".",
@@ -55,9 +55,9 @@ export async function nextRoleplayReply(args:{
 export async function assessRoleplay(args:{
   baseUrl:string;apiKey:string;model:string;scenario:RoleplayScenario;level:RoleplayLevel;history:RoleplayLine[];
 }):Promise<ConversationFeedback>{
-  const transcript=args.history.slice(0,5).concat(args.history.slice(-35)).map(x=>x.speaker==="learner"?"Learner: "+x.text:"Role-play partner: "+x.text).join("\n");
+  const transcript=[...args.history.slice(0,5),...args.history.slice(Math.max(5,args.history.length-35))].map(x=>x.speaker==="learner"?"Learner: "+x.text:"Role-play partner: "+x.text).join("\n");
   const messages:ChatMessage[]=[{
-    role:"system",content:"You are an English communication coach for Singapore Primary 5–6. Evaluate practical open-ended role-play only from written transcripts. Do not claim to measure pronunciation or any official SEAB examination marks. Return strict JSON."
+    role:"user",content:"You are an English communication coach for Singapore Primary 5–6. Evaluate practical open-ended role-play only from written transcripts. Do not claim to measure pronunciation or any official SEAB examination marks. Return strict JSON."
   },{
     role:"user",content:[
       "Scenario: "+args.scenario.title+"; learner role: "+args.scenario.studentRole+"; AI role: "+args.scenario.aiRole,

@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ConversationFeedback, PronunciationAssessment, SpeakingMode, SpeakingPrompt } from "@/lib/speaking/types";
 import { getSpeechRecognitionCtor, type SpeechRecognitionLike } from "@/lib/browser/speech-recognition";
+import { useConversationVoice } from "@/lib/browser/use-conversation-voice";
 
 type Focus = "stimulus" | "reading_aloud";
 type Config = {authenticated:boolean;serverStt:boolean;serverTts:boolean;azurePronunciation:boolean};
@@ -66,10 +67,12 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
   const sampleRateRef=useRef(48000);
   const startingRef=useRef(false);
   const committedRef=useRef<Set<number>>(new Set());
+  const sendingRef=useRef(false);
+  const voice=useConversationVoice({config,onAutoSubmit:async message=>{await submitConversation(message)}});
 
   useEffect(()=>{void fetch("/api/student/speaking/config",{cache:"no-store"}).then(r=>r.json()).then(x=>setConfig(x as Config)).catch(()=>setError("Could not load speech settings."))},[]);
   useEffect(()=>{
-    let live=true;setLoading(true);setError("");setTranscript("");setFeedback(null);setAssessment(null);setHistory([]);setSessionId("");setPhase("description");setQuestionNumber(0);setExaminerQuestion("");setImageReady(false);setImageFailed(false);
+    let live=true;voice.reset();setLoading(true);setError("");setTranscript("");setFeedback(null);setAssessment(null);setHistory([]);setSessionId("");setPhase("description");setQuestionNumber(0);setExaminerQuestion("");setImageReady(false);setImageFailed(false);
     void fetch("/api/student/speaking/prompts",{cache:"no-store"}).then(async r=>{
       const body=await r.json() as {prompts?:SpeakingPrompt[];dailyProgress?:Progress;error?:string};
       if(!r.ok)throw new Error(body.error||"Could not load oral tasks");
@@ -82,11 +85,12 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
   },[focus]);
   useEffect(()=>()=>{if(timerRef.current)clearInterval(timerRef.current);try{recRef.current?.stop()}catch{}streamRef.current?.getTracks().forEach(t=>t.stop());processorRef.current?.disconnect();sourceRef.current?.disconnect();void audioRef.current?.close().catch(()=>{})},[]);
   const active=prompts.find(p=>p.id===promptId)||prompts[0]||null;
-  function selectPrompt(id:string){if(recording||busy)return;setPromptId(id);setTranscript("");setFeedback(null);setAssessment(null);setSessionId("");setHistory([]);setPhase("description");setQuestionNumber(0);setExaminerQuestion("");setImageReady(false);setImageFailed(false);wavRef.current=null;}
+  function selectPrompt(id:string){if(recording||busy||voice.state!=="idle")return;voice.reset();setPromptId(id);setTranscript("");setFeedback(null);setAssessment(null);setSessionId("");setHistory([]);setPhase("description");setQuestionNumber(0);setExaminerQuestion("");setImageReady(false);setImageFailed(false);wavRef.current=null;}
   async function start(){
-    if(recording||busy||startingRef.current||phase==="completed")return;
+    if(recording||busy||startingRef.current||voice.state!=="idle"||phase==="completed")return;
     if(focus==="stimulus"&&(!active?.stimulusImageUrl||!imageReady||imageFailed)){setError("The picture is not available. Ask your teacher to add a working image before starting.");return}
     if(config&&!config.authenticated){setError("Sign in with a student account to record and receive feedback.");return}
+    if(focus==="stimulus"){await voice.startRecording();return;}
     startingRef.current=true;
     try{
       setError("");setFeedback(null);setAssessment(null);setTranscript("");setInterim("");setSeconds(0);
@@ -111,6 +115,7 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
     finally{startingRef.current=false}
   }
   async function stop(){
+    if(focus==="stimulus"){await voice.stopRecording(voice.handsFree);return;}
     if(!recording)return;setRecording(false);if(timerRef.current)clearInterval(timerRef.current);
     try{recRef.current?.stop()}catch{}recRef.current=null;
     processorRef.current?.disconnect();sourceRef.current?.disconnect();
@@ -125,14 +130,16 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
     }
   }
   async function speak(text:string){
+    if(focus==="stimulus"){await voice.play(text,false);return;}
     if(config?.serverTts){try{const r=await fetch("/api/student/speaking/tts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})});if(r.ok){const url=URL.createObjectURL(await r.blob());const audio=new Audio(url);audio.onended=()=>URL.revokeObjectURL(url);await audio.play();return}}catch{}}
     browserSpeak(text);
   }
-  async function submitConversation(){
-    if(!active||!transcript.trim()||phase==="completed")return;
-    setBusy(true);setError("");
+  async function submitConversation(message?:string){
+    const spoken=(message??voice.getTranscript()).trim();
+    if(!active||!spoken||phase==="completed"||busy||sendingRef.current)return;
+    sendingRef.current=true;setBusy(true);setError("");
     try{
-      const response=await fetch("/api/student/speaking/respond",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({promptId:active.id,mode:"stimulus",transcript,history,sessionId:sessionId||undefined})});
+      const response=await fetch("/api/student/speaking/respond",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({promptId:active.id,mode:"stimulus",transcript:spoken,sessionId:sessionId||undefined})});
       const body=await response.json() as {sessionId?:string;feedback?:ConversationFeedback;dailySpeaking?:Progress;error?:string;phase?:"questions"|"completed";questionNumber?:number;questionTotal?:number;completed?:boolean;overallScore?:number};
       if(!response.ok||!body.feedback)throw new Error(body.error||"Conversation could not be assessed");
       setSessionId(body.sessionId||"");
@@ -142,10 +149,11 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
       setExaminerQuestion(body.completed?"":body.feedback.followUpQuestion||body.feedback.reply);
       setFeedback(body.completed?body.feedback:null);
       if(body.dailySpeaking)setProgress(body.dailySpeaking);
-      setHistory(v=>[...v,{role:"user",content:transcript},{role:"assistant",content:body.feedback!.reply}]);
-      setTranscript("");setInterim("");
-      void speak(body.feedback.reply);
-    }catch(e){setError(e instanceof Error?e.message:"Conversation failed")}finally{setBusy(false)}
+      setHistory(v=>[...v,{role:"user",content:spoken},{role:"assistant",content:body.feedback!.reply}]);
+      voice.clearTranscript();
+      void voice.play(body.feedback.reply,!body.completed);
+    }catch(e){setError(e instanceof Error?e.message:"Conversation failed")}
+    finally{sendingRef.current=false;setBusy(false)}
   }
   async function assessReading(){
     if(!active?.referenceText||!wavRef.current)return;
@@ -162,17 +170,21 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
   }
   const passed=Boolean(progress?.passedModes?.includes(focus));
   const description=phase==="description";
+  const recordingNow=focus==="stimulus"?voice.state==="listening":recording;
+  const audioBusy=focus==="stimulus"&&(voice.state==="speaking"||voice.state==="transcribing");
+  const visibleTranscript=focus==="stimulus"?voice.transcript:transcript;
+  const visibleInterim=focus==="stimulus"?voice.interim:interim;
   const photoMissing=focus==="stimulus"&&(!active?.stimulusImageUrl||imageFailed);
   function restartConversation(){
-    if(recording||busy)return;
-    setSessionId("");setPhase("description");setQuestionNumber(0);setExaminerQuestion("");setHistory([]);setFeedback(null);setTranscript("");setInterim("");setError("");wavRef.current=null;
+    if(recording||busy||voice.state==="transcribing")return;
+    voice.reset();setSessionId("");setPhase("description");setQuestionNumber(0);setExaminerQuestion("");setHistory([]);setFeedback(null);setTranscript("");setInterim("");setError("");wavRef.current=null;
   }
   return <div className="speakingWorkspace">
     <div className="speakingDailyGate"><strong>{focus==="reading_aloud"?"Reading Aloud":"Stimulus-Based Conversation"} · {focus==="stimulus"?(phase==="completed"?"Conversation finished":description?"Step 1 · Describe the picture":"Step 2 · Question "+questionNumber+" of "+questionTotal):(passed?"Practised successfully":"Ready to practise")}</strong><span>{progress?"Today's practice target: "+progress.passMark+"%":"Scores are for practice, not official PSLE marks"}</span></div>
     <div className="speakingGrid"><section className="card">
       <div className="cardHeader"><h2>{active?.title||"PSLE oral practice"}</h2><span>{active?.topic||"Primary 5–6"}</span></div>
       {loading&&<div className="emptyState">Preparing your oral task…</div>}
-      {prompts.length>1&&<select className="selectInput" value={active?.id||""} onChange={e=>selectPrompt(e.target.value)} disabled={recording||busy}>{prompts.map(p=><option key={p.id} value={p.id}>{p.title}</option>)}</select>}
+      {prompts.length>1&&<select className="selectInput" value={active?.id||""} onChange={e=>selectPrompt(e.target.value)} disabled={recordingNow||busy||audioBusy}>{prompts.map(p=><option key={p.id} value={p.id}>{p.title}</option>)}</select>}
       {active&&<div className="oralPrompt"><div className="eyebrow">{focus==="reading_aloud"?"Read for the audience and purpose":description?"First, describe the picture":"Now, talk with your AI examiner"}</div>{focus==="reading_aloud"?<p>{active.prompt}</p>:<p>{description?"Look closely at the picture. Say who and what you see, what people are doing and what you think is happening. After your description the AI examiner will ask four questions, one by one.":active.prompt}</p>}
         {focus==="reading_aloud"&&active.referenceText&&<div className="readingAloudText">{active.referenceText}</div>}
         {focus==="stimulus"&&<div className="stimulusCard">
@@ -181,17 +193,24 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
           {imageFailed&&<div className="notice warnNotice">The picture could not be loaded. Please try another task or ask the administrator to update the picture.</div>}
           {active.stimulusImageUrl&&!imageFailed&&<small className="sourceHint">Describe what you can actually see, not a written model answer.</small>}
         </div>}
-        {focus==="stimulus"&&phase==="questions"&&<div className="practiceBox" aria-live="polite"><strong>Examiner · question {questionNumber} of {questionTotal}</strong><p>{examinerQuestion}</p><button className="button ghost smallButton" onClick={()=>void speak(examinerQuestion)}>🔊 Hear question again</button></div>}
+        {focus==="stimulus"&&phase==="questions"&&<div className="practiceBox" aria-live="polite"><strong>Examiner · question {questionNumber} of {questionTotal}</strong><p>{examinerQuestion}</p><button className="button ghost smallButton" disabled={recordingNow||busy} onClick={()=>void speak(examinerQuestion)}>🔊 Hear question again</button></div>}
         {focus==="stimulus"&&phase==="completed"&&<div className="notice"><strong>Conversation complete.</strong> You described the picture and answered {questionTotal} examiner questions.</div>}
       </div>}
       {config&&!config.authenticated&&<div className="notice warnNotice">A student login is required to record and receive AI feedback.</div>}
-      <div className="recordControls"><button className={"recordBig"+(recording?" recording":"")} disabled={!active||busy||Boolean(config&&!config.authenticated)||phase==="completed"||photoMissing||(focus==="stimulus"&&!imageReady)} onClick={()=>void(recording?stop():start())}>{recording?"■ Stop":focus==="stimulus"?(description?"● Describe picture":"● Answer examiner"):"● Record reading"}</button><span>{recording?seconds+" seconds · recording":busy?"Evaluating…":focus==="stimulus"?(description?"Your first turn: picture description":phase==="completed"?"Session finished":"Your turn: answer the examiner's question"):"Read the passage aloud"}</span></div>
-      {(transcript||interim)&&<div className="transcriptBox"><div className="eyebrow">Recognised speech · edit only obvious transcription errors</div><textarea aria-label="Recognised speech" value={transcript} onChange={e=>setTranscript(e.target.value)} /><p className="muted">{interim}</p></div>}
-      {!recording&&focus==="stimulus"&&phase!=="completed"&&transcript.trim()&&<button className="button primary" disabled={busy||photoMissing} onClick={()=>void submitConversation()}>{description?"Submit picture description · start questions":"Submit answer · next examiner turn"}</button>}
-      {focus==="stimulus"&&phase==="completed"&&<button className="button primary" disabled={busy||recording} onClick={restartConversation}>Practise this picture again</button>}
+      {focus==="stimulus"&&<div className="rowActions">
+        <button type="button" className={"button "+(voice.handsFree?"primary":"ghost")} aria-pressed={voice.handsFree} onClick={()=>{
+          const next=!voice.handsFree;voice.setHandsFree(next);
+          if(next&&voice.state==="idle"&&!busy&&phase!=="completed"&&active&&imageReady&&!imageFailed)void voice.startRecording();
+        }}>{voice.handsFree?"🎙 Hands-free ON":"🎙 Hands-free OFF"}</button>
+        <span className="sourceHint">AI finishes speaking → microphone starts → 3 seconds of silence sends your answer. Use headphones for best results.</span>
+      </div>}
+      <div className="recordControls"><button className={"recordBig"+(recordingNow?" recording":"")} disabled={!active||busy||audioBusy||Boolean(config&&!config.authenticated)||phase==="completed"||photoMissing||(focus==="stimulus"&&!imageReady)} onClick={()=>void(recordingNow?stop():start())}>{recordingNow?"■ Stop / send":focus==="stimulus"?(description?"● Describe picture":"● Answer examiner"):"● Record reading"}</button><span>{recordingNow?(focus==="stimulus"?voice.seconds:seconds)+" seconds · listening":audioBusy?(voice.state==="speaking"?"Examiner is speaking…":"Transcribing your reply…"):busy?"Evaluating…":focus==="stimulus"?(description?"Your first turn: picture description":phase==="completed"?"Session finished":"Your turn: answer the examiner's question"):"Read the passage aloud"}</span></div>
+      {(visibleTranscript||visibleInterim||focus==="stimulus"&&voice.state==="listening")&&<div className="transcriptBox"><div className="eyebrow">Recognised speech · edit only obvious transcription errors</div><textarea aria-label="Recognised speech" value={visibleTranscript} disabled={recordingNow||audioBusy||busy} onChange={e=>focus==="stimulus"?voice.setTranscript(e.target.value):setTranscript(e.target.value)} /><p className="muted">{visibleInterim}</p></div>}
+      {!recordingNow&&focus==="stimulus"&&phase!=="completed"&&visibleTranscript.trim()&&<button className="button primary" disabled={busy||audioBusy||photoMissing} onClick={()=>void submitConversation()}>{description?"Submit picture description · start questions":"Submit answer · next examiner turn"}</button>}
+      {focus==="stimulus"&&phase==="completed"&&<button className="button primary" disabled={busy||recordingNow||audioBusy} onClick={restartConversation}>Practise this picture again</button>}
       {!recording&&focus==="reading_aloud"&&wavRef.current&&<button className="button primary" disabled={busy} onClick={()=>void assessReading()}>Assess reading aloud</button>}
       {history.length>0&&<div className="conversationHistory">{history.map((item,i)=><div className={"historyBubble "+(item.role==="user"?"learner":"tutor")} key={i}><span>{item.role==="user"?"You":"Examiner"}</span><p>{item.content}</p></div>)}</div>}
-      {error&&<div className="notice warnNotice" role="alert">{error}</div>}
+      {(error||(focus==="stimulus"?voice.error:""))&&<div className="notice warnNotice" role="alert">{error||(focus==="stimulus"?voice.error:"")}</div>}
     </section>
     <aside className="card speakingCoach"><div className="cardHeader"><h2>Practice feedback</h2><span>{focus==="reading_aloud"?(config?.azurePronunciation?"Acoustic assessment":"Approximate assessment"):"Ideas and interaction"}</span></div>
       {feedback?<><div className="speechScores"><Score label="Relevance" value={feedback.relevance}/><Score label="Ideas" value={feedback.development}/><Score label="Grammar" value={feedback.grammar}/><Score label="Vocabulary" value={feedback.vocabulary}/><Score label="Interaction" value={feedback.interaction}/></div>
