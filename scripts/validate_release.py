@@ -118,9 +118,9 @@ def check_files() -> None:
     # learner's one-way description. A submitted prompt must belong to today.
     require("components/speaking-workspace.tsx",
             "stimulusImageUrl", "imageReady", "examinerQuestion",
-            'setPhase(body.completed?"completed":"questions")')
+            'setPhase(body.completed?"completed":body.passed?"questions":"retry")')
     require("lib/speaking/evaluate.ts",
-            "PSLE_CONVERSATION_QUESTION_COUNT=4",
+            "PSLE_CONVERSATION_QUESTION_COUNT",
             "evaluatePsleConversationTurn", "nextQuestion",
             "args.history")
     require("app/api/student/speaking/respond/route.ts",
@@ -144,12 +144,13 @@ def check_files() -> None:
             'action==="finish"')
     require("lib/roleplay/engine.ts",
             "nextRoleplayReply", "assessRoleplay",
-            "OPEN-ENDED interactive role-play", "args.history")
+            "OPEN-ENDED interactive role-play", "args.history", "improvedLines")
     require("components/roleplay-workspace.tsx",
             'action:"start"', 'action:"reply"', 'action:"finish"',
-            "startRecording", "stopRecording", "voice.play(data.reply,true)")
+            "startRecording", "stopRecording", "rehearsalLine", "begin_final")
+    require("lib/speaking/psle-oral.ts", "PSLE_ORAL_PASS_MARK = 90", "PSLE_CONVERSATION_QUESTION_COUNT = 3")
     require("app/api/student/speaking/assess/route.ts",
-            "requireAuthenticatedLearner")
+            "requireAuthenticatedLearner", "assessment.pronunciation>=PSLE_ORAL_PASS_MARK")
     require("app/api/student/speaking/transcribe/route.ts",
             "requireAuthenticatedLearner")
     require("app/api/student/speaking/tts/route.ts",
