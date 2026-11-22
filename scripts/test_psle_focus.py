@@ -82,7 +82,7 @@ passMark=(root/"lib/student/speaking-daily.ts").read_text()
 reading=(root/"app/api/student/speaking/assess/route.ts").read_text()
 roleplay=(root/"app/api/student/roleplay/route.ts").read_text()
 engine=(root/"lib/roleplay/engine.ts").read_text()
-assert "Math.max(PSLE_ORAL_PASS_MARK" in passMark
+assert "passMark=PSLE_ORAL_PASS_MARK" in passMark
 assert 'if(assessment.pronunciation>=PSLE_ORAL_PASS_MARK)await recordDailyGoalEvent' in reading
 assert 'if(passed)await recordDailyGoalEvent' in roleplay
 assert '"rehearse","begin_final"' in roleplay
