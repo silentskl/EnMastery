@@ -146,7 +146,7 @@ def check_files() -> None:
             "nextRoleplayReply", "assessRoleplay",
             "OPEN-ENDED interactive role-play", "args.history", "improvedLines")
     require("components/roleplay-workspace.tsx",
-            'action:"start"', 'action:"reply"', 'action:"finish"',
+            'action:"start"', '?"rehearse":"reply"', 'action:"finish"',
             "startRecording", "stopRecording", "rehearsalLine", "begin_final")
     require("lib/speaking/psle-oral.ts", "PSLE_ORAL_PASS_MARK = 90", "PSLE_CONVERSATION_QUESTION_COUNT = 3")
     require("app/api/student/speaking/assess/route.ts",
