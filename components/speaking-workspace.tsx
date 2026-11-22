@@ -70,6 +70,7 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
   const wavRef=useRef<Blob|null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
   const startedRef=useRef(0);
+  const recordedDurationRef=useRef(0);
   const sampleRateRef=useRef(48000);
   const startingRef=useRef(false);
   const committedRef=useRef<Set<number>>(new Set());
@@ -106,7 +107,7 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
     startingRef.current=true;
     try{
       setError("");setMicIssue(null);setFeedback(null);setAssessment(null);setTranscript("");transcriptRef.current="";recognitionErrorRef.current="";setInterim("");setSeconds(0);
-      wavRef.current=null;chunksRef.current=[];
+      wavRef.current=null;chunksRef.current=[];recordedDurationRef.current=0;
       const stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true}});
       streamRef.current=stream;
       const ctx=new AudioContext();audioRef.current=ctx;sampleRateRef.current=ctx.sampleRate;
@@ -133,7 +134,11 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
   }
   async function stop(){
     if(focus==="stimulus"){await voice.stopRecording(voice.handsFree);return;}
-    if(!recording)return;setRecording(false);if(timerRef.current)clearInterval(timerRef.current);
+    if(!recording)return;
+    setRecording(false);setBusy(true);
+    recordedDurationRef.current=Math.max(1000,Date.now()-startedRef.current);
+    if(timerRef.current)clearInterval(timerRef.current);
+    try{
     // SpeechRecognition may emit its final transcript AFTER stop() returns.
     // Wait for onend (with a short limit), before deciding whether server STT is needed.
     const rec=recRef.current;
@@ -152,15 +157,14 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
     streamRef.current?.getTracks().forEach(t=>t.stop());streamRef.current=null;
     await audioRef.current?.close().catch(()=>{});audioRef.current=null;processorRef.current=null;sourceRef.current=null;
     if(!transcriptRef.current.trim()&&config?.serverStt&&wavRef.current){
-      setBusy(true);
       try{const form=new FormData();form.append("audio",wavRef.current,"psle-speech.wav");const response=await fetch("/api/student/speaking/transcribe",{method:"POST",body:form});const body=await response.json() as {text?:string;error?:string};if(!response.ok)throw new Error(body.error||"Speech recognition failed");if(body.text){transcriptRef.current=body.text;setTranscript(body.text)}}
       catch(e){setMicIssue("speech");setError(e instanceof Error?e.message:"Server speech recognition failed")}
-      finally{setBusy(false)}
     }
     if(!config?.azurePronunciation&&!transcriptRef.current.trim()){
       if(recognitionErrorRef.current==="no-speech")setError("No speech was recognised. Please read the passage again clearly.");
       else {setMicIssue("speech");setError("Audio was recorded, but speech transcription is unavailable. A browser or server STT service is required to score this recording.");}
     }
+    }finally{setBusy(false)}
   }
   async function speak(text:string){
     if(focus==="stimulus"){await voice.play(text,false);return;}
@@ -197,7 +201,7 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
     try{
       const form=new FormData();form.append("audio",wavRef.current,"reading.wav");
       form.append("promptId",active.id);form.append("referenceText",active.referenceText);
-      form.append("browserTranscript",transcriptRef.current||transcript);form.append("durationMs",String(Math.max(1000,Date.now()-startedRef.current)));
+      form.append("browserTranscript",transcriptRef.current||transcript);form.append("durationMs",String(Math.max(1000,recordedDurationRef.current)));
       const response=await fetch("/api/student/speaking/assess",{method:"POST",body:form});
       const body=await response.json() as {assessment?:PronunciationAssessment;dailySpeaking?:Progress;error?:string;code?:string};
       if(!response.ok||!body.assessment){if(body.code==="SPEECH_RECOGNITION_UNAVAILABLE")setMicIssue("speech");throw new Error(body.error||"Reading assessment failed")}
