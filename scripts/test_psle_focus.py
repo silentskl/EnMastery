@@ -91,3 +91,20 @@ assert 'score>=PSLE_ORAL_PASS_MARK' in roleplay
 assert "improvedLines" in engine
 assert "ready_final" in roleplay and "phaseStartLine" in roleplay
 print("PASS: no daily credit for <90 reading / unpassed role-play; guided script cannot be skipped")
+
+# Voice setup: microphone permission and speech provider are distinct errors.
+setup=(root/"components/oral-setup-dialog.tsx").read_text()
+reading_workspace=(root/"components/speaking-workspace.tsx").read_text()
+roleplay_workspace=(root/"components/roleplay-workspace.tsx").read_text()
+reading_api=(root/"app/api/student/speaking/assess/route.ts").read_text()
+assert "Microphone permission required" in setup
+assert "Speech recognition / assessment is unavailable" in setup
+assert "Microphone → Allow" in setup
+assert "onRetry" in setup
+assert "micIssue" in voice and "microphoneIssue(reason)" in voice
+assert "getSpeechRecognitionCtor()" in reading_workspace and "config?.azurePronunciation" in reading_workspace
+assert "rec.onend=finish" in reading_workspace, "Reading Aloud must wait for the final browser transcript"
+assert "transcriptRef.current" in reading_workspace
+assert "OralSetupDialog" in reading_workspace and "OralSetupDialog" in roleplay_workspace
+assert 'code:"SPEECH_RECOGNITION_UNAVAILABLE"' in reading_api
+print("PASS: explicit microphone permission dialog, missing STT guidance and late transcript protection")
