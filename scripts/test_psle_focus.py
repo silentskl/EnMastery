@@ -107,4 +107,5 @@ assert "rec.onend=finish" in reading_workspace, "Reading Aloud must wait for the
 assert "transcriptRef.current" in reading_workspace
 assert "OralSetupDialog" in reading_workspace and "OralSetupDialog" in roleplay_workspace
 assert 'code:"SPEECH_RECOGNITION_UNAVAILABLE"' in reading_api
+assert "resolveLearnerIntegrations(request)" in reading_api, "Pronunciation scoring must use the same tenant credentials as its configuration endpoint"
 print("PASS: explicit microphone permission dialog, missing STT guidance and late transcript protection")
