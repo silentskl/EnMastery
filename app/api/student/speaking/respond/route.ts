@@ -7,12 +7,13 @@ import { recordTenantAiUsage } from "@/lib/tenant/usage";
 import { sgDate } from "@/lib/student/tasks";
 import { recordDailyGoalEvent } from "@/lib/student/daily-goal";
 import type { ConversationFeedback } from "@/lib/speaking/types";
+import { PSLE_ORAL_PASS_MARK, PSLE_FIRST_QUESTION } from "@/lib/speaking/psle-oral";
 
 type Session={id:string;mode:string;prompt_title:string|null;prompt_text:string;status:string;turn_count:number};
 type TurnRow={speaker:"learner"|"assistant";transcript:string|null;reply_text:string|null;evaluation_json:string|null};
 const feedbackKeys=["relevance","development","grammar","vocabulary","interaction"] as const;
 
-/** Five learner turns: description, then four distinct answers to AI questions. */
+/** Each photograph question must be re-answered until the learner scores 90+. */
 export async function POST(request:Request){
   const {env,session,tenantId,quota}=await resolveLearnerAiIntegrations(request);
   const denied=requireAuthenticatedLearner(session);
@@ -61,9 +62,10 @@ export async function POST(request:Request){
   if(!active||active.mode!=="stimulus"||active.prompt_title!==promptId||active.prompt_text!==prompt)return Response.json({error:"Conversation session does not match this picture"},{status:403});
   if(active.status==="completed")return Response.json({error:"This conversation is complete. Start a new practice session."},{status:409});
   const index=Number(active.turn_count);
-  if(index<0||index>PSLE_CONVERSATION_QUESTION_COUNT)return Response.json({error:"Conversation has already reached the maximum rounds"},{status:409});
+  if(index<0||index>=60)return Response.json({error:"Maximum number of attempts reached. Start a fresh conversation."},{status:409});
 
-  // Atomic optimistic claim: next turn cannot start while the previous AI answer is still being generated.
+  // claim the exact number of recorded learner attempts, not the number of
+  // passed questions: failed replies must not silently advance an exam topic.
   const claim=await env.DB.prepare(
     "UPDATE speaking_sessions SET turn_count=turn_count+1,updated_at=CURRENT_TIMESTAMP "+
     "WHERE id=? AND child_id=? AND status='active' AND turn_count=? "+
@@ -78,24 +80,33 @@ export async function POST(request:Request){
     ).bind(sessionId).all<TurnRow>();
     const prior=rows.results;
     if(prior.filter(r=>r.speaker==="learner").length!==index)throw new Error("Conversation turns are out of sync");
+    const accepted=prior.filter(r=>r.speaker==="learner").flatMap(row=>{
+      try{
+        const evaluation=JSON.parse(row.evaluation_json||"null") as {passed?:boolean;followUpQuestion?:string;relevance?:number;development?:number;grammar?:number;vocabulary?:number;interaction?:number};
+        return evaluation?.passed?[evaluation]:[];
+      }catch{return[];}
+    });
+    const questionIndex=accepted.length;
+    if(questionIndex>=PSLE_CONVERSATION_QUESTION_COUNT)throw new Error("All oral questions have already been answered");
+    const currentQuestion=questionIndex===0?PSLE_FIRST_QUESTION:String(accepted[questionIndex-1]?.followUpQuestion||"");
+    if(!currentQuestion)throw new Error("Earlier oral question is missing. Start a fresh session.");
     const history=prior.map(row=>({
       role:row.speaker==="learner"?"user" as const:"assistant" as const,
       content:(row.speaker==="learner"?row.transcript:row.reply_text)||"",
     }));
     const evaluation=await evaluatePsleConversationTurn({
       baseUrl:env.MODELBRIDGE_BASE_URL,apiKey:env.MODELBRIDGE_API_KEY,model:env.MODELBRIDGE_CHAT_MODEL,
-      prompt,sceneDescription,transcript,turnIndex:index,history,
+      prompt,sceneDescription,transcript,turnIndex:questionIndex,currentQuestion,history,
     });
     const completed=evaluation.completed;
     let feedback:ConversationFeedback=evaluation;
     let overallScore:number|undefined;
     if(completed){
-      const all=[...prior.filter(row=>row.speaker==="learner").flatMap(row=>{
-        try{return row.evaluation_json?[JSON.parse(row.evaluation_json) as ConversationFeedback]:[]}catch{return[]}
-      }),evaluation];
+      const all=[...accepted,evaluation];
       const averages=Object.fromEntries(feedbackKeys.map(k=>[k,Math.round(all.reduce((n,item)=>n+Number(item[k]||0),0)/all.length)])) as Record<(typeof feedbackKeys)[number],number>;
       feedback={...evaluation,...averages};
       overallScore=conversationOverallScore(feedback);
+      if(overallScore<PSLE_ORAL_PASS_MARK)throw new Error("Conversation score fell below the required pass mark");
     }
 
     const learnerTurn="turn-"+crypto.randomUUID(),examinerTurn="turn-"+crypto.randomUUID();
@@ -111,19 +122,21 @@ export async function POST(request:Request){
     stored=true;
 
     let dailySpeaking;
-    if(completed){
-      await recordDailyGoalEvent(env.DB,session.childId,"conversation",sessionId);
+    if(completed&&overallScore!==undefined&&overallScore>=PSLE_ORAL_PASS_MARK){
       try{
         await updateSkillEvidence(env.DB,session.childId,"S-SBC-IDEA",Math.round((feedback.relevance+feedback.development)/2));
         await updateSkillEvidence(env.DB,session.childId,"S-INTERACT",feedback.interaction);
-        dailySpeaking=await recordDailySpeakingModeScore(env.DB,{childId:session.childId,mode:"stimulus",promptId,score:overallScore??0});
+        dailySpeaking=await recordDailySpeakingModeScore(env.DB,{childId:session.childId,mode:"stimulus",promptId,score:overallScore});
+        await recordDailyGoalEvent(env.DB,session.childId,"conversation",sessionId);
       }catch(err){console.error("[psle-conversation] completion metrics update failed",err)}
     }
     await recordTenantAiUsage(env.DB,{tenantId,childId:session.childId,purpose:"psle_stimulus_conversation",model:env.MODELBRIDGE_CHAT_MODEL}).catch(()=>undefined);
     const response=Response.json({
-      sessionId,feedback,phase:completed?"completed":"questions",
-      questionNumber:Math.min(index+1,PSLE_CONVERSATION_QUESTION_COUNT),
+      sessionId,feedback,phase:completed?"completed":evaluation.passed?"questions":"retry",
+      questionNumber:completed?PSLE_CONVERSATION_QUESTION_COUNT:questionIndex+(evaluation.passed?2:1),
       questionTotal:PSLE_CONVERSATION_QUESTION_COUNT,
+      examinerQuestion:completed?"":evaluation.passed?evaluation.nextQuestion:currentQuestion,
+      passed:evaluation.passed,score:evaluation.score,passMark:PSLE_ORAL_PASS_MARK,
       completed,overallScore,dailySpeaking,
     });
     response.headers.set("Cache-Control","private, no-store");
