@@ -1,5 +1,5 @@
 import type { SpeakingMode } from "@/lib/speaking/types";
-import { getLearnerPassScore } from "@/lib/settings/learning-policy";
+import { PSLE_ORAL_PASS_MARK } from "@/lib/speaking/psle-oral";
 import { completeMatchingTasks, sgDate } from "@/lib/student/tasks";
 
 const REQUIRED_MODES:SpeakingMode[]=["reading_aloud","stimulus"];
@@ -17,7 +17,7 @@ export function conversationOverallScore(feedback:{relevance:number;development:
 }
 
 export async function getDailySpeakingProgress(db:D1Database,childId:string):Promise<DailySpeakingProgress>{
-  const taskDate=sgDate(),passMark=await getLearnerPassScore(db,childId);
+  const taskDate=sgDate(),passMark=PSLE_ORAL_PASS_MARK;
   const rows=await db.prepare("SELECT mode,score,passed FROM speaking_daily_mode_progress WHERE child_id=? AND task_date=? ORDER BY mode")
     .bind(childId,taskDate).all<{mode:SpeakingMode;score:number;passed:number}>().catch(()=>({results:[]} as {results:Array<{mode:SpeakingMode;score:number;passed:number}>}));
   const scores:Partial<Record<SpeakingMode,number>>={};for(const row of rows.results)if(REQUIRED_MODES.includes(row.mode))scores[row.mode]=Math.round(Number(row.score)||0);
@@ -28,7 +28,7 @@ export async function getDailySpeakingProgress(db:D1Database,childId:string):Pro
 }
 
 export async function recordDailySpeakingModeScore(db:D1Database,args:{childId:string;mode:SpeakingMode;promptId?:string|null;score:number}){
-  const taskDate=sgDate(),passMark=await getLearnerPassScore(db,args.childId),score=Math.max(0,Math.min(100,Math.round(Number(args.score)||0))),passed=score>=passMark;
+  const taskDate=sgDate(),passMark=PSLE_ORAL_PASS_MARK,score=Math.max(0,Math.min(100,Math.round(Number(args.score)||0))),passed=score>=passMark;
   await db.prepare(`INSERT INTO speaking_daily_mode_progress(child_id,task_date,mode,prompt_id,score,pass_mark,passed,updated_at)
     VALUES(?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
     ON CONFLICT(child_id,task_date,mode) DO UPDATE SET
