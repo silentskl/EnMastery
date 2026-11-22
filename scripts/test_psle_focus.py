@@ -27,13 +27,18 @@ print("PASS: PSLE Oral and Listening routes, UI, and API surface")
 examiner=(root/"lib/speaking/evaluate.ts").read_text()
 conversation=(root/"app/api/student/speaking/respond/route.ts").read_text()
 workspace=(root/"components/speaking-workspace.tsx").read_text()
-assert "PSLE_CONVERSATION_QUESTION_COUNT=4" in examiner
-assert "turnIndex===0" in examiner and "nextQuestion" in examiner
+assert "PSLE_CONVERSATION_QUESTION_COUNT" in examiner
+assert "args.currentQuestion" in examiner and "nextQuestion" in examiner and "passed" in examiner
 assert "completed?" in conversation and "recordDailySpeakingModeScore" in conversation
 assert "speaking_turns" in conversation and "turn_count" in conversation
-assert 'setPhase(body.completed?"completed":"questions")' in workspace
+assert 'setPhase(body.completed?"completed":body.passed?"questions":"retry")' in workspace
 assert "examinerQuestion" in workspace
-print("PASS: staged picture description plus four examiner questions")
+assert "PSLE_ORAL_PASS_MARK = 90" in (root/"lib/speaking/psle-oral.ts").read_text()
+assert "PSLE_CONVERSATION_QUESTION_COUNT = 3" in (root/"lib/speaking/psle-oral.ts").read_text()
+assert "questionIndex" in conversation and "evaluation.passed" in conversation
+assert "currentQuestion" in conversation and "retry" in conversation
+assert "recordDailyGoalEvent" in conversation
+print("PASS: 3 photo oral questions, per-answer coaching and repeated 90-point gate")
 
 # Everyday scenario role-play is separate from the PSLE photograph assessment.
 assert (root/"app/oral/roleplay/page.tsx").is_file()
@@ -68,8 +73,21 @@ for marker in ["SILENCE_MS = 3000","NO_SPEECH_MS = 30000","MAX_TURN_MS = 90000",
                "await serverSpeech(text)","await browserSpeech(text)","listenAfter",
                "await submitRef.current(message)","URL.revokeObjectURL"]:
  assert marker in voice, "Missing hands-free guard: "+marker
-assert "voice.play(body.feedback.reply,!body.completed)" in picture
-assert "voice.play(data.reply,true)" in roleplay
+assert 'body.passed?" "+(body.examinerQuestion||"")' in picture
+assert "voice.play(data.reply,data.phase!==\"ready_final\")" in roleplay and "begin_final" in roleplay
 assert "voice.stopRecording(voice.handsFree)" in picture and "voice.stopRecording(voice.handsFree)" in roleplay
 assert "assessReading()" in picture and "PronunciationAssessment" in picture
-print("PASS: natural hands-free conversation while Reading Aloud is unchanged")
+print("PASS: three-round voice practice with automatic 3-second silence submission")
+passMark=(root/"lib/student/speaking-daily.ts").read_text()
+reading=(root/"app/api/student/speaking/assess/route.ts").read_text()
+roleplay=(root/"app/api/student/roleplay/route.ts").read_text()
+engine=(root/"lib/roleplay/engine.ts").read_text()
+assert "Math.max(PSLE_ORAL_PASS_MARK" in passMark
+assert 'if(assessment.pronunciation>=PSLE_ORAL_PASS_MARK)await recordDailyGoalEvent' in reading
+assert 'if(passed)await recordDailyGoalEvent' in roleplay
+assert '"rehearse","begin_final"' in roleplay
+assert "transcriptMatch(expected,transcript)" in roleplay
+assert 'score>=PSLE_ORAL_PASS_MARK' in roleplay
+assert "improvedLines" in engine
+assert "ready_final" in roleplay and "phaseStartLine" in roleplay
+print("PASS: no daily credit for <90 reading / unpassed role-play; guided script cannot be skipped")
