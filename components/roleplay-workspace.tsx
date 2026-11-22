@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ROLEPLAY_CATEGORIES, ROLEPLAY_SCENARIOS, type RoleplayLevel } from "@/lib/roleplay/scenarios";
 import type { ConversationFeedback } from "@/lib/speaking/types";
 import { useConversationVoice } from "@/lib/browser/use-conversation-voice";
+import { OralSetupDialog } from "@/components/oral-setup-dialog";
 
 type Line={speaker:"learner"|"assistant";text:string};
 type Config={authenticated:boolean;serverStt:boolean;serverTts:boolean};
@@ -117,6 +118,7 @@ export function RoleplayWorkspace(){
   }
 
   return <div className="roleplayWorkspace">
+    <OralSetupDialog issue={voice.micIssue} onClose={()=>voice.setMicIssue(null)} onRetry={()=>{const issue=voice.micIssue;voice.setMicIssue(null);if(issue==="speech")window.location.reload();else void voice.startRecording()}} />
     <div className="roleplayChooser card">
       <div className="cardHeader"><h2>Choose a real-life situation</h2><span>{ROLEPLAY_SCENARIOS.length} scenes · {ROLEPLAY_CATEGORIES.length} categories</span></div>
       <p className="muted">Three-stage mastery: 1) talk naturally, 2) read aloud an AI-polished version of your answers in a replay, 3) talk independently again. A final-round score of 90 or more passes; otherwise start another full three-stage cycle.</p>
