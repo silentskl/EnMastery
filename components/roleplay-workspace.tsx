@@ -92,7 +92,7 @@ export function RoleplayWorkspace(){
         setTurnCount(0);
         setRehearsalLine(data.rehearsalLine||"");setRehearsalIndex(0);
         setRehearsalTotal(data.rehearsalTotal||0);
-        if(data.reply)void voice.play(data.reply,false);
+        if(data.reply)void voice.play(data.reply,true);
       }else if(data.phase==="first"){
         // A failed independent third round automatically begins a NEW
         // three-stage cycle. Keep feedback visible for reflection.
@@ -182,7 +182,7 @@ export function RoleplayWorkspace(){
             <span>{recording?voice.seconds+" sec · listening":voice.state==="speaking"?"AI is speaking…":voice.state==="transcribing"?"Transcribing speech…":busy?"AI is responding…":"Speak naturally, or type instead"}</span>
           </div>
           <label htmlFor="roleplay-transcript">{phase==="rehearsal"?"Read the displayed improved reply aloud":"Your reply · speak or type"}</label>
-          <textarea id="roleplay-transcript" className="textInput" rows={3} value={voice.transcript} placeholder={phase==="rehearsal"?"Read the polished sentence above, then submit recognised words.":"What would you say next?"} onChange={e=>voice.setTranscript(e.target.value)} disabled={busy||recording||audioBusy}/>
+          <textarea id="roleplay-transcript" className="textInput" rows={3} value={voice.transcript} placeholder={phase==="rehearsal"?"Read the polished sentence above, then submit recognised words.":"What would you say next?"} onChange={e=>{if(phase!=="rehearsal")voice.setTranscript(e.target.value)}} readOnly={phase==="rehearsal"} disabled={busy||recording||audioBusy}/>
           {voice.interim&&<p className="muted">Recognising: {voice.interim}</p>}
           <div className="rowActions">
             <button className="button primary" disabled={!voice.transcript.trim()||busy||recording||audioBusy} onClick={()=>void submitMessage(voice.getTranscript())}>{phase==="rehearsal"?"Submit reading · next line":"Send reply"}</button>
