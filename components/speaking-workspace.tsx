@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ConversationFeedback, PronunciationAssessment, SpeakingMode, SpeakingPrompt } from "@/lib/speaking/types";
 import { getSpeechRecognitionCtor, type SpeechRecognitionLike } from "@/lib/browser/speech-recognition";
 import { useConversationVoice } from "@/lib/browser/use-conversation-voice";
+import { OralSetupDialog, microphoneIssue, type OralSetupIssue } from "@/components/oral-setup-dialog";
 import { PSLE_ORAL_PASS_MARK, PSLE_FIRST_QUESTION, PSLE_CONVERSATION_QUESTION_COUNT } from "@/lib/speaking/psle-oral";
 
 type Focus = "stimulus" | "reading_aloud";
@@ -56,12 +57,15 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
   const [busy,setBusy]=useState(false);
   const [seconds,setSeconds]=useState(0);
   const [error,setError]=useState("");
+  const [micIssue,setMicIssue]=useState<OralSetupIssue|null>(null);
   const [loading,setLoading]=useState(true);
   const streamRef=useRef<MediaStream|null>(null);
   const audioRef=useRef<AudioContext|null>(null);
   const processorRef=useRef<ScriptProcessorNode|null>(null);
   const sourceRef=useRef<MediaStreamAudioSourceNode|null>(null);
   const recRef=useRef<SpeechRecognitionLike|null>(null);
+  const transcriptRef=useRef("");
+  const recognitionErrorRef=useRef("");
   const chunksRef=useRef<Float32Array[]>([]);
   const wavRef=useRef<Blob|null>(null);
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
@@ -74,7 +78,7 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
 
   useEffect(()=>{void fetch("/api/student/speaking/config",{cache:"no-store"}).then(r=>r.json()).then(x=>setConfig(x as Config)).catch(()=>setError("Could not load speech settings."))},[]);
   useEffect(()=>{
-    let live=true;voice.reset();setLoading(true);setError("");setTranscript("");setFeedback(null);setAssessment(null);setHistory([]);setSessionId("");setPhase("questions");setQuestionNumber(1);setExaminerQuestion(PSLE_FIRST_QUESTION);setLatestScore(null);setImageReady(false);setImageFailed(false);
+    let live=true;voice.reset();setLoading(true);setError("");setTranscript("");setFeedback(null);setAssessment(null);setMicIssue(null);transcriptRef.current="";setHistory([]);setSessionId("");setPhase("questions");setQuestionNumber(1);setExaminerQuestion(PSLE_FIRST_QUESTION);setLatestScore(null);setImageReady(false);setImageFailed(false);
     void fetch("/api/student/speaking/prompts",{cache:"no-store"}).then(async r=>{
       const body=await r.json() as {prompts?:SpeakingPrompt[];dailyProgress?:Progress;error?:string};
       if(!r.ok)throw new Error(body.error||"Could not load oral tasks");
@@ -87,15 +91,21 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
   },[focus]);
   useEffect(()=>()=>{if(timerRef.current)clearInterval(timerRef.current);try{recRef.current?.stop()}catch{}streamRef.current?.getTracks().forEach(t=>t.stop());processorRef.current?.disconnect();sourceRef.current?.disconnect();void audioRef.current?.close().catch(()=>{})},[]);
   const active=prompts.find(p=>p.id===promptId)||prompts[0]||null;
-  function selectPrompt(id:string){if(recording||busy||voice.state!=="idle")return;voice.reset();setPromptId(id);setTranscript("");setFeedback(null);setAssessment(null);setSessionId("");setHistory([]);setPhase("questions");setQuestionNumber(1);setExaminerQuestion(PSLE_FIRST_QUESTION);setLatestScore(null);setImageReady(false);setImageFailed(false);wavRef.current=null;}
+  function selectPrompt(id:string){if(recording||busy||voice.state!=="idle")return;voice.reset();setPromptId(id);setTranscript("");transcriptRef.current="";setMicIssue(null);setFeedback(null);setAssessment(null);setSessionId("");setHistory([]);setPhase("questions");setQuestionNumber(1);setExaminerQuestion(PSLE_FIRST_QUESTION);setLatestScore(null);setImageReady(false);setImageFailed(false);wavRef.current=null;}
   async function start(){
     if(recording||busy||startingRef.current||voice.state!=="idle"||phase==="completed")return;
     if(focus==="stimulus"&&(!active?.stimulusImageUrl||!imageReady||imageFailed)){setError("The picture is not available. Ask your teacher to add a working image before starting.");return}
     if(config&&!config.authenticated){setError("Sign in with a student account to record and receive feedback.");return}
     if(focus==="stimulus"){await voice.startRecording();return;}
+    if(typeof navigator==="undefined"||!navigator.mediaDevices?.getUserMedia){setMicIssue("unsupported");setError("This browser cannot access a microphone.");return}
+    // Browser recognition availability is unrelated to microphone permissions.
+    // Acoustic Azure scoring works directly from WAV and needs no transcript.
+    if(!config?.azurePronunciation&&!config?.serverStt&&!getSpeechRecognitionCtor()){
+      setMicIssue("speech");setError("No speech recognition or pronunciation assessment service is available for this browser.");return;
+    }
     startingRef.current=true;
     try{
-      setError("");setFeedback(null);setAssessment(null);setTranscript("");setInterim("");setSeconds(0);
+      setError("");setMicIssue(null);setFeedback(null);setAssessment(null);setTranscript("");transcriptRef.current="";recognitionErrorRef.current="";setInterim("");setSeconds(0);
       wavRef.current=null;chunksRef.current=[];
       const stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true}});
       streamRef.current=stream;
@@ -108,27 +118,48 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
       if(Ctor){
         try{
           const recognition=new Ctor();committedRef.current=new Set();recognition.lang="en-SG";recognition.continuous=true;recognition.interimResults=true;
-          recognition.onresult=e=>{let added="",draft="";for(let i=0;i<e.results.length;i++){const line=(e.results[i][0]?.transcript||"").trim();if(!line)continue;if(e.results[i].isFinal){if(!committedRef.current.has(i)){committedRef.current.add(i);added+=" "+line}}else draft+=" "+line}if(added)setTranscript(v=>(v+added).trim());setInterim(draft.trim())};
-          recognition.onerror=()=>{};recognition.start();recRef.current=recognition;
+          recognition.onresult=e=>{let added="",draft="";for(let i=0;i<e.results.length;i++){const line=(e.results[i][0]?.transcript||"").trim();if(!line)continue;if(e.results[i].isFinal){if(!committedRef.current.has(i)){committedRef.current.add(i);added+=" "+line}}else draft+=" "+line}if(added)setTranscript(v=>{const next=(v+added).trim();transcriptRef.current=next;return next});setInterim(draft.trim())};
+          recognition.onerror=e=>{
+            const code=(e as {error?:string}|null)?.error||"";
+            recognitionErrorRef.current=code;
+            if(code==="not-allowed"||code==="audio-capture")setMicIssue(code==="audio-capture"?"device":"permission");
+          };
+          recognition.start();recRef.current=recognition;
         }catch{}
       }
       startedRef.current=Date.now();timerRef.current=setInterval(()=>setSeconds(Math.round((Date.now()-startedRef.current)/1000)),500);setRecording(true);
-    }catch(e){streamRef.current?.getTracks().forEach(t=>t.stop());streamRef.current=null;setError(e instanceof Error?e.message:"Microphone permission is required.")}
+    }catch(e){streamRef.current?.getTracks().forEach(t=>t.stop());streamRef.current=null;setMicIssue(microphoneIssue(e));setError(e instanceof Error?e.message:"Microphone could not start.")}
     finally{startingRef.current=false}
   }
   async function stop(){
     if(focus==="stimulus"){await voice.stopRecording(voice.handsFree);return;}
     if(!recording)return;setRecording(false);if(timerRef.current)clearInterval(timerRef.current);
-    try{recRef.current?.stop()}catch{}recRef.current=null;
+    // SpeechRecognition may emit its final transcript AFTER stop() returns.
+    // Wait for onend (with a short limit), before deciding whether server STT is needed.
+    const rec=recRef.current;
+    if(rec){
+      await new Promise<void>(resolve=>{
+        let settled=false;
+        const finish=()=>{if(settled)return;settled=true;clearTimeout(timeout);resolve()};
+        const timeout=setTimeout(finish,1200);
+        rec.onend=finish;
+        try{rec.stop()}catch{finish()}
+      });
+    }
+    recRef.current=null;
     processorRef.current?.disconnect();sourceRef.current?.disconnect();
     wavRef.current=encodeWav(chunksRef.current,sampleRateRef.current);
     streamRef.current?.getTracks().forEach(t=>t.stop());streamRef.current=null;
     await audioRef.current?.close().catch(()=>{});audioRef.current=null;processorRef.current=null;sourceRef.current=null;
-    if(!transcript.trim()&&config?.serverStt&&wavRef.current){
+    if(!transcriptRef.current.trim()&&config?.serverStt&&wavRef.current){
       setBusy(true);
-      try{const form=new FormData();form.append("audio",wavRef.current,"psle-speech.wav");const response=await fetch("/api/student/speaking/transcribe",{method:"POST",body:form});const body=await response.json() as {text?:string;error?:string};if(!response.ok)throw new Error(body.error||"Speech recognition failed");if(body.text)setTranscript(body.text)}
-      catch(e){setError(e instanceof Error?e.message:"Speech recognition failed")}
+      try{const form=new FormData();form.append("audio",wavRef.current,"psle-speech.wav");const response=await fetch("/api/student/speaking/transcribe",{method:"POST",body:form});const body=await response.json() as {text?:string;error?:string};if(!response.ok)throw new Error(body.error||"Speech recognition failed");if(body.text){transcriptRef.current=body.text;setTranscript(body.text)}}
+      catch(e){setMicIssue("speech");setError(e instanceof Error?e.message:"Server speech recognition failed")}
       finally{setBusy(false)}
+    }
+    if(!config?.azurePronunciation&&!transcriptRef.current.trim()){
+      if(recognitionErrorRef.current==="no-speech")setError("No speech was recognised. Please read the passage again clearly.");
+      else {setMicIssue("speech");setError("Audio was recorded, but speech transcription is unavailable. A browser or server STT service is required to score this recording.");}
     }
   }
   async function speak(text:string){
@@ -159,14 +190,17 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
   }
   async function assessReading(){
     if(!active?.referenceText||!wavRef.current)return;
+    if(!config?.azurePronunciation&&!transcriptRef.current.trim()){
+      setMicIssue("speech");setError("Speech transcription is unavailable. Configure server STT or Azure pronunciation assessment before scoring.");return;
+    }
     setBusy(true);setError("");
     try{
       const form=new FormData();form.append("audio",wavRef.current,"reading.wav");
       form.append("promptId",active.id);form.append("referenceText",active.referenceText);
-      form.append("browserTranscript",transcript);form.append("durationMs",String(Math.max(1000,Date.now()-startedRef.current)));
+      form.append("browserTranscript",transcriptRef.current||transcript);form.append("durationMs",String(Math.max(1000,Date.now()-startedRef.current)));
       const response=await fetch("/api/student/speaking/assess",{method:"POST",body:form});
-      const body=await response.json() as {assessment?:PronunciationAssessment;dailySpeaking?:Progress;error?:string};
-      if(!response.ok||!body.assessment)throw new Error(body.error||"Reading assessment failed");
+      const body=await response.json() as {assessment?:PronunciationAssessment;dailySpeaking?:Progress;error?:string;code?:string};
+      if(!response.ok||!body.assessment){if(body.code==="SPEECH_RECOGNITION_UNAVAILABLE")setMicIssue("speech");throw new Error(body.error||"Reading assessment failed")}
       setAssessment(body.assessment);wavRef.current=null;if(body.dailySpeaking)setProgress(body.dailySpeaking);
     }catch(e){setError(e instanceof Error?e.message:"Reading assessment failed")}finally{setBusy(false)}
   }
@@ -182,6 +216,7 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
     voice.reset();setSessionId("");setPhase("questions");setQuestionNumber(1);setExaminerQuestion(PSLE_FIRST_QUESTION);setLatestScore(null);setHistory([]);setFeedback(null);setTranscript("");setInterim("");setError("");wavRef.current=null;
   }
   return <div className="speakingWorkspace">
+    <OralSetupDialog issue={micIssue||voice.micIssue} onClose={()=>{setMicIssue(null);voice.setMicIssue(null)}} onRetry={()=>{const issue=micIssue||voice.micIssue;setMicIssue(null);voice.setMicIssue(null);if(issue==="speech")window.location.reload();else if(focus==="stimulus")void voice.startRecording();else void start()}} />
     <div className="speakingDailyGate"><strong>{focus==="reading_aloud"?"Reading Aloud":"Stimulus-Based Conversation"} · {focus==="stimulus"?(phase==="completed"?"Conversation passed":(retry?"Retry · ":"Question ")+questionNumber+" of "+questionTotal):(passed?"Practised successfully":"Ready to practise")}</strong><span>{progress?"Today's practice target: "+progress.passMark+"%":"Scores are for practice, not official PSLE marks"}</span></div>
     <div className="speakingGrid"><section className="card">
       <div className="cardHeader"><h2>{active?.title||"PSLE oral practice"}</h2><span>{active?.topic||"Primary 5–6"}</span></div>
@@ -207,7 +242,7 @@ export function SpeakingWorkspace({focus}:{focus:Focus}) {
         <span className="sourceHint">AI finishes speaking → microphone starts → 3 seconds of silence sends your answer. Use headphones for best results.</span>
       </div>}
       <div className="recordControls"><button className={"recordBig"+(recordingNow?" recording":"")} disabled={!active||busy||audioBusy||Boolean(config&&!config.authenticated)||phase==="completed"||photoMissing||(focus==="stimulus"&&!imageReady)} onClick={()=>void(recordingNow?stop():start())}>{recordingNow?"■ Stop / send":focus==="stimulus"?(retry?"● Improve your answer":"● Answer examiner"):"● Record reading"}</button><span>{recordingNow?(focus==="stimulus"?voice.seconds:seconds)+" seconds · listening":audioBusy?(voice.state==="speaking"?"Examiner is speaking…":"Transcribing your reply…"):busy?"Evaluating…":focus==="stimulus"?(phase==="completed"?"Session passed":retry?"Repeat the same question after reviewing feedback":"Your turn: answer the examiner's question"):"Read the passage aloud"}</span></div>
-      {(visibleTranscript||visibleInterim||focus==="stimulus"&&voice.state==="listening")&&<div className="transcriptBox"><div className="eyebrow">Recognised speech · edit only obvious transcription errors</div><textarea aria-label="Recognised speech" value={visibleTranscript} disabled={recordingNow||audioBusy||busy} onChange={e=>focus==="stimulus"?voice.setTranscript(e.target.value):setTranscript(e.target.value)} /><p className="muted">{visibleInterim}</p></div>}
+      {(visibleTranscript||visibleInterim||focus==="stimulus"&&voice.state==="listening")&&<div className="transcriptBox"><div className="eyebrow">Recognised speech · edit only obvious transcription errors</div><textarea aria-label="Recognised speech" value={visibleTranscript} disabled={recordingNow||audioBusy||busy} onChange={e=>focus==="stimulus"?voice.setTranscript(e.target.value):(transcriptRef.current=e.target.value,setTranscript(e.target.value))} /><p className="muted">{visibleInterim}</p></div>}
       {!recordingNow&&focus==="stimulus"&&phase!=="completed"&&visibleTranscript.trim()&&<button className="button primary" disabled={busy||audioBusy||photoMissing} onClick={()=>void submitConversation()}>{retry?"Submit improved answer · retry":"Submit answer · get feedback"}</button>}
       {focus==="stimulus"&&phase==="completed"&&<button className="button primary" disabled={busy||recordingNow||audioBusy} onClick={restartConversation}>Practise this picture again</button>}
       {!recording&&focus==="reading_aloud"&&wavRef.current&&<button className="button primary" disabled={busy} onClick={()=>void assessReading()}>Assess reading aloud</button>}
