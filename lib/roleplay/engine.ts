@@ -4,6 +4,7 @@ import type { RoleplayLevel, RoleplayScenario } from "@/lib/roleplay/scenarios";
 
 export type RoleplayLine={speaker:"learner"|"assistant";text:string};
 export type RoleplayResult={reply:string};
+export type RoleplayCoachingFeedback=ConversationFeedback&{improvedLines:string[]};
 
 function parseModelJson(raw:string):Record<string,unknown>{
   const fenced=raw.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
@@ -54,25 +55,30 @@ export async function nextRoleplayReply(args:{
 }
 export async function assessRoleplay(args:{
   baseUrl:string;apiKey:string;model:string;scenario:RoleplayScenario;level:RoleplayLevel;history:RoleplayLine[];
-}):Promise<ConversationFeedback>{
-  const transcript=[...args.history.slice(0,5),...args.history.slice(Math.max(5,args.history.length-35))].map(x=>x.speaker==="learner"?"Learner: "+x.text:"Role-play partner: "+x.text).join("\n");
+}):Promise<RoleplayCoachingFeedback>{
+  const learnerLines=args.history.filter(x=>x.speaker==="learner").map(x=>x.text);
+  if(learnerLines.length===0)throw new Error("Role-play needs spoken answers before coaching");
+  const transcript=args.history.slice(-45).map(x=>x.speaker==="learner"?"Learner: "+x.text:"Role-play partner: "+x.text).join("\n");
   const messages:ChatMessage[]=[{
     role:"user",content:"You are an English communication coach for Singapore Primary 5–6. Evaluate practical open-ended role-play only from written transcripts. Do not claim to measure pronunciation or any official SEAB examination marks. Return strict JSON."
   },{
     role:"user",content:[
       "Scenario: "+args.scenario.title+"; learner role: "+args.scenario.studentRole+"; AI role: "+args.scenario.aiRole,
       "Goals: "+args.scenario.goals.join("; ")+". Difficulty: "+args.level+".",
-      "Evaluate conversational appropriateness, polite requests, initiative, clarifications, relevant information, grammar and vocabulary. Encourage flexible language and reasonable solutions.",
-      "Do NOT invent errors. Provide two specific strengths and 1–3 practical improvements, with a concise better expression if useful.",
+      "Evaluate conversational appropriateness, polite requests, initiative, clarifications, relevant information, grammar and vocabulary. Give a demanding 0-100 practice score; generic or incomplete responses should not reach 90. Scores are NOT official PSLE marks.",
+      "Do NOT invent errors. Provide two specific strengths and 1–3 practical improvements. Rewrite EVERY learner line as a stronger, natural, age-appropriate version while preserving the original meaning and details. Use one matching improvedLines item for each learner line, in the exact same order. These lines will be displayed for the child to READ ALOUD in a guided replay of the conversation.",
+      "Original learner lines in order (rewrite one for each): "+JSON.stringify(learnerLines),
       "Conversation: \n"+transcript,
-      'Return JSON only: {"reply":"one-sentence encouraging wrap-up","relevance":0,"development":0,"grammar":0,"vocabulary":0,"interaction":0,"strengths":["..."],"improvements":["..."],"betterExpression":"..."}',
+      'Return JSON only: {"reply":"one-sentence specific wrap-up","relevance":0,"development":0,"grammar":0,"vocabulary":0,"interaction":0,"strengths":["..."],"improvements":["..."],"betterExpression":"...","improvedLines":["one polished learner line per original learner line in order"]}',
     ].join("\n\n")
   }];
   const result=await modelBridgeChat({baseUrl:args.baseUrl,apiKey:args.apiKey,model:args.model},messages);
   const raw=result?.choices?.[0]?.message?.content;
   if(typeof raw!=="string")throw new Error("AI coach returned no feedback");
   const obj=parseModelJson(raw);
-  return {reply:text(obj.reply,400)||"Well done for practising a real-life conversation.",
+  const improvedLines=Array.isArray(obj.improvedLines)?obj.improvedLines.map(v=>text(v,1000)):[];
+  if(improvedLines.length!==learnerLines.length||improvedLines.some(v=>!v))throw new Error("AI coach did not return a polished reply for every student turn");
+  return {improvedLines,reply:text(obj.reply,400)||"Well done for practising a real-life conversation.",
     relevance:clamp(obj.relevance),development:clamp(obj.development),
     grammar:clamp(obj.grammar),vocabulary:clamp(obj.vocabulary),interaction:clamp(obj.interaction),
     strengths:points(obj.strengths),improvements:points(obj.improvements),
