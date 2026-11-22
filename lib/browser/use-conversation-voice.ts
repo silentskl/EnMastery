@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getSpeechRecognitionCtor, type SpeechRecognitionLike } from "@/lib/browser/speech-recognition";
+import { microphoneIssue, type OralSetupIssue } from "@/components/oral-setup-dialog";
 
 type SpeechConfig = { serverStt: boolean; serverTts: boolean };
 type VoiceState = "idle" | "speaking" | "listening" | "transcribing";
@@ -51,6 +52,7 @@ export function useConversationVoice(args: {
   const [interim, setInterim] = useState("");
   const [seconds, setSeconds] = useState(0);
   const [error, setError] = useState("");
+  const [micIssue, setMicIssue] = useState<OralSetupIssue|null>(null);
   const configRef = useRef(args.config);
   const submitRef = useRef(args.onAutoSubmit);
   const handsFreeRef = useRef(true);
@@ -141,6 +143,7 @@ export function useConversationVoice(args: {
     setState("idle");
     setSeconds(0);
     setError("");
+    setMicIssue(null);
   }
 
   async function stopRecording(autoSubmit = false): Promise<string> {
@@ -190,11 +193,13 @@ export function useConversationVoice(args: {
   async function startRecording(): Promise<void> {
     if (activeRef.current || startingRef.current || processingRef.current) return;
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      setError("This browser cannot record microphone audio. Type your reply instead.");
+      setMicIssue("unsupported");
+      setError("This browser cannot record microphone audio.");
       return;
     }
     if (!configRef.current?.serverStt && !getSpeechRecognitionCtor()) {
-      setError("Speech recognition is unavailable. Enable server STT or type your reply.");
+      setMicIssue("speech");
+      setError("Speech recognition is unavailable in this browser and server STT is not configured.");
       return;
     }
     startingRef.current = true;
@@ -202,6 +207,7 @@ export function useConversationVoice(args: {
     try {
       stopPlayback();
       setError("");
+      setMicIssue(null);
       clearTranscript();
       setSeconds(0);
       samplesRef.current = [];
@@ -274,9 +280,12 @@ export function useConversationVoice(args: {
               lastVoiceRef.current = Date.now();
             }
           };
-          recognition.onerror = () => {
+          recognition.onerror = event => {
+            const code=(event as {error?:string}|null)?.error||"";
+            if(code==="not-allowed"||code==="audio-capture")setMicIssue(code==="audio-capture"?"device":"permission");
+            else if(code==="service-not-allowed"&&!configRef.current?.serverStt)setMicIssue("speech");
             if (!configRef.current?.serverStt && activeRef.current)
-              setError("Browser speech recognition stopped. Try again or type your reply.");
+              setError("Browser speech recognition stopped ("+(code||"unknown")+"). Check permissions or configure server STT.");
           };
           recognition.start();
           recognitionRef.current = recognition;
@@ -300,7 +309,8 @@ export function useConversationVoice(args: {
     } catch (reason) {
       releaseMicrophone();
       setState("idle");
-      setError(reason instanceof Error ? reason.message : "Microphone permission is required.");
+      setMicIssue(microphoneIssue(reason));
+      setError(reason instanceof Error ? reason.message : "Microphone could not start.");
     } finally {
       startingRef.current = false;
     }
@@ -382,7 +392,7 @@ export function useConversationVoice(args: {
     releaseMicrophone();
   }, []);
 
-  return { state, handsFree, setHandsFree, transcript, setTranscript, getTranscript,
+  return { state, handsFree, setHandsFree, micIssue, setMicIssue, transcript, setTranscript, getTranscript,
     clearTranscript, interim, seconds, error, setError, startRecording, stopRecording,
     play, reset, stopPlayback };
 }
