@@ -35,8 +35,8 @@ function readState(raw:string|null):PracticeState {
   try {
     const item=JSON.parse(raw||"null") as Partial<PracticeState>|null;
     if(item && ["first","rehearsal","ready_final","final","passed"].includes(item.phase||"")
-      && Number.isInteger(item.cycle)&&Number.isInteger(item.phaseStartLine)
-      && Number.isInteger(item.rehearsalIndex)&&Array.isArray(item.script)&&Array.isArray(item.improvedLines)){
+      && Number.isInteger(Number(item.cycle))&&Number.isInteger(Number(item.phaseStartLine))
+      && Number.isInteger(Number(item.rehearsalIndex))&&Array.isArray(item.script)&&Array.isArray(item.improvedLines)){
       return item as PracticeState;
     }
   }catch{}
@@ -160,7 +160,7 @@ export async function POST(request:Request){
       if(state.phase==="first"){
         let position=0;
         const script:RoleplayLine[]=stageHistory.map(line=>
-          line.speaker==="learner"?{speaker:"learner",text:feedback.improvedLines[position++]}:line);
+          line.speaker==="learner"?{speaker:"learner" as const,text:feedback.improvedLines[position++]}:line);
         if(script[0]?.speaker!=="assistant"||position!==feedback.improvedLines.length)
           throw new Error("Cannot construct the improved role-play replay");
         const next:PracticeState={...state,phase:"rehearsal",script,improvedLines:feedback.improvedLines,rehearsalIndex:0,baselineScore:score};
